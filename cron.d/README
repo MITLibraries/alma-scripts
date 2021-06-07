@@ -1,0 +1,3 @@
+#Files placed here will be automatically copied to /etc/cron.d/ on the the alma-sftp instance.  
+#Care should be taken to only place files formatted as a cron job here, for example - 
+#11 19 * * *   root    echo "hello world"
