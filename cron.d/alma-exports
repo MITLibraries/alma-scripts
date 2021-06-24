@@ -1,0 +1,3 @@
+# Cron jobs for alma exports
+3 0 * * * root /mnt/alma/alma-scripts/scripts/Update-Export.sh 
+30 0 2 * * root /mnt/alma/alma-scripts/scripts/Full-Export.sh
