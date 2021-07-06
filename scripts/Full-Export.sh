@@ -7,7 +7,7 @@ mkdir /mnt/alma/FullUpdate_automated
 cd /mnt/alma/FullUpdate_automated
 
 # Copy down all the MRC files (tar files?)
-aws s3 sync s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ . --exclude "*" --include "*.mrc"
+aws s3 sync s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ . --delete --exclude "*" --include "*.mrc"
 
 ## todo: fix untar (not sure if single or multiple files)
 
@@ -21,7 +21,7 @@ cat *.mrc >> result.tmp
 aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_FULL_EXPORT_$now.mrc
 
 #Test whether the file is valid, if it is, delete the files locally and from s3
-sudo docker run mitlibraries/mario:alma-updates ingest --source aleph --consumer silent s3://dip-aleph-s3-stage/ALMA_FULL_EXPORT_2021-06-24.mrc
+sudo docker run mitlibraries/mario:alma-updates ingest --source aleph --consumer silent s3://dip-aleph-s3-stage/ALMA_FULL_EXPORT_$now.mrc
 
 ## todo: Find whether lambda ran successfully or decide success of above docker run
 
