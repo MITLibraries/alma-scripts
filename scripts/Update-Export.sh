@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# ###########################
+# This is currently untested, and should not be used...
+# ###########################
+
 # Create date string
 now=$(date +"%Y-%m-%d")
 
@@ -19,7 +24,7 @@ cat *.mrc >> result.tmp
 aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_UPDATE_EXPORT_$now.mrc
 
 #Test whether the file is valid, if it is, delete the files locally and from s3
-sudo docker run mitlibraries/mario:alma-updates ingest --source aleph --consumer silent s3://dip-aleph-s3-stage/ALMA_UPDATE_EXPORT_2021-06-24.mrc
+#sudo docker run mitlibraries/mario:latest ingest --source aleph --consumer silent s3://dip-aleph-s3-stage/ALMA_UPDATE_EXPORT_2021-06-24.mrc
 
 #rm *.mrc
 #aws s3 rm s3://$ALMA_BUCKET/exlibris/Timdex/FULL/

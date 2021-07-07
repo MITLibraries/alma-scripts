@@ -21,7 +21,7 @@ cat *.mrc >> result.tmp
 aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_FULL_EXPORT_$now.mrc
 
 #Test whether the file is valid, if it is, delete the files locally and from s3
-sudo docker run mitlibraries/mario:alma-updates ingest --source aleph --consumer silent s3://dip-aleph-s3-stage/ALMA_FULL_EXPORT_$now.mrc
+#sudo docker run mitlibraries/mario:latest ingest --source aleph --consumer silent s3://dip-aleph-s3-stage/ALMA_FULL_EXPORT_$now.mrc
 
 ## todo: Find whether lambda ran successfully or decide success of above docker run
 
