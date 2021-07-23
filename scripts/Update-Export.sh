@@ -14,7 +14,7 @@ aws s3 sync s3://$ALMA_BUCKET/exlibris/Timdex/UPDATE/ . --delete --exclude "*" -
 rm result.tmp
 
 # Concat all the mrc files into one file
-cat *.mrc >> result.tmp
+cat `ls|grep ".mrc"|sort -n` >> result.tmp 
 
 # Upload the file to s3, name it properly
 aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_UPDATE_EXPORT_$now.mrc
@@ -24,5 +24,6 @@ aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_UPDATE_EXPORT_$now.mrc
 
 aws s3 mv s3://$ALMA_BUCKET/exlibris/Timdex/UPDATE/ s3://$ALMA_BUCKET/exlibris/Timdex/UPDATE/ARCHIVE/ --exclude "*" --include "*.mrc" --recursive
 
+#Clean up
 rm *.mrc
-
+rm *.tmp
