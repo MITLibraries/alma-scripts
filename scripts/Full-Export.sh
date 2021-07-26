@@ -6,10 +6,8 @@ now=$(date +"%Y-%m-%d")
 mkdir /mnt/alma/FullUpdate_automated
 cd /mnt/alma/FullUpdate_automated
 
-# Copy down all the MRC files (tar files?)
+# Copy down all the MRC files 
 aws s3 sync s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ . --delete --exclude "*" --include "*.mrc"
-
-## todo: fix untar (not sure if single or multiple files)
 
 # Remove the previous run's tmp file
 rm result.tmp
@@ -25,7 +23,6 @@ aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_FULL_EXPORT_$now.mrc
 
 ## todo: Find whether lambda ran successfully or decide success of above docker run
 
-## todo: move files to archive location for them to be deleted as they age out?
+aws s3 mv s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ARCHIVE/ --exclude "*" --include "*.mrc" --recursive
 
-#rm *.mrc
-#aws s3 rm s3://$ALMA_BUCKET/exlibris/Timdex/FULL/
+rm *.mrc
