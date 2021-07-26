@@ -1,4 +1,6 @@
 # Cron jobs for alma exports
-# Possible future cron jobs 
-3 3 * * * root /mnt/alma/alma-scripts/scripts/Update-Export.sh 
+# At 0803
+3 8 * * * root /mnt/alma/alma-scripts/scripts/Update-Export.sh 
+
+# At 0030 on the 2nd of the month
 30 0 2 * * root /mnt/alma/alma-scripts/scripts/Full-Export.sh
