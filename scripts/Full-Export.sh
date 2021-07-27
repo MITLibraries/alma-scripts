@@ -23,6 +23,6 @@ aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_FULL_EXPORT_$now.mrc
 
 ## todo: Find whether lambda ran successfully or decide success of above docker run
 
-aws s3 mv s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ARCHIVE/ --exclude "*" --include "*.mrc" --recursive
+aws s3 mv s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ s3://$ALMA_BUCKET/ARCHIVE/ --exclude "*" --include "*.mrc" --recursive
 
 rm *.mrc

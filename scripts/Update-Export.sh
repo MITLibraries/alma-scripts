@@ -22,7 +22,7 @@ aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_UPDATE_EXPORT_$now.mrc
 #Test whether the file is valid, if it is, delete the files locally and from s3
 #sudo docker run mitlibraries/mario:latest ingest --source aleph --consumer silent s3://dip-aleph-s3-stage/ALMA_UPDATE_EXPORT_2021-06-24.mrc
 
-aws s3 mv s3://$ALMA_BUCKET/exlibris/Timdex/UPDATE/ s3://$ALMA_BUCKET/exlibris/Timdex/UPDATE/ARCHIVE/ --exclude "*" --include "*.mrc" --recursive
+aws s3 mv s3://$ALMA_BUCKET/exlibris/Timdex/UPDATE/ s3://$ALMA_BUCKET/ARCHIVE/ --exclude "*" --include "*.mrc" --recursive
 
 #Clean up
 rm *.mrc
