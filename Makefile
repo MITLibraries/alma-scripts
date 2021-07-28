@@ -1,6 +1,6 @@
-linting: bandit black flake8 isort
+lint: bandit black flake8 isort
 	
-testing: coveralls pytest
+test: coveralls 
 
 bandit:
 	pipenv run bandit -r alma_api_cli
@@ -8,7 +8,7 @@ bandit:
 black:
 	pipenv run black --check --diff .
 	
-coveralls: 
+coveralls: test
 	pipenv run coveralls
 
 flake8:
@@ -17,5 +17,5 @@ flake8:
 isort:
 	pipenv run isort . --diff
 	
-pytest:
-	pipenv run pytest
+test:
+	pipenv run pytest --cov=alma_api_cli
