@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+lxml = "*"
+
+[dev-packages]
+black = "==21.7b0"
+isort = "*"
+flake8 = "*"
+pylama = "*"
+bandit = "*"
+pytest = "*"
+requests-mock = "*"
+coveralls = "*"
+
+[requires]
+python_version = "3.9"
+
+[scripts]
+alma_api_cli = "python -c \"from alma_api_cli.cli import cli; cli()\""
