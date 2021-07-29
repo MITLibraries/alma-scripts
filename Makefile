@@ -1,9 +1,7 @@
 lint: bandit black flake8 isort
-	
-test: coveralls 
 
 bandit:
-	pipenv run bandit -r alma_api_cli
+	pipenv run bandit -r llama
 
 black:
 	pipenv run black --check --diff .
@@ -18,4 +16,4 @@ isort:
 	pipenv run isort . --diff
 	
 test:
-	pipenv run pytest --cov=alma_api_cli
+	pipenv run pytest --cov=llama
