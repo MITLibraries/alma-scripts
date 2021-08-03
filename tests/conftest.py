@@ -42,12 +42,12 @@ def s3_session(aws_credentials, date_today):
         s3.create_bucket(Bucket="ils-sftp")
         s3.put_object(
             Bucket="ils-sftp",
-            Key=f"exlibris/Timdex/UPDATE/{date_today}_marc1.mrc",
+            Key=f"exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__{date_today}_marc1.mrc",
             Body="MARC 001",
         )
         s3.put_object(
             Bucket="ils-sftp",
-            Key=f"exlibris/Timdex/UPDATE/{date_today}_marc2.mrc",
+            Key=f"exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__{date_today}_marc2.mrc",
             Body="MARC 002",
         )
         s3.create_bucket(Bucket="dip-ils-bucket")
