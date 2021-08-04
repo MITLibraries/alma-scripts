@@ -1,7 +1,10 @@
+from freezegun import freeze_time
+
 from llama.cli import cli
 
 
-def test_concat_timdex_export(s3_session, bucket_env, date_today, runner):
+@freeze_time("2021-01-01")
+def test_concat_timdex_export(s3_session, bucket_env, runner):
     # today's date
     assert len(s3_session.client("s3").list_objects(Bucket="ils-sftp")["Contents"]) == 4
     assert "Contents" not in s3_session.client("s3").list_objects(
@@ -17,7 +20,7 @@ def test_concat_timdex_export(s3_session, bucket_env, date_today, runner):
     )
     assert result.exit_code == 0
     concatenated_file = s3_session.client("s3").get_object(
-        Bucket="dip-ils-bucket", Key=f"ALMA_UPDATE_EXPORT_{date_today}.mrc"
+        Bucket="dip-ils-bucket", Key="ALMA_UPDATE_EXPORT_20210101.mrc"
     )
     assert concatenated_file["Body"].read() == b"MARC 001MARC 002"
 

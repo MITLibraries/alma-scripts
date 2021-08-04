@@ -1,5 +1,4 @@
 import os
-from datetime import datetime
 
 import boto3
 import pytest
@@ -24,30 +23,24 @@ def bucket_env():
 
 
 @pytest.fixture(scope="function")
-def date_today():
-    date_today = datetime.today().strftime("%Y%m%d")
-    return date_today
-
-
-@pytest.fixture(scope="function")
 def runner():
     return CliRunner()
 
 
 @pytest.fixture(scope="function")
-def s3_session(aws_credentials, date_today):
+def s3_session(aws_credentials):
     with mock_s3():
         session = boto3.session.Session()
         s3 = boto3.client("s3", region_name="us-east-1")
         s3.create_bucket(Bucket="ils-sftp")
         s3.put_object(
             Bucket="ils-sftp",
-            Key=f"exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__{date_today}_marc1.mrc",
+            Key="exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__20210101_marc1.mrc",
             Body="MARC 001",
         )
         s3.put_object(
             Bucket="ils-sftp",
-            Key=f"exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__{date_today}_marc2.mrc",
+            Key="exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__20210101_marc2.mrc",
             Body="MARC 002",
         )
         s3.put_object(

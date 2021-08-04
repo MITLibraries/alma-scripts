@@ -1,17 +1,17 @@
 from llama import s3
 
 
-def test_concatenate_files(s3_session, bucket_env, date_today):
+def test_concatenate_files(s3_session, bucket_env):
     # today's date
     s3.concatenate_files(
-        date_today,
+        "20210101",
         s3_session,
         "ils-sftp",
         "exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__",
-        f"ALMA_UPDATE_EXPORT_{date_today}.mrc",
+        "ALMA_UPDATE_EXPORT_20210101.mrc",
     )
     concatenated_file = s3_session.client("s3").get_object(
-        Bucket="ils-sftp", Key=f"ALMA_UPDATE_EXPORT_{date_today}.mrc"
+        Bucket="ils-sftp", Key="ALMA_UPDATE_EXPORT_20210101.mrc"
     )
     assert concatenated_file["Body"].read() == b"MARC 001MARC 002"
 
@@ -29,7 +29,7 @@ def test_concatenate_files(s3_session, bucket_env, date_today):
     assert concatenated_file["Body"].read() == b"MARC 003MARC 004"
 
 
-def test_move_s3_file(s3_session, bucket_env, date_today):
+def test_move_s3_file(s3_session, bucket_env):
     assert len(s3_session.client("s3").list_objects(Bucket="ils-sftp")["Contents"]) == 4
     assert "Contents" not in s3_session.client("s3").list_objects(
         Bucket="dip-ils-bucket"
@@ -37,9 +37,9 @@ def test_move_s3_file(s3_session, bucket_env, date_today):
     s3.move_s3_file(
         s3_session.client("s3"),
         "ils-sftp",
-        f"exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__{date_today}_marc1.mrc",
+        "exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__20210101_marc1.mrc",
         "dip-ils-bucket",
-        f"ARCHIVE/ALMA_UPDATE_EXPORT__{date_today}_marc1.mrc",
+        "ARCHIVE/ALMA_UPDATE_EXPORT__20201012_marc1.mrc",
     )
     assert len(s3_session.client("s3").list_objects(Bucket="ils-sftp")["Contents"]) == 3
     assert (
