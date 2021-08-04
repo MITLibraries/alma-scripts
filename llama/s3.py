@@ -1,19 +1,16 @@
-import os
-
 from s3_concat import S3Concat
 
 
-def concatenate_files(today, session, key_prefix):
-    """Concatenate files into a date-named file. s3Concat function creates the
-    concatenated file in the same directory as the source files after which it will be
-    copied to the destination directory and deleted in the original directory."""
+def concatenate_files(date, session, bucket, key_prefix, output_filename):
+    """Concatenates files with the provided key_prefix in the provided bucket in a
+    random order"""
     job = S3Concat(
-        os.environ["ALMA_BUCKET"],
-        f"ALMA_UPDATE_EXPORT_{today}.mrc",
+        bucket,
+        output_filename,
         None,
         session=session,
     )
-    job.add_files(f"{key_prefix}{today}")
+    job.add_files(f"{key_prefix}{date}")
     job.concat()
 
 

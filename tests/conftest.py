@@ -50,5 +50,15 @@ def s3_session(aws_credentials, date_today):
             Key=f"exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__{date_today}_marc2.mrc",
             Body="MARC 002",
         )
+        s3.put_object(
+            Bucket="ils-sftp",
+            Key="exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__20201012_marc1.mrc",
+            Body="MARC 003",
+        )
+        s3.put_object(
+            Bucket="ils-sftp",
+            Key="exlibris/Timdex/UPDATE/ALMA_UPDATE_EXPORT__20201012_marc2.mrc",
+            Body="MARC 004",
+        )
         s3.create_bucket(Bucket="dip-ils-bucket")
         yield session
