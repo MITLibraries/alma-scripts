@@ -23,7 +23,7 @@ moto = {extras = ["s3"], version = "*"}
 freezegun = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.8"
 
 [scripts]
 llama = "python -c \"from llama.cli import cli; cli()\""
