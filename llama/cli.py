@@ -1,16 +1,14 @@
-import sys
 from datetime import datetime
 
-import boto3
 import click
 
-from llama import s3
+from llama.s3 import S3
 
 
 @click.group()
 @click.pass_context
 def cli(ctx):
-    ctx.obj = {}
+    ctx.ensure_object(dict)
     ctx.obj["today"] = datetime.today()
 
 
@@ -22,39 +20,36 @@ def cli(ctx):
 )
 @click.option("--source_bucket", envvar="ALMA_BUCKET", required=True)
 @click.option("--destination_bucket", envvar="DIP_ALEPH_BUCKET", required=True)
-@click.option("--date")
+@click.option(
+    "--date",
+    help=(
+        "Optional date of exports to process, in 'YYYYMMDD' format. Defaults to "
+        "today's date if not provided."
+    ),
+)
 @click.pass_context
-def concat_timdex_export(
-    ctx,
-    export_type,
-    source_bucket,
-    destination_bucket,
-    date,
-):
-    """Concatenate files from UPDATE bucket and move the new file to destination bucket"""
+def concat_timdex_export(ctx, export_type, source_bucket, destination_bucket, date):
+    """Concatenate all files with a given date prefix to the source bucket and move the
+    new concatenated file to the destination bucket. This command assumes certain file
+    naming conventions that are used in the Alma export jobs for TIMDEX exports."""
     if date is None:
         date = ctx.obj["today"].strftime("%Y%m%d")
-    session = boto3.session.Session()
-    s3_client = session.client("s3")
-    key_prefix = f"exlibris/Timdex/{export_type}/ALMA_{export_type}_EXPORT__"
+    s3 = S3()
+    key_prefix = f"exlibris/Timdex/{export_type}/ALMA_{export_type}_EXPORT__{date}"
+    output_filename = f"ALMA_{export_type}_EXPORT_{date}.mrc"
     try:
-        s3.concatenate_files(
-            date,
-            session,
-            source_bucket,
-            key_prefix,
-            f"ALMA_UPDATE_EXPORT_{date}.mrc",
-        )
+        s3.concatenate_files(source_bucket, key_prefix, output_filename)
+        s3.move_file(output_filename, source_bucket, destination_bucket)
     except KeyError:
-        print(f"No files with key beginning: {key_prefix}{date}")
-        sys.exit(1)
-    # S3Concat function creates the concatenated file in the same directory as the source
-    # files after which it will be copied to the destination directory and deleted in
-    # the original directory
-    s3.move_s3_file(
-        s3_client,
-        source_bucket,
-        f"ALMA_{export_type}_EXPORT_{date}.mrc",
-        destination_bucket,
-        f"ALMA_{export_type}_EXPORT_{date}.mrc",
+        raise click.ClickException(
+            f"No files found in bucket {source_bucket} with key prefix: {key_prefix}"
+        )
+    except s3.client.exceptions.NoSuchBucket:
+        raise click.ClickException(
+            "One or more supplied buckets does not exist. Bucket names provided were: "
+            f"source_bucket={source_bucket}, destination_bucket={destination_bucket}"
+        )
+    click.echo(
+        f"Concatenated file {output_filename} succesfully created and moved to bucket "
+        f"{destination_bucket}."
     )
