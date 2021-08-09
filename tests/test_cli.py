@@ -1,13 +1,9 @@
-import os
-
 from freezegun import freeze_time
 
 from llama.cli import cli
-from llama.s3 import S3
 
 
-def test_concat_timdex_export_all_options_provided_success(mocked_s3, runner):
-    s3 = S3()
+def test_concat_timdex_export_all_options_provided_success(mocked_s3, runner, s3):
     assert len(s3.client.list_objects(Bucket="ils-sftp")["Contents"]) == 4
     assert "Contents" not in s3.client.list_objects(Bucket="dip-ils-bucket")
     result = runner.invoke(
@@ -36,10 +32,9 @@ def test_concat_timdex_export_all_options_provided_success(mocked_s3, runner):
 
 
 @freeze_time("2021-01-01")
-def test_concat_timdex_export_no_options_provided_success(mocked_s3, runner):
-    os.environ["ALMA_BUCKET"] = "ils-sftp"
-    os.environ["DIP_ALEPH_BUCKET"] = "dip-ils-bucket"
-    s3 = S3()
+def test_concat_timdex_export_no_options_provided_success(
+    bucket_env, mocked_s3, runner, s3
+):
     assert len(s3.client.list_objects(Bucket="ils-sftp")["Contents"]) == 4
     assert "Contents" not in s3.client.list_objects(Bucket="dip-ils-bucket")
     result = runner.invoke(

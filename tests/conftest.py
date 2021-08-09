@@ -5,6 +5,8 @@ import pytest
 from click.testing import CliRunner
 from moto import mock_s3
 
+from llama.s3 import S3
+
 
 @pytest.fixture(scope="function")
 def aws_credentials():
@@ -20,11 +22,6 @@ def bucket_env():
     """Mocked AWS Credentials for moto."""
     os.environ["ALMA_BUCKET"] = "ils-sftp"
     os.environ["DIP_ALEPH_BUCKET"] = "dip-ils-bucket"
-
-
-@pytest.fixture(scope="function")
-def runner():
-    return CliRunner()
 
 
 @pytest.fixture(scope="function")
@@ -54,3 +51,13 @@ def mocked_s3(aws_credentials):
         )
         s3.create_bucket(Bucket="dip-ils-bucket")
         yield s3
+
+
+@pytest.fixture(scope="function")
+def runner():
+    return CliRunner()
+
+
+@pytest.fixture(scope="function")
+def s3():
+    return S3()
