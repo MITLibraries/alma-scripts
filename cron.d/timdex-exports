@@ -6,3 +6,6 @@
 # # At 0030 on the 2nd of the month (runs on full export from the 1st of the
 # # month)
 30 0 2 * * gituser /mnt/alma/alma-scripts/scripts/Full-Export.sh
+
+# do the git pull
+5 0 * * 1 gituser /mnt/alma/alma-scripts/scripts/Gitrepo-pull.sh 
