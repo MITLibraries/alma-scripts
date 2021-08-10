@@ -14,4 +14,4 @@ cd /mnt/alma/alma-scripts
 #run the update, which automatically only uses the current days files 
 /usr/bin/python3.8 -m pipenv run llama concat-timdex-export --export_type UPDATE > /mnt/alma/logs/timdex-concat.log 2>&1
 
-aws ses send-email --region us-east-1 --from noreply@libraries.mit.edu --to zoto@mit.edu --subject "Concat Job Completed" --text file:///mnt/alma/logs/timdex-concat.log
+aws ses send-email --region us-east-1 --from noreply@libraries.mit.edu --to lib-alma-timdex-notifications@mit.edu --subject "Concat Job Completed" --text file:///mnt/alma/logs/timdex-concat.log
