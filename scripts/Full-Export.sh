@@ -1,28 +1,20 @@
 #!/bin/bash
-# Create date string
-now=$(date +"%Y-%m-%d")
+#source the environment variables here so that the script runs correctly for the cron user
+source /etc/profile
 
-# Make a directory and move to it for this work
-mkdir /mnt/alma/FullUpdate_automated
-cd /mnt/alma/FullUpdate_automated
+#make the logs dir if it doesn't already exist
+mkdir /mnt/alma/logs
 
-# Copy down all the MRC files 
-aws s3 sync s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ . --delete --exclude "*" --include "*.mrc"
+#change to the alma-scripts directory
+cd /mnt/alma/alma-scripts
 
-# Remove the previous run's tmp file
-rm result.tmp
+#Get the current date, but dont use the day, we hard code that to use the 1st
+CURRENT_DATE="$(date +"%Y%m")01"
 
-# Concat all the mrc files into one file
-cat *.mrc >> result.tmp
+#install the dependencies and dev tools for them
+/usr/bin/python3.8 -m pipenv --python 3.8 install --dev
 
-# Upload the file to s3, name it properly
-aws s3 cp result.tmp s3://$DIP_ALEPH_BUCKET/ALMA_FULL_EXPORT_$now.mrc
+#run the full update, this should only happen on the second of the month for files generated on the first. 
+/usr/bin/python3.8 -m pipenv run llama concat-timdex-export --export_type FULL --date "$CURRENT_DATE" > /mnt/alma/logs/timdex-concat.log 2>&1
 
-#Test whether the file is valid, if it is, delete the files locally and from s3
-#sudo docker run mitlibraries/mario:latest ingest --source aleph --consumer silent s3://dip-aleph-s3-stage/ALMA_FULL_EXPORT_$now.mrc
-
-## todo: Find whether lambda ran successfully or decide success of above docker run
-
-aws s3 mv s3://$ALMA_BUCKET/exlibris/Timdex/FULL/ s3://$ALMA_BUCKET/ARCHIVE/ --exclude "*" --include "*.mrc" --recursive
-
-rm *.mrc
+aws ses send-email --region us-east-1 --from noreply@libraries.mit.edu --to lib-alma-timdex-notifications@mit.edu --subject "Concat Job Completed" --text file:///mnt/alma/logs/timdex-concat.log

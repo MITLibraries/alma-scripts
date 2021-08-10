@@ -1,10 +1,14 @@
 # Cron jobs for TIMDEX exports
-
-CURRENT_DATE=date +%Y%m
-
+#
 # Daily at 0853
-53 08 * * * gituser cd /mnt/alma/alma-scripts && PATH=/usr/local/bin/pipenv:$PATH && pipenv run llama concat-timdex-export --export_type UPDATE >> /mnt/alma/logs/timdex-concat.log 2>&1
+53 08 * * * gituser /mnt/alma/alma-scripts/scripts/Update-Export.sh
+#
+# # At 0030 on the 2nd of the month (runs on full export from the 1st of the
+# # month)
+30 0 2 * * gituser /mnt/alma/alma-scripts/scripts/Full-Export.sh
 
-# At 0030 on the 2nd of the month (runs on full export from the 1st of the
-# month)
-30 0 2 * * gituser cd /mnt/alma/alma-scripts && PATH=/usr/local/bin/pipenv:$PATH && pipenv run llama concat-timdex-export --export_type FULL --date "$(${CURRENT_DATE})01" >> /mnt/alma/logs/timdex-concat.log 2>&1
+# do the git pull once a week, on monday, at 0005 
+5 0 * * 1 gituser /mnt/alma/alma-scripts/scripts/Gitrepo-pull.sh 
+
+#make sure to keep required newline at end of file -
+
