@@ -1,7 +1,10 @@
-from datetime import datetime
+import datetime
 
+import boto3
 import click
+from botocore.exceptions import ClientError
 
+from llama import credit_card_slips
 from llama.s3 import S3
 
 
@@ -9,7 +12,45 @@ from llama.s3 import S3
 @click.pass_context
 def cli(ctx):
     ctx.ensure_object(dict)
-    ctx.obj["today"] = datetime.today()
+    ctx.obj["today"] = datetime.datetime.today()
+
+
+@cli.command()
+@click.option(
+    "--date",
+    help=(
+        "Optional date of exports to process, in 'YYYY-MM-DD' format. Defaults to "
+        "today's date if not provided."
+    ),
+)
+@click.option(
+    "--source_email",
+    required=True,
+    help="The email address sending the credit card slips.",
+)
+@click.option(
+    "--recipient_email",
+    required=True,
+    help="The email address receiving the credit card slips.",
+)
+@click.pass_context
+def cc_slips(ctx, date, source_email, recipient_email):
+    if date is None:
+        date = (ctx.obj["today"] - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    credit_card_slips_xml = credit_card_slips.create_credit_card_slips(date)
+    ses_client = boto3.client("ses", region_name="us-east-1")
+    try:
+        response = credit_card_slips.send_credit_card_slips_email(
+            ses_client,
+            date,
+            credit_card_slips_xml,
+            source_email,
+            recipient_email,
+        )
+    except ClientError as e:
+        click.echo(e.response["Error"]["Message"])
+    else:
+        click.echo(f'Email sent! Message ID: {response["MessageId"]}')
 
 
 @cli.command()

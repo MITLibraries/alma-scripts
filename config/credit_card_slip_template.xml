@@ -1,0 +1,130 @@
+<ccslip>
+    <p align="center">
+      <b>MIT Libraries Credit Card Purchase</b><br/>
+      Monograph Acquisitions, Rm. NE36-6101</p>
+    <br/>
+    <br/>
+    <table border="0" width="100%" align="left">
+      <tr>
+        <td colspan="2">
+          <u>CHARGE INFORMATION</u>
+        </td>
+      </tr>
+      <tr>
+        <td align="left">Date:</td>
+        <td class="po_date" align="left">20210518</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td align="left">Cardholder:</td>
+        <td class="cardholder" align="left"></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td align="left">Vendor code:
+        </td>
+        <td class="vendor" align="left"></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td align="left">Account 1:
+        </td>
+        <td class="account_1" align="left"></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td align="left">Account 2:
+        </td>
+        <td class="account_2" align="left"></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><br/></td>
+      </tr>
+      <tr>
+        <td>PO Line #:</td>
+        <td>TITLE:</td>
+        <td>PRICE</td>
+      </tr>
+      <tr>
+        <td class="poline"></td>
+        <td class="item_title"></td>
+        <td class="price"></td>
+      </tr>
+      <tr>
+        <td><br/></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td align="right">Transaction fee:
+        </td>
+        <td>__________</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td align="right">TOTAL DUE:
+        </td>
+        <td class="price"></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <u>SAP INFORMATION</u>
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="2">SAP document #:</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="2">Date posted in SAP:</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="2">Verified by:</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="2">Verified date:</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><br/></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <u>ALMA INVOICE INFORMATION</u>
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="invoice_num" colspan="2"></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td style="padding-left:30px;" colspan="3">Inv #: Date charged + 1st 3 letters of title: YYMMDD "xxx")</td>
+      </tr>
+      <tr>
+        <td style="padding-left:30px;" class="credit_memo_num" colspan="3">For Credit Memo #, use Invoice # + CRE (YYMMDD"XXX"CRE)</td>
+      </tr>
+      <tr>
+        <td colspan="2">Use Charge Date above for Invoice Date.</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td><br/></td>
+      </tr>
+      <tr>
+        <td colspan="2">Date entered in Alma:
+        </td>
+        <td></td>
+      </tr>
+      <tr>
+        <td colspan="2">Entered by:
+        </td>
+        <td></td>
+      </tr>
+    </table>
+    <hr class="pb"/>
+    <p style="page-break-before: always" />
+</ccslip>
