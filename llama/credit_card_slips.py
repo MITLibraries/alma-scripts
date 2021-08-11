@@ -127,9 +127,10 @@ def load_xml_template(xml_file):
 
 
 def send_credit_card_slips_email(
-    ses_client, date, attachment_content, source_email, recipient_email
+    ses_client, date, attachment_content, source_email, recipients
 ):
-    """Send email with credit card slips as an attached file."""
+    """Send email with credit card slips as an attached file. Recipients parameter must
+    be a list and not a str."""
     message = MIMEMultipart()
     message["Subject"] = f"Credit card slips {date}"
     attachment_object = MIMEApplication(attachment_content)
@@ -139,7 +140,7 @@ def send_credit_card_slips_email(
     message.attach(attachment_object)
     response = ses_client.send_raw_email(
         Source=source_email,
-        Destinations=[recipient_email],
+        Destinations=recipients,
         RawMessage={
             "Data": message.as_string(),
         },

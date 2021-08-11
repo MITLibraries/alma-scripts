@@ -18,7 +18,9 @@ def test_cc_slips_date_provided(mocked_alma, mocked_alma_env_vars, runner):
             "--source_email",
             "noreply@example.com",
             "--recipient_email",
-            "test@example.com",
+            "test1@example.com",
+            "--recipient_email",
+            "test2@example.com",
         ],
     )
     assert result.exit_code == 0
@@ -37,7 +39,9 @@ def test_cc_slips_no_date_provided(mocked_alma, mocked_alma_env_vars, runner):
             "--source_email",
             "noreply@example.com",
             "--recipient_email",
-            "test@example.com",
+            "test1@example.com",
+            "--recipient_email",
+            "test2@example.com",
         ],
     )
     assert result.exit_code == 0

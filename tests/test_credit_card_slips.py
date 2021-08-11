@@ -127,6 +127,6 @@ def test_send_credit_card_slips_email():
         "2021-08-09",
         "<html/>",
         "noreply@example.com",
-        "test@example.com",
+        ["test@example.com"],
     )
     assert response["ResponseMetadata"]["HTTPStatusCode"] == 200

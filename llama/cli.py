@@ -31,7 +31,8 @@ def cli(ctx):
 @click.option(
     "--recipient_email",
     required=True,
-    help="The email address receiving the credit card slips.",
+    multiple=True,
+    help="The email address receiving the credit card slips. Re",
 )
 @click.pass_context
 def cc_slips(ctx, date, source_email, recipient_email):
@@ -45,7 +46,7 @@ def cc_slips(ctx, date, source_email, recipient_email):
             date,
             credit_card_slips_xml,
             source_email,
-            recipient_email,
+            list(recipient_email),
         )
     except ClientError as e:
         click.echo(e.response["Error"]["Message"])
