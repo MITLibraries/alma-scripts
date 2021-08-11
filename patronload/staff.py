@@ -65,7 +65,7 @@ staff_no_email_yes_krb = open("STAFF_REJECTS/staff_no_email_yes_krb.txt", "w")
 
 # Start Oracle data import #
 
-# Connect as user "LIBUSER" to the "WAREHOUSE.WORLD" as defined in the tns.ora
+# Connect as to "WAREHOUSE.WORLD" as defined in the tns.ora
 connection = cx_Oracle.connect(dw['user'], dw['password'], "WAREHOUSE.WORLD")
 cursor = connection.cursor()
 cursor.execute("""
