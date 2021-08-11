@@ -1,6 +1,4 @@
-import boto3
 from defusedxml import ElementTree as ET
-from moto import mock_ses
 
 from llama import credit_card_slips
 
@@ -116,17 +114,3 @@ def test_load_xml_template():
     assert root.tag == "ccslip"
     for element_class in element_classes:
         assert root.find(f'.//td[@class="{element_class}"]') is not None
-
-
-@mock_ses
-def test_send_credit_card_slips_email():
-    ses_client = boto3.client("ses", region_name="us-east-1")
-    ses_client.verify_email_identity(EmailAddress="noreply@example.com")
-    response = credit_card_slips.send_credit_card_slips_email(
-        ses_client,
-        "2021-08-09",
-        "<html/>",
-        "noreply@example.com",
-        ["test@example.com"],
-    )
-    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200

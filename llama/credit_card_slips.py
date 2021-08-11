@@ -1,6 +1,4 @@
 import os
-from email.mime.application import MIMEApplication
-from email.mime.multipart import MIMEMultipart
 
 import requests
 from defusedxml import ElementTree as ET
@@ -124,25 +122,3 @@ def load_xml_template(xml_file):
     tree = ET.parse(xml_file)
     root = tree.getroot()
     return root
-
-
-def send_credit_card_slips_email(
-    ses_client, date, attachment_content, source_email, recipients
-):
-    """Send email with credit card slips as an attached file. Recipients parameter must
-    be a list and not a str."""
-    message = MIMEMultipart()
-    message["Subject"] = f"Credit card slips {date}"
-    attachment_object = MIMEApplication(attachment_content)
-    attachment_object.add_header(
-        "Content-Disposition", "attachment", filename=f"{date}_credit_card_slips.htm"
-    )
-    message.attach(attachment_object)
-    response = ses_client.send_raw_email(
-        Source=source_email,
-        Destinations=recipients,
-        RawMessage={
-            "Data": message.as_string(),
-        },
-    )
-    return response

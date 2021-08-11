@@ -1,11 +1,11 @@
 import datetime
 
-import boto3
 import click
 from botocore.exceptions import ClientError
 
 from llama import credit_card_slips
 from llama.s3 import S3
+from llama.ses import SES
 
 
 @click.group()
@@ -32,19 +32,19 @@ def cli(ctx):
     "--recipient_email",
     required=True,
     multiple=True,
-    help="The email address receiving the credit card slips. Re",
+    help="The email address receiving the credit card slips. Repeatable",
 )
 @click.pass_context
 def cc_slips(ctx, date, source_email, recipient_email):
     if date is None:
         date = (ctx.obj["today"] - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     credit_card_slips_xml = credit_card_slips.create_credit_card_slips(date)
-    ses_client = boto3.client("ses", region_name="us-east-1")
+    ses_client = SES()
     try:
-        response = credit_card_slips.send_credit_card_slips_email(
-            ses_client,
-            date,
+        response = ses_client.send_email(
+            f"Credit card slips {date}",
             credit_card_slips_xml,
+            f"{date}_credit_card_slips.htm",
             source_email,
             list(recipient_email),
         )
