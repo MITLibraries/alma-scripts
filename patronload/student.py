@@ -253,7 +253,6 @@ for i in range(0, len(student)):
         for user_identifier in user_identifiers:
             id_type = user_identifier.findall("id_type")
             type = id_type[0]
-            #print(patron["MIT_ID"] + " " + type.text)
             id_value = user_identifier.findall("value")
             value = id_value[0]
 
