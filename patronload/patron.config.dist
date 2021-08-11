@@ -1,0 +1,7 @@
+[ALMA]
+apikey = [not needed for patron load]
+apihost = [not needed for patron load]
+
+[DW]
+user = [data warehouse username]
+password = [data warehouse password]
