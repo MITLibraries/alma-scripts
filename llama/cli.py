@@ -1,15 +1,69 @@
-from datetime import datetime
+import datetime
 
 import click
+from botocore.exceptions import ClientError
 
+from llama import credit_card_slips
+from llama.alma import Alma_API_Client
 from llama.s3 import S3
+from llama.ses import SES
 
 
 @click.group()
 @click.pass_context
 def cli(ctx):
     ctx.ensure_object(dict)
-    ctx.obj["today"] = datetime.today()
+    ctx.obj["today"] = datetime.datetime.today()
+
+
+@cli.command()
+@click.option(
+    "--date",
+    help=(
+        "Optional date of exports to process, in 'YYYY-MM-DD' format. Defaults to "
+        "yesterday's date if not provided."
+    ),
+)
+@click.option(
+    "--source_email",
+    required=True,
+    help="The email address sending the credit card slips.",
+)
+@click.option(
+    "--recipient_email",
+    required=True,
+    multiple=True,
+    help="The email address receiving the credit card slips. Repeatable",
+)
+@click.pass_context
+def cc_slips(ctx, date, source_email, recipient_email):
+    if date is None:
+        date = (ctx.obj["today"] - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    alma_api_client = Alma_API_Client()
+    alma_api_client.create_api_headers("application/json", "application/json")
+    credit_card_full_po_lines = (
+        credit_card_slips.get_credit_card_full_po_lines_from_date(alma_api_client, date)
+    )
+    po_line_dicts = credit_card_slips.create_po_line_dicts(
+        alma_api_client, credit_card_full_po_lines
+    )
+    credit_card_slip_xml_data = credit_card_slips.xml_data_from_dicts(po_line_dicts)
+    ses_client = SES()
+    message = ses_client.create_email(
+        f"Credit card slips {date}",
+        credit_card_slip_xml_data,
+        f"{date}_credit_card_slips.htm",
+    )
+    try:
+        response = ses_client.send_email(
+            source_email,
+            list(recipient_email),
+            message,
+        )
+    except ClientError as e:
+        click.echo(e.response["Error"]["Message"])
+    else:
+        click.echo(f'Email sent! Message ID: {response["MessageId"]}')
 
 
 @cli.command()
