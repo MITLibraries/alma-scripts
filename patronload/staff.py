@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import cx_Oracle
 import ast
@@ -55,17 +56,11 @@ file.close()
 
 # End import staff departments #
 
-staff_rejects = open("STAFF_REJECTS/staff_rejects_full.txt", "w")
-staff_no_barcode = open("STAFF_REJECTS/staff_no_barcode.txt", "w")
-staff_no_email = open("STAFF_REJECTS/staff_no_email.txt", "w")
-staff_no_phone = open("STAFF_REJECTS/staff_no_phone.txt", "w")
-staff_no_addr = open("STAFF_REJECTS/staff_no_addr.txt", "w")
-staff_no_email_no_krb = open("STAFF_REJECTS/staff_no_email_no_krb.txt", "w")
-staff_no_email_yes_krb = open("STAFF_REJECTS/staff_no_email_yes_krb.txt", "w")
+staff_rejects = open("rejects_staff_script.txt", "w")
 
 # Start Oracle data import #
 
-# Connect as to "WAREHOUSE.WORLD" as defined in the tns.ora
+# Connect to "WAREHOUSE.WORLD" as defined in the tns.ora
 connection = cx_Oracle.connect(dw['user'], dw['password'], "WAREHOUSE.WORLD")
 cursor = connection.cursor()
 cursor.execute("""
@@ -81,6 +76,7 @@ col_name = []
 for i in range(0, len(cursor.description)):
     col_name.append(cursor.description[i][0])
 
+# print column headers for rejects file
 staff_rejects.write(xstr(col_name[0]) + '|' +
                     col_name[1] + '|' +
                     col_name[2] + '|' +
@@ -106,8 +102,7 @@ for row in res:
         # purge += timedelta(days=365)
         # note the use of row[5].strftime('%Y-%m-%d') (APPOINTMENT_END_DATE)
         # to get a real date we can use
-        user = {col_name[0]: xstr(row[0]).decode("utf-8",
-                                                 errors="backslashreplace"),
+        user = {col_name[0]: xstr(row[0]),
                 col_name[1]: xstr(row[1]),
                 col_name[2]: xstr(row[2]),
                 col_name[3]: xstr(row[3]),
@@ -126,16 +121,6 @@ for row in res:
         end_date = 'Unknown'
         if row[5]:
             end_date = row[5].strftime('%Y-%m-%d')
-        # print (end_date + '|' + xstr(row[3]) + "|" + xstr(row[0]))
-        if row[3] and (xstr(row[4]) == ''):
-            staff_no_email.write(row[3] + "\n")
-            if row[6]:
-                staff_no_email_yes_krb.write(row[3] + "\t" +
-                                             row[6] + "\t" +
-                                             end_date + "\n")
-            else:
-                staff_no_email_no_krb.write(row[3] + "\t" +
-                                            end_date + "\n")
 
         staff_rejects.write(xstr(row[0]) + '|' +
                             xstr(row[1]) + '|' +
@@ -206,7 +191,6 @@ for i in range(0, len(staff)):
                 if patron["LIBRARY_ID"] and patron["LIBRARY_ID"] != 'NONE':
                     value.text = patron["LIBRARY_ID"]
                 else:
-                    staff_no_barcode.write(patron["MIT_ID"] + "\n")
                     user_identifiers.remove(user_identifier)
 
     for contact_info in root.iter('contact_info'):
@@ -215,15 +199,19 @@ for i in range(0, len(staff)):
             addresses[0][0].text = patron["OFFICE_ADDRESS"]
         else:
             addresses[0][0].text = 'NO ADDRESS ON FILE IN DATA WAREHOUSE'
-            staff_no_addr.write(patron["MIT_ID"] + "\n")
+
+        emails = contact_info.find("emails")
         if patron["EMAIL_ADDRESS"]:
-            emails = contact_info.find("emails")
             emails[0][0].text = patron["EMAIL_ADDRESS"]
+        else:
+            ems = emails.findall('email')
+            for em in ems:
+                emails.remove(em)
+
         phones = contact_info.find("phones")
         if patron["OFFICE_PHONE"]:
             phones[0][0].text = phone_format(patron["OFFICE_PHONE"])
         else:
-            staff_no_phone.write(patron["MIT_ID"] + "\n")
             tels = phones.findall('phone')
             for tel in tels:
                 phones.remove(tel)

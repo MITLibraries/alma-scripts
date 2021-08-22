@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 import cx_Oracle
@@ -45,14 +46,7 @@ departments = ast.literal_eval(contents)
 file.close()
 
 # End import student departments #
-rejects = "STUDENT_REJECTS"
-student_no_barcode = open(rejects + "/student_no_barcode.txt", "w")
-student_reject = open(rejects + "/student_rejects_full.txt", "w")
-student_no_phone = open(rejects + "/student_no_phone.txt", "w")
-student_no_addr = open(rejects + "/student_no_addr.txt", "w")
-student_no_email_no_krb = open(rejects + "/student_no_email_no_krb.txt", "w")
-student_no_email_yes_krb = open(rejects + "/student_no_email_yes_krb.txt", "w")
-
+student_reject = open("rejects_students_script.txt", "w")
 
 # Connect to the "WAREHOUSE.WORLD" service from tns.ora
 connection = cx_Oracle.connect(dw['user'], dw['password'], "WAREHOUSE.WORLD")
@@ -121,22 +115,14 @@ student = []
 for row in res:
     if (row[16]):
         user = {col_name[0]: row[0],
-                col_name[1]: xstr(row[1]).decode("utf-8",
-                                                 errors="backslashreplace"),
-                col_name[2]: xstr(row[2]).decode("utf-8",
-                                                 errors="backslashreplace"),
-                col_name[3]: xstr(row[3]).decode("utf-8",
-                                                 errors="backslashreplace"),
-                col_name[4]: xstr(row[4]).decode("utf-8",
-                                                 errors="backslashreplace"),
-                col_name[5]: xstr(row[5]).decode("utf-8",
-                                                 errors="backslashreplace"),
-                col_name[6]: xstr(row[6]).decode("utf-8",
-                                                 errors="backslashreplace"),
-                col_name[7]: xstr(row[7]).decode("utf-8",
-                                                 errors="backslashreplace"),
-                col_name[8]: xstr(row[8]).decode("utf-8",
-                                                 errors="backslashreplace"),
+                col_name[1]: xstr(row[1]),
+                col_name[2]: xstr(row[2]),
+                col_name[3]: xstr(row[3]),
+                col_name[4]: xstr(row[4]),
+                col_name[5]: xstr(row[5]),
+                col_name[6]: xstr(row[6]),
+                col_name[7]: xstr(row[7]),
+                col_name[8]: xstr(row[8]),
                 col_name[9]: xstr(row[9]),
                 col_name[10]: xstr(row[10]),
                 col_name[11]: xstr(row[11]),
@@ -215,20 +201,23 @@ for i in range(0, len(student)):
         purge_date.text = two_years.strftime('%Y-%m-%d') + 'Z'
 
     for contact_info in root.iter('contact_info'):
-        if patron["EMAIL_ADDRESS"]:
-            emails = contact_info.find("emails")
-            emails[0][0].text = patron["EMAIL_ADDRESS"]
-
         addresses = contact_info.find("addresses")
         if patron["TERM_STREET1"]:
             addresses[0][0].text = patron["TERM_STREET1"]
         else:
             addresses[0][0].text = 'NO ADDRESS ON FILE IN DATA WAREHOUSE'
-            student_no_addr.write(patron["MIT_ID"] + "\n")
         addresses[0][1].text = patron["TERM_STREET2"]
         addresses[0][2].text = patron["TERM_CITY"]
         addresses[0][3].text = patron["TERM_STATE"]
         addresses[0][4].text = patron["TERM_ZIP"]
+
+        emails = contact_info.find("emails")
+        if patron["EMAIL_ADDRESS"]:
+            emails[0][0].text = patron["EMAIL_ADDRESS"]
+        else:
+            ems = emails.findall('email')
+            for em in ems:
+                emails.remove(em)
 
         phones = contact_info.find("phones")
         if patron["OFFICE_PHONE"] and patron["TERM_PHONE1"]:
@@ -240,8 +229,6 @@ for i in range(0, len(student)):
             phones[0][0].text = phone_format(patron["TERM_PHONE1"])
         elif patron["TERM_PHONE2"]:
             phones[0][0].text = phone_format(patron["TERM_PHONE2"])
-        else:
-            student_no_phone.write(patron["MIT_ID"] + "\n")
         tels = phones.findall('phone')
         for tel in tels:
             pn = tel.findall('phone_number')
@@ -262,7 +249,6 @@ for i in range(0, len(student)):
                 if patron["LIBRARY_ID"] and patron["LIBRARY_ID"] != 'NONE':
                     value.text = patron["LIBRARY_ID"]
                 else:
-                    student_no_barcode.write(patron["MIT_ID"] + "\n")
                     user_identifiers.remove(user_identifier)
 
     for user_statistic in root.iter('user_statistic'):
