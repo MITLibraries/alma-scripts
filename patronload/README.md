@@ -1,8 +1,8 @@
-#Scripts for loading patrons into Alma from the MIT Data Warehouse. 
+# Scripts for loading patrons into Alma from the MIT Data Warehouse. 
 
 *More documentation coming soon!*
 
-##What's here?
+## What's here?
 1. Directories:
     - **STAFF** Directory where generated staff XML files are stored for processing
     - **STUDENT** Directory where generated student XML files are stored for processing
