@@ -2,7 +2,7 @@ from boto3 import client
 
 
 class SSM:
-    """A SSM class that provides a generic boto3 SSM client with specific SSM
+    """An SSM class that provides a generic boto3 SSM client with specific SSM
     functionality necessary for llama scripts"""
 
     def __init__(self):

@@ -3,7 +3,7 @@ from s3_concat import S3Concat
 
 
 class S3:
-    """A S3 class that provides a generic boto3 s3 client for interacting with S3
+    """An S3 class that provides a generic boto3 s3 client for interacting with S3
     objects, along with specific S3 functionality necessary for llama scripts"""
 
     def __init__(self):

@@ -5,7 +5,7 @@ from boto3 import client
 
 
 class SES:
-    """A SES class that provides a generic boto3 SES client with specific SES
+    """An SES class that provides a generic boto3 SES client with specific SES
     functionality necessary for llama scripts"""
 
     def __init__(self):

@@ -10,4 +10,4 @@ cd /mnt/alma/alma-scripts
 /usr/bin/python3.8 -m pipenv --python 3.8 install --dev
 
 #run the update, which automatically only uses the current days files 
-/usr/bin/python3.8 -m pipenv run llama cc-slips --source_email noreply@libraries.mit.edu --recipient_email ils-lib@mit.edu --recipient_email monoacq@mit.edu > /mnt/alma/logs/credit-card-slips.log 2>&1
+/usr/bin/python3.8 -m pipenv run llama cc-slips --source_email noreply@libraries.mit.edu --recipient_email ils-lib@mit.edu --recipient_email monoacq@mit.edu --api_key_parameter /apps/alma-sftp/ALMA_API_PROD_ACQ_KEY --api_url_parameter /apps/alma-sftp/ALMA_API_URL > /mnt/alma/logs/credit-card-slips.log 2>&1
