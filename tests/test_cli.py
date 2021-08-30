@@ -1,6 +1,85 @@
+import boto3
 from freezegun import freeze_time
+from moto import mock_ses
 
 from llama.cli import cli
+
+
+@mock_ses
+def test_cc_slips_date_provided(mocked_alma, mocked_ssm, runner):
+    ses_client = boto3.client("ses", region_name="us-east-1")
+    ses_client.verify_email_identity(EmailAddress="noreply@example.com")
+    result = runner.invoke(
+        cli,
+        [
+            "cc-slips",
+            "--date",
+            "2021-05-13",
+            "--source_email",
+            "noreply@example.com",
+            "--recipient_email",
+            "test1@example.com",
+            "--recipient_email",
+            "test2@example.com",
+            "--api_key_parameter",
+            "/test/example/ALMA_API_PROD_ACQ_KEY",
+            "--api_url_parameter",
+            "/test/example/ALMA_API_URL",
+        ],
+    )
+    assert result.exit_code == 0
+    assert result.output.startswith("Email sent! Message ID:")
+
+
+@mock_ses
+@freeze_time("2021-05-14")
+def test_cc_slips_no_date_provided(mocked_alma, mocked_ssm, runner):
+    ses_client = boto3.client("ses", region_name="us-east-1")
+    ses_client.verify_email_identity(EmailAddress="noreply@example.com")
+    result = runner.invoke(
+        cli,
+        [
+            "cc-slips",
+            "--source_email",
+            "noreply@example.com",
+            "--recipient_email",
+            "test1@example.com",
+            "--recipient_email",
+            "test2@example.com",
+            "--api_key_parameter",
+            "/test/example/ALMA_API_PROD_ACQ_KEY",
+            "--api_url_parameter",
+            "/test/example/ALMA_API_URL",
+        ],
+    )
+    assert result.exit_code == 0
+    assert result.output.startswith("Email sent! Message ID:")
+
+
+@mock_ses
+def test_cc_slips_no_records_for_date_provided(mocked_alma, mocked_ssm, runner):
+    ses_client = boto3.client("ses", region_name="us-east-1")
+    ses_client.verify_email_identity(EmailAddress="noreply@example.com")
+    result = runner.invoke(
+        cli,
+        [
+            "cc-slips",
+            "--date",
+            "2021-03-10",
+            "--source_email",
+            "noreply@example.com",
+            "--recipient_email",
+            "test1@example.com",
+            "--recipient_email",
+            "test2@example.com",
+            "--api_key_parameter",
+            "/test/example/ALMA_API_PROD_ACQ_KEY",
+            "--api_url_parameter",
+            "/test/example/ALMA_API_URL",
+        ],
+    )
+    assert result.exit_code == 0
+    assert result.output.startswith("Email sent! Message ID:")
 
 
 def test_concat_timdex_export_all_options_provided_success(mocked_s3, runner, s3):

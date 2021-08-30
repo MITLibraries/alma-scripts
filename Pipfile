@@ -8,6 +8,7 @@ requests = "*"
 lxml = "*"
 boto3 = "*"
 s3-concat = "*"
+defusedxml = "*"
 
 [dev-packages]
 black = "==21.7b0"
