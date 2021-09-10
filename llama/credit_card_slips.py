@@ -15,6 +15,9 @@ def create_po_line_dict(alma_api_client, po_line_record):
     price = format(float(po_line_record["price"]["sum"]), ".2f")
     po_line_dict["price"] = f"${price}"
 
+    total_price = get_total_price(po_line_record, price)
+    po_line_dict["total_price"] = f"${total_price}"
+
     # Stakeholder requested format of date
     po_line_created_date = "".join(
         filter(str.isdigit, po_line_record["created_date"][2:])
@@ -91,6 +94,18 @@ def get_po_title(po_line_record):
     title = po_line_record["resource_metadata"]["title"]
     title = "Unknown title" if title is None else title
     return title
+
+
+def get_total_price(po_line_record, unit_price):
+    """Get total price from fund distribution of PO line record. If no  amount is listed
+    in the fund distribution, the unit price is returned as the total price."""
+    total_price = 0
+    for fund in [f for f in po_line_record["fund_distribution"] if f["amount"]["sum"]]:
+        total_price += float(fund["amount"]["sum"])
+    total_price = format(total_price, ".2f")
+    if total_price == "0.00":
+        total_price = unit_price
+    return total_price
 
 
 def load_xml_template(xml_file):

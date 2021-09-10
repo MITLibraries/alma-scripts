@@ -113,7 +113,9 @@ def po_line_record_all_fields():
         "resource_metadata": {"title": "Book title"},
         "price": {"sum": "12.0"},
         "created_date": "2021-05-13Z",
-        "fund_distribution": [{"fund_code": {"value": "ABC"}}],
+        "fund_distribution": [
+            {"fund_code": {"value": "ABC"}, "amount": {"sum": "24.0"}}
+        ],
         "note": [{"note_text": "CC-abc"}],
     }
     return po_line_record_all
@@ -127,7 +129,7 @@ def po_line_record_missing_fields():
         "resource_metadata": {"title": None},
         "price": {"sum": "0.0"},
         "created_date": "2021-05-13Z",
-        "fund_distribution": [{"fund_code": {"value": ""}}],
+        "fund_distribution": [{"fund_code": {"value": ""}, "amount": {"sum": ""}}],
         "note": [],
     }
     return po_line_record_missing_fields
@@ -142,8 +144,8 @@ def po_line_record_multiple_funds():
         "price": {"sum": "12.0"},
         "created_date": "2021-05-13Z",
         "fund_distribution": [
-            {"fund_code": {"value": "ABC"}},
-            {"fund_code": {"value": "DEF"}},
+            {"fund_code": {"value": "ABC"}, "amount": {"sum": "6.0"}},
+            {"fund_code": {"value": "DEF"}, "amount": {"sum": "6.0"}},
         ],
         "note": [{"note_text": ""}],
     }

@@ -108,13 +108,23 @@ def test_get_credit_card_full_po_lines_from_date(mocked_alma, mocked_alma_api_cl
 
 
 def test_get_po_title_with_title():
-    po_rec_1 = {"resource_metadata": {"title": "Book title"}}
-    assert credit_card_slips.get_po_title(po_rec_1) == "Book title"
+    po_line_record = {"resource_metadata": {"title": "Book title"}}
+    assert credit_card_slips.get_po_title(po_line_record) == "Book title"
 
 
 def test_get_po_title_without_title():
-    po_rec_2 = {"resource_metadata": {"title": None}}
-    assert credit_card_slips.get_po_title(po_rec_2) == "Unknown title"
+    po_line_record = {"resource_metadata": {"title": None}}
+    assert credit_card_slips.get_po_title(po_line_record) == "Unknown title"
+
+
+def test_get_total_price_with_total_price():
+    po_line_record = {"fund_distribution": [{"amount": {"sum": "30.0"}}]}
+    assert credit_card_slips.get_total_price(po_line_record, "15.00") == "30.00"
+
+
+def test_get_total_price_without_total_price():
+    po_line_record = {"fund_distribution": [{"amount": {"sum": ""}}]}
+    assert credit_card_slips.get_total_price(po_line_record, "15.00") == "15.00"
 
 
 def test_load_xml_template():
