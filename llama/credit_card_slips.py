@@ -27,7 +27,9 @@ def create_po_line_dict(alma_api_client, po_line_record):
         "invoice_num"
     ] = f"Invoice #: {po_line_created_date}{title[:3].upper()}"
 
-    fund_code_1 = po_line_record["fund_distribution"][0]["fund_code"]["value"]
+    fund_code_1 = (
+        po_line_record["fund_distribution"][0].get("fund_code", {}).get("value")
+    )
     po_line_dict["account_1"] = get_account_from_fund_code(alma_api_client, fund_code_1)
     if len(po_line_record["fund_distribution"]) > 1:
         fund_code_2 = po_line_record["fund_distribution"][1]["fund_code"]["value"]
@@ -100,7 +102,9 @@ def get_total_price(po_line_record, unit_price):
     """Get total price from fund distribution of PO line record. If no  amount is listed
     in the fund distribution, the unit price is returned as the total price."""
     total_price = 0
-    for fund in [f for f in po_line_record["fund_distribution"] if f["amount"]["sum"]]:
+    for fund in [
+        f for f in po_line_record["fund_distribution"] if f.get("amount", {}).get("sum")
+    ]:
         total_price += float(fund["amount"]["sum"])
     total_price = format(total_price, ".2f")
     if total_price == "0.00":
