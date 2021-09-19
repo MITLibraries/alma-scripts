@@ -1,0 +1,8 @@
+<invoice>
+ <payment>
+   <voucher_date>2021-09-03Z</voucher_date>
+   <voucher_amount/>
+   <voucher_currency/>
+   <voucher_number/>
+ </payment>
+</invoice>

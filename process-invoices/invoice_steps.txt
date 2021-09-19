@@ -1,0 +1,35 @@
+# file names are for example only, they will be created by the scripts as you go
+
+1) ./print_reports_by_status.py 
+    - creates files invoice_ids_20210813120643.txt & invoice_special_20210813120643.txt
+    - creates why_20210813120643.txt to account for files not included in files sent to SAP
+        - add to summary files (vendor codes included to aid telling M from S
+
+2) ./get_invoices_from_file.py invoice_ids_20210813120643.txt
+    - creates separate invoice files for serials & monos
+        - dlibsapg.2858.20210813000000
+        - dlibsapg.2859.20210813000000
+    - updates the file seq-sap to update the SAP sequence
+        !!! if you  have to rerun, make sure to roll back the seq-sap file !!!
+    
+3) ./make_cfile.py dlibsapg.2858.20210813000000
+        - creates clibsapg.2858.20210813000000
+   ./make_cfile.py dlibsapg.2859.20210813000000
+        - creates clibsapg.2859.20210813000000
+    # you can quick check the cfile by running ./parse_cfile.py clibsapg.2859.20210813000000
+4) ./make_summary.py dlibsapg.2858.20210813000000 >mono_summary_20210813.txt
+   ./make_summary.py dlibsapg.2859.20210813000000 >ser_summary_20210813.txt
+5) edit empty.xml to change voucher_date to today's date
+   ./update_invoice_status.pl [invoice id] paid
+   do this for each invoice number in invoice_ids_20210813120643.txt & invoice_special_20210813120643.txt
+   # see "go" for how I actually do this.
+
+
+ftp sap-dropbox.mit.edu
+libsp
+aob368
+put dlibsapg.2858.20210813000000
+put clibsapg.2858.20210813000000
+put dlibsapg.2859.20210813000000
+put clibsapg.2859.20210813000000
+
