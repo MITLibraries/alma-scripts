@@ -8,11 +8,16 @@ import xml.etree.ElementTree as ET
 from datetime import date
 # from datetime import timedelta
 from dateutil.relativedelta import relativedelta
-import configparser
 
-config = configparser.ConfigParser()
-config.read('patron.config')
-dw = config['DW']
+from llama.ssm import SSM
+
+ssm = SSM()
+data_warehouse_password = ssm.get_parameter_value(
+    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_PASSWORD"
+)
+data_warehouse_user = ssm.get_parameter_value(
+    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_USER"
+)
 
 
 def xstr(s):
@@ -61,7 +66,11 @@ staff_rejects = open("rejects_staff_script.txt", "w")
 # Start Oracle data import #
 
 # Connect to "WAREHOUSE.WORLD" as defined in the tns.ora
-connection = cx_Oracle.connect(dw['user'], dw['password'], "WAREHOUSE.WORLD")
+connection = cx_Oracle.connect(
+    data_warehouse_user,
+    data_warehouse_password,
+    "WAREHOUSE.WORLD"
+)
 cursor = connection.cursor()
 cursor.execute("""
         SELECT *
