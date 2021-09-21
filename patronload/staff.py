@@ -12,11 +12,20 @@ from dateutil.relativedelta import relativedelta
 from llama.ssm import SSM
 
 ssm = SSM()
+data_warehouse_user = ssm.get_parameter_value(
+    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_USER"
+)
 data_warehouse_password = ssm.get_parameter_value(
     "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_PASSWORD"
 )
-data_warehouse_user = ssm.get_parameter_value(
-    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_USER"
+data_warehouse_host = ssm.get_parameter_value(
+    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_HOST"
+)
+data_warehouse_port = ssm.get_parameter_value(
+    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_PORT"
+)
+data_warehouse_sid = ssm.get_parameter_value(
+    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_SID"
 )
 
 
@@ -66,10 +75,12 @@ staff_rejects = open("rejects_staff_script.txt", "w")
 # Start Oracle data import #
 
 # Connect to "WAREHOUSE.WORLD" as defined in the tns.ora
+dsn = cx_Oracle.makedsn(data_warehouse_host, data_warehouse_port, data_warehouse_sid)
+
 connection = cx_Oracle.connect(
     data_warehouse_user,
     data_warehouse_password,
-    "WAREHOUSE.WORLD"
+    dsn,
 )
 cursor = connection.cursor()
 cursor.execute("""
