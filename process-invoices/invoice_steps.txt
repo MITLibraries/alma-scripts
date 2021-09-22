@@ -27,7 +27,7 @@
 
 ftp sap-dropbox.mit.edu
 libsp
-aob368
+passwd
 put dlibsapg.2858.20210813000000
 put clibsapg.2858.20210813000000
 put dlibsapg.2859.20210813000000
