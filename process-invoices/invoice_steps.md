@@ -1,3 +1,11 @@
+## Initial setup
+### Step 0 - First run setup 
+* copy invoice.config.dist to invoice.config and fill in api values
+* make sure seq-sap exists and is current with the most recent run number  
+* update `scripts/update_invoice_status.pl` with api key inline
+
+## All commands to be run as "gituser" - `sudo su - gituser`
+
 ## Review Run
 
 1.  Retrieve all invoices with a status of "Waiting to be Sent" from Alma.
@@ -17,21 +25,21 @@
 2.  Email review reports to Acquisitions staff for review.
     - Send one email for monographs report
         To: alma-sap-feeds-create@mit.edu
-        Reply-to: ** Does this matter?
+        Reply-to: ils-lib@mit.edu
         Subject: Review Report – monos - YYYYMMDD
         Body: Empty
         Attachment: review_mono_report_YYYYMMDDhhmmss.txt
     - Send one email for serials report
         To: alma-sap-feeds-create@mit.edu
-        Reply-to: ** Does this matter?
+        Reply-to: ils-lib@mit.edu
         Subject: Review Report – serials - YYYYMMDD
         Body: Empty
         Attachment: review_serial_report_YYYYMMDDhhmmss.txt
 
 3.  Repeat above steps until Acquisitions staff indicates that the invoices are ready   
     for the final run.
-    ** How does that communication happen? How does one know when to re-run this review
-       process or run the final process?
+    - Communication usually happens via ticket or email.
+
 
 ## Final Run
 
@@ -60,13 +68,13 @@
 3.  Email cover sheets to Acquisitions staff.
     - Send one email for monographs cover sheet
         To: alma-sap-feeds-create@mit.edu
-        Reply-to: ** Does this matter?
+        Reply-to: ils-lib@mit.edu
         Subject: Coversheets – monos - YYYYMMDD
         Body: Empty
         Attachment: cover_sheets_mono_YYYYMMDDhhmmss.txt
     - Send one email for serials cover sheet
         To: alma-sap-feeds-create@mit.edu
-        Reply-to: ** Does this matter?
+        Reply-to: ils-lib@mit.edu
         Subject: Coversheets – serials – YYYYMMDD
         Body: Empty
         Attachment: cover_sheets_ser_YYYYMMDDhhmmss.txt
@@ -123,7 +131,7 @@
     Outputs:
       - File ser_summary_YYYYMMDD.txt: Serials summary file
 
-9.  Transmit invoice data and control files to SAP via FTP
+9.  Transmit invoice data and control files to SAP via FTP (soon to be sftp)
     Commands, in order:
       - `ftp sap-dropbox.mit.edu`
       - `[username]`
@@ -153,6 +161,4 @@
     Command:
       `./update_invoice_status.pl [invoice id] paid`
     Note:
-      ** Current documentation says "Do this for each invoice ID in invoice_ids_YYYYMMDDhhmmss.txt and invoice_special_YYYYMMDDhhmmss.txt
-      # see "go" for how I actually do this."
-      Does this command currently have to be run manually for each ID in each of those files? How many IDs are there usually? Where is this "go"...file? This would be a very quick, simple step to automate.
+      There are typically tens of ID's, each run manually.  
