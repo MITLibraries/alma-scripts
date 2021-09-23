@@ -49,6 +49,18 @@ def test_create_po_line_dict_multiple_funds(
     assert po_line_dict_multiple_funds["account_2"] == "789"
 
 
+def test_create_po_line_dict_spaces_in_title(
+    mocked_alma,
+    mocked_alma_api_client,
+    po_line_record_spaces_in_title,
+):
+    po_line_dict_spaces_in_title = credit_card_slips.create_po_line_dict(
+        mocked_alma_api_client,
+        po_line_record_spaces_in_title,
+    )
+    assert po_line_dict_spaces_in_title["invoice_num"] == "Invoice #: 210513ATI"
+
+
 def test_create_po_line_dicts(
     mocked_alma, mocked_alma_api_client, po_line_record_all_fields
 ):

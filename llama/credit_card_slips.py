@@ -25,7 +25,7 @@ def create_po_line_dict(alma_api_client, po_line_record):
     po_line_dict["po_date"] = po_line_created_date
     po_line_dict[
         "invoice_num"
-    ] = f"Invoice #: {po_line_created_date}{title[:3].upper()}"
+    ] = f"Invoice #: {po_line_created_date}{title.replace(' ', '')[:3].upper()}"
 
     fund_code_1 = (
         po_line_record["fund_distribution"][0].get("fund_code", {}).get("value")

@@ -153,6 +153,23 @@ def po_line_record_multiple_funds():
 
 
 @pytest.fixture()
+def po_line_record_spaces_in_title():
+    po_line_record_spaces_in_title = {
+        "vendor_account": "Corporation",
+        "number": "POL-123",
+        "resource_metadata": {"title": "A title"},
+        "price": {"sum": "12.0"},
+        "created_date": "2021-05-13Z",
+        "fund_distribution": [
+            {"fund_code": {"value": "ABC"}, "amount": {"sum": "6.0"}},
+            {"fund_code": {"value": "DEF"}, "amount": {"sum": "6.0"}},
+        ],
+        "note": [{"note_text": ""}],
+    }
+    return po_line_record_spaces_in_title
+
+
+@pytest.fixture()
 def po_line_record_wrong_date():
     """A PO line record with the wrong date that should be filtered out."""
     po_line_record_all = {
