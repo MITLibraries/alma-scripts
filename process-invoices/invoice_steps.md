@@ -133,9 +133,8 @@
 
 9.  Transmit invoice data and control files to SAP via FTP (soon to be sftp)
     Commands, in order:
-      - `ftp sap-dropbox.mit.edu`
-      - `[username]`
-      - `[password]`
+      - `sftp -o "IdentityFile=~/.ssh/libsp_prod.priv" libsp@sap-dropbox.mit.edu`
+      - `cd dropbox`
       - `put dlibsapg.###1.YYYYMMDD000000`
       - `put clibsapg.###1.YYYYMMDD000000`
       - `put dlibsapg.###2.YYYYMMDD000000`
