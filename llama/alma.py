@@ -1,22 +1,21 @@
 import requests
 
+from llama import config
+
 
 class Alma_API_Client:
     """An Alma_API_Client class that provides a client for interacting with the Alma API
-    and specific functionality necessary for llama scripts."""
+    and specific functionality necessary for llama scripts.
+    """
 
-    def __init__(self, api_key, api_url):
-        self.api_key = api_key
-        self.api_url = api_url
+    def __init__(self, api_key, base_api_url=config.ALMA_API_URL):
+        self.base_url = base_api_url
+        self.headers = {"Authorization": f"apikey {api_key}"}
 
-    def create_api_headers(self, accept, content_type):
-        """Create API headers for requesting content from the Alma API."""
-        api_headers = {
-            "accept": accept,
-            "content-type": content_type,
-            "Authorization": f"apikey {self.api_key}",
-        }
-        self.api_headers = api_headers
+    def set_content_headers(self, accept, content_type):
+        """Set headers for requesting and receiving content from the Alma API."""
+        self.headers["accept"] = accept
+        self.headers["content-type"] = content_type
 
     def get_brief_po_lines(self, acquisition_method=""):
         """Get brief PO lines with an option to narrow by acquisition_method. The
@@ -32,9 +31,9 @@ class Alma_API_Client:
         brief_po_lines = ""
         while brief_po_lines != []:
             response = requests.get(
-                f"{self.api_url}acq/po-lines",
+                f"{self.base_url}acq/po-lines",
                 params=po_line_payload,
-                headers=self.api_headers,
+                headers=self.headers,
             ).json()
             brief_po_lines = response.get("po_line", [])
             for brief_po_line in brief_po_lines:
@@ -44,7 +43,7 @@ class Alma_API_Client:
     def get_full_po_line(self, po_line_id):
         """Get a full PO line record using the PO line ID."""
         full_po_line = requests.get(
-            f"{self.api_url}acq/po-lines/{po_line_id}",
-            headers=self.api_headers,
+            f"{self.base_url}acq/po-lines/{po_line_id}",
+            headers=self.headers,
         ).json()
         return full_po_line

@@ -24,6 +24,7 @@ coveralls = "*"
 pytest-cov = "*"
 moto = {extras = ["s3"], version = "*"}
 freezegun = "*"
+pytest-env = "*"
 
 [requires]
 python_version = "3.8"

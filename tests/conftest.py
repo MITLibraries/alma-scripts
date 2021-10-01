@@ -52,8 +52,8 @@ def mocked_alma(po_line_record_all_fields):
 
 @pytest.fixture()
 def mocked_alma_api_client():
-    alma_api_client = Alma_API_Client("abc123", "http://example.com/")
-    alma_api_client.create_api_headers("application/json", "application/json")
+    alma_api_client = Alma_API_Client("abc123", base_api_url="http://example.com/")
+    alma_api_client.set_content_headers("application/json", "application/json")
     return alma_api_client
 
 
@@ -92,7 +92,7 @@ def mocked_ssm(aws_credentials):
     with mock_ssm():
         ssm = boto3.client("ssm", region_name="us-east-1")
         ssm.put_parameter(
-            Name="/test/example/ALMA_API_PROD_ACQ_KEY",
+            Name="/test/example/ALMA_API_ACQ_READ_KEY",
             Value="abc123",
             Type="SecureString",
         )

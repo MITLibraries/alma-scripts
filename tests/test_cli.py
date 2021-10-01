@@ -21,10 +21,6 @@ def test_cc_slips_date_provided(mocked_alma, mocked_ssm, runner):
             "test1@example.com",
             "--recipient_email",
             "test2@example.com",
-            "--api_key_parameter",
-            "/test/example/ALMA_API_PROD_ACQ_KEY",
-            "--api_url_parameter",
-            "/test/example/ALMA_API_URL",
         ],
     )
     assert result.exit_code == 0
@@ -46,10 +42,6 @@ def test_cc_slips_no_date_provided(mocked_alma, mocked_ssm, runner):
             "test1@example.com",
             "--recipient_email",
             "test2@example.com",
-            "--api_key_parameter",
-            "/test/example/ALMA_API_PROD_ACQ_KEY",
-            "--api_url_parameter",
-            "/test/example/ALMA_API_URL",
         ],
     )
     assert result.exit_code == 0
@@ -72,10 +64,6 @@ def test_cc_slips_no_records_for_date_provided(mocked_alma, mocked_ssm, runner):
             "test1@example.com",
             "--recipient_email",
             "test2@example.com",
-            "--api_key_parameter",
-            "/test/example/ALMA_API_PROD_ACQ_KEY",
-            "--api_url_parameter",
-            "/test/example/ALMA_API_URL",
         ],
     )
     assert result.exit_code == 0
