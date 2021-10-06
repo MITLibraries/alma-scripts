@@ -304,6 +304,7 @@
 "UGA": "UG",
 "UMI": "UM",
 "UNITED STATES OF AMERICA": "US",
+"US": "US",
 "USA": "US",
 "URUGUAY": "UY",
 "URY": "UY",

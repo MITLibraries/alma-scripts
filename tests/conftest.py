@@ -1,3 +1,4 @@
+import json
 import os
 
 import boto3
@@ -27,16 +28,21 @@ def bucket_env():
 @pytest.fixture()
 def mocked_alma(po_line_record_all_fields):
     with requests_mock.Mocker() as m:
-        fund_code_record_abc = {"fund": [{"external_id": "456"}]}
-        fund_code_record_def = {"fund": [{"external_id": "789"}]}
         po_lines = {
             "po_line": [
                 {"number": "POL-123", "created_date": "2021-05-13Z"},
                 {"number": "POL-456", "created_date": "2021-05-02Z"},
             ]
         }
-        m.get("http://example.com/acq/funds?q=fund_code~ABC", json=fund_code_record_abc)
-        m.get("http://example.com/acq/funds?q=fund_code~DEF", json=fund_code_record_def)
+        with open("tests/fixtures/funds.json") as f:
+            m.get("http://example.com/acq/funds", json=json.load(f))
+        with open("tests/fixtures/invoices.json") as f:
+            m.get(
+                "http://example.com/acq/invoices/0501130657",
+                json=json.load(f)["invoice"][0],
+            )
+            f.seek(0)
+            m.get("http://example.com/acq/invoices", json=json.load(f))
         m.get(
             "http://example.com/acq/po-lines?status=ACTIVE&limit=100&offset=0",
             json=po_lines,
@@ -47,6 +53,10 @@ def mocked_alma(po_line_record_all_fields):
         )
         m.get("http://example.com/acq/po-lines/POL-123", json=po_line_record_all_fields)
         m.get("http://example.com/acq/po-lines/POL-456", json=po_line_record_wrong_date)
+        with open("tests/fixtures/vendor.json") as f:
+            m.get("http://example.com/acq/vendors/BKHS", json=json.load(f))
+        with open("tests/fixtures/invoice_paid.xml") as f:
+            m.post("http://example.com/acq/invoices/0501130657", text=f.read())
         yield m
 
 
@@ -86,7 +96,6 @@ def mocked_s3(aws_credentials):
         yield s3
 
 
-@mock_ssm
 @pytest.fixture(scope="function")
 def mocked_ssm(aws_credentials):
     with mock_ssm():

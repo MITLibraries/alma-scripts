@@ -1,8 +1,6 @@
 ## Initial setup
-### Step 0 - First run setup 
-* copy invoice.config.dist to invoice.config and fill in api values
-* make sure seq-sap exists and is current with the most recent run number  
-* update `scripts/update_invoice_status.pl` with api key inline
+### Step 0 - First run setup
+* make sure seq-sap exists and is current with the most recent run number
 
 ## All commands to be run as "gituser" - `sudo su - gituser`
 
@@ -11,7 +9,7 @@
 1.  Retrieve all invoices with a status of "Waiting to be Sent" from Alma.
     Command:
       `/usr/bin/python3.8 -m pipenv run python print_reports_by_status.py`
-    Outputs:
+    Outputs (all written to output-files folder):
       - File invoice_ids_YYYYMMDDhhmmss.txt: IDs of invoices to be sent to SAP
       - File invoice_special_YYYYMMDDhhmmss.txt: IDs of invoices that are paid via
         another mechanism and should not be sent to SAP
@@ -47,7 +45,7 @@
     exactly the same as step 1 in the Review Run above).
     Command:
       `/usr/bin/python3.8 -m pipenv run python print_reports_by_status.py`
-    Outputs:
+    Outputs (all written to output-files folder):
       - File invoice_ids_YYYYMMDDhhmmss.txt: IDs of invoices to be sent to SAP
       - File invoice_special_YYYYMMDDhhmmss.txt: IDs of invoices that are paid via
         another mechanism and should not be sent to SAP
@@ -81,8 +79,8 @@
 
 4.  Create invoice data files (one for monographs and one for serials) to send to SAP.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python get_invoices_from_file.py [invoice_ids_YYYYMMDDhhmmss.txt filename from step 1]`
-    Outputs:
+      `/usr/bin/python3.8 -m pipenv run python get_invoices_from_file.py output-files/[invoice_ids_YYYYMMDDhhmmss.txt filename from step 1]`
+    Outputs (all written to output-files folder):
       - File dlibsapg.###1.YYYYMMDD000000: Monographs SAP invoice data file (where ###1
         is the next sequence number according to seq-sap)
       - File dlibsapg.###2.YYYYMMDD000000: Serials SAP invoice data file (where ###2 is
@@ -99,36 +97,35 @@
 
 5.  Create monographs control file to send to SAP.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python make_cfile.py [dlibsapg.###1.YYYYMMDD000000 filename from step 4]`
-    Outputs:
+      `/usr/bin/python3.8 -m pipenv run python make_cfile.py output-files/[dlibsapg.###1.YYYYMMDD000000 filename from step 4]`
+    Outputs (written to output-files folder):
       - File clibsapg.###1.YYYYMMDD000000: Monographs SAP invoice control file
     Note:
-      You can optionally check the control file by running `/usr/bin/python3.8 -m
-      pipenv run python parse_cfile.py [clibsapg.###1.YYYYMMDD000000 filename from this
-      step]`. This will print human-readable information from the control file to std-
-      out for verification.
+      You can optionally check the control file by running
+        `/usr/bin/python3.8 -m pipenv run python parse_cfile.py output-files/[clibsapg.###1.YYYYMMDD000000 filename from this step]`
+      This will print human-readable information from the control file to std-out for verification.
 
 6.  Create serials control file to send to SAP.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python make_cfile.py [dlibsapg.###2.YYYYMMDD000000 filename from step 4]`
-    Outputs:
+      `/usr/bin/python3.8 -m pipenv run python make_cfile.py output-files/[dlibsapg.###2.YYYYMMDD000000 filename from step 4]`
+    Outputs (written to output-files folder):
       - File clibsapg.###2.YYYYMMDD000000: Serials SAP invoice control file
     Note:
-      You can optionally check the control file by running `/usr/bin/python3.8 -m
-      pipenv run python parse_cfile.py [clibsapg.###2.YYYYMMDD000000 filename from this
-      step]`. This will print human-readable information from the control file to std-
-      out for verification.
+      You can optionally check the control file by running
+        `/usr/bin/python3.8 -m pipenv run python parse_cfile.py output-files/[clibsapg.###2.YYYYMMDD000000 filename from this step]`
+      This will print human-readable information from the control file to std-out for
+      verification.
 
 7.  Create monographs summary file.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python make_summary.py dlibsapg.###1.YYYYMMDD000000 > mono_summary_YYYYMMDD.txt`
-    Outputs:
+      `/usr/bin/python3.8 -m pipenv run python make_summary.py output-files/[dlibsapg.###1.YYYYMMDD000000 filename from step 4] > output-files/mono_summary_YYYYMMDD.txt`
+    Outputs (written to output-files folder):
       - File mono_summary_YYYYMMDD.txt: Monographs summary file
 
 8.  Create serials summary file.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python make_summary.py dlibsapg.###2.YYYYMMDD000000 > ser_summary_YYYYMMDD.txt`
-    Outputs:
+      `/usr/bin/python3.8 -m pipenv run python make_summary.py output-files/[dlibsapg.###2.YYYYMMDD000000 filename from step 4] > output-files/ser_summary_YYYYMMDD.txt`
+    Outputs (written to output-files folder):
       - File ser_summary_YYYYMMDD.txt: Serials summary file
 
 9.  Transmit invoice data and control files to SAP via FTP (soon to be sftp)
@@ -154,10 +151,6 @@
         Body: Contents of ser_summary_YYYYMMDD.txt file
         Attachment: None
 
-11. Manually edit file empty.xml to change `voucher_date` field value to today's date.
-
-12. Update invoices status in Alma for all invoice IDs retrieved in step 1.
+11. Update invoice status in Alma for all invoice IDs retrieved in step 1.
     Command:
-      `./update_invoice_status.pl [invoice id] paid`
-    Note:
-      There are typically tens of ID's, each run manually.  
+      `/usr/bin/python3.8 -m pipenv run python update_invoice_statuses.py`

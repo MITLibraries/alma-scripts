@@ -9,15 +9,15 @@ import json
 from urllib.request import urlopen
 from datetime import date
 from datetime import datetime
-import configparser
 import invoice_sap
 
-config = configparser.ConfigParser()
-config.read('invoice.config')
-alma = config['ALMA']
+sys.path.append("..")
+from llama.alma import Alma_API_Client
+import llama.config as config
 
-apikey = alma['apikey']
-host = alma['apihost']
+# Create Alma API client
+alma_client = Alma_API_Client(config.get_alma_api_key("ALMA_API_ACQ_READ_KEY"))
+alma_client.set_content_headers("application/json", "application/json")
 
 today = date.today().strftime("%Y%m%d")
 rightnow = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -33,13 +33,13 @@ note = 'alma' + date.today().strftime("%y%m%d")
 
 mcmd = "./ser -f seq-sap -t mono -n " + note + " -i"
 mstamp = os.popen(mcmd).read().strip()
-mfile = "dlibsapg." + mstamp
+mfile = "output-files/dlibsapg." + mstamp
 monos = open(mfile, "w")
 
 
 scmd = "./ser -f seq-sap -t ser -n " + note + " -i"
 sstamp = os.popen(scmd).read().strip()
-sfile = "dlibsapg." + sstamp
+sfile = "output-files/dlibsapg." + sstamp
 serials = open(sfile, "w")
 
 typer = {'S': serials, 'M': monos}
@@ -57,19 +57,11 @@ f.close()
 
 for line in lines:
     if (line):
-        url = 'https://' + host
-        url += '/almaws/v1/acq/invoices/'
-        url += line
-        url += '?format=json'
-        url += '&apikey=' + apikey
-
-        response = urlopen(url)
-        invoice = json.loads(response.read())
-
+        invoice = alma_client.get_invoice(line)
         datetime_object = datetime.strptime(invoice['invoice_date'], '%Y-%m-%dZ')
         invoice_date = datetime_object.strftime('%y%m%d')
         biginvoice = invoice['number'] + invoice_date
-        vendor_info = invoice_sap.get_vendor(invoice['vendor']['value'], host, apikey)
+        vendor_info = alma_client.get_vendor_details(invoice['vendor']['value'])
         vendornum = '400000'
         netpay = "{:16.2f}".format(invoice['total_amount'])
         netsign = ' '
@@ -78,11 +70,10 @@ for line in lines:
         some_text = ' '
         city = ' '
 
-        type = ''
-        if re.search("-S$", vendor_info['code']):
-            type = 'S'
+        if vendor_info["code"].endswith("-S"):
+            type = "S"
         else:
-            type = 'M'
+            type = "M"
 
         address_found = 0
         for address in vendor_info['contact_info']['address']:
@@ -193,8 +184,8 @@ for line in lines:
                     invoice_line['fund_distribution'][0]['amount'] > 0
                ):
                 for fd in invoice_line['fund_distribution']:
-                    external_id = invoice_sap.get_fund(fd['fund_code']['value'],
-                                                       host, apikey)
+                    fund_info = alma_client.get_fund_by_code(fd["fund_code"]["value"])
+                    external_id = fund_info["fund"][0]["external_id"].strip()
                     if external_id in funds.keys():
                         funds[external_id] += fd['amount']
                     else:

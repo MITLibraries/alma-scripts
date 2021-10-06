@@ -32,32 +32,6 @@ def extract_vendor(json):
         return 0
 
 
-def get_vendor(vendor_code, host, apikey):
-    """
-    Retrieve Vendor info from Alma
-    """
-    vendor_url = 'https://' + host + '/almaws/v1/acq/vendors/'
-    vendor_url += vendor_code + '?apikey=' + apikey
-    vendor_url += '&format=json'
-    vendor_response = urlopen(vendor_url)
-    return json.loads(vendor_response.read())
-
-
-def get_fund(fund_code, host, apikey):
-    """
-    Retrieve Fund info from Alma
-    """
-    fund_url = 'https://' + host + '/almaws/v1/acq/funds'
-    fund_url += '?apikey=' + apikey
-    fund_url += '&format=json'
-    fund_url += '&q=fund_code~' + fund_code
-    fund_url += '&view=full'
-
-    fund_response = urlopen(fund_url)
-    data = json.loads(fund_response.read())
-    return data['fund'][0]['external_id']
-
-
 CFILE = {
             'bytes_start': 0,
             'bytes_end': 16,
