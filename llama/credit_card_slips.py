@@ -57,10 +57,11 @@ def get_account_from_fund_code(client, fund_code):
         account = "No fund code"
     else:
         fund_payload = {"q": f"fund_code~{fund_code}"}
+        # TODO: this needs to move to the alma client class
         response = requests.get(
-            f"{client.api_url}acq/funds",
+            f"{client.base_url}acq/funds",
             params=fund_payload,
-            headers=client.api_headers,
+            headers=client.headers,
         ).json()
         account = response["fund"][0]["external_id"]
     return account

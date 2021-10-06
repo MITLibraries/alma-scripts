@@ -14,25 +14,7 @@ from dateutil.relativedelta import relativedelta
 import cx_Oracle
 
 sys.path.append("..")
-from llama.ssm import SSM
-
-
-ssm = SSM()
-data_warehouse_user = ssm.get_parameter_value(
-    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_USER"
-)
-data_warehouse_password = ssm.get_parameter_value(
-    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_PASSWORD"
-)
-data_warehouse_host = ssm.get_parameter_value(
-    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_HOST"
-)
-data_warehouse_port = ssm.get_parameter_value(
-    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_PORT"
-)
-data_warehouse_sid = ssm.get_parameter_value(
-    "/apps/alma-sftp/ALMA_PROD_DATA_WAREHOUSE_SID"
-)
+import llama.config as config
 
 
 def xstr(s):
@@ -69,12 +51,13 @@ file.close()
 # End import student departments #
 student_reject = open("rejects_students_script.txt", "w")
 
-# Connect to the "WAREHOUSE.WORLD" service from tns.ora
-dsn = cx_Oracle.makedsn(data_warehouse_host, data_warehouse_port, data_warehouse_sid)
+dsn = cx_Oracle.makedsn(
+    config.DATA_WAREHOUSE_HOST, config.DATA_WAREHOUSE_PORT, config.DATA_WAREHOUSE_SID
+)
 
 connection = cx_Oracle.connect(
-    data_warehouse_user,
-    data_warehouse_password,
+    config.DATA_WAREHOUSE_USER,
+    config.DATA_WAREHOUSE_PASSWORD,
     dsn,
 )
 cursor = connection.cursor()
