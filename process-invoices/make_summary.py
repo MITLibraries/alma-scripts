@@ -5,17 +5,18 @@ import re
 import invoice_sap
 
 
-file = ''
+file_path = ''
 if len(sys.argv) == 1:
     print("file name expected!")
     sys.exit()
 else:
-    file = sys.argv[1]
+    file_path = sys.argv[1]
 
-f = open(file)
+f = open(file_path)
 lines = f.read().splitlines()
 f.close()
 
+file = file_path.replace("output-files/", "")
 print("--- MIT Libraries--- Alma to SAP Invoice Feed")
 print()
 print()

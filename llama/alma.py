@@ -47,3 +47,48 @@ class Alma_API_Client:
             headers=self.headers,
         ).json()
         return full_po_line
+
+    def get_fund_by_code(self, fund_code):
+        """Get fund details using the fund code."""
+        endpoint = f"{self.base_url}acq/funds"
+        params = {"q": f"fund_code~{fund_code}", "view": "full"}
+        r = requests.get(endpoint, headers=self.headers, params=params)
+        r.raise_for_status()
+        return r.json()
+
+    def get_invoice(self, invoice_id):
+        """Get an invoice by ID."""
+        endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
+        r = requests.get(endpoint, headers=self.headers)
+        r.raise_for_status()
+        return r.json()
+
+    def get_invoices_by_status(self, status):
+        """Get all invoices with a provided status."""
+        endpoint = f"{self.base_url}acq/invoices"
+        # TODO: handle paged requests
+        params = {"invoice_workflow_status": status, "limit": "100"}
+        r = requests.get(endpoint, headers=self.headers, params=params)
+        r.raise_for_status()
+        return r.json()
+
+    def get_vendor_details(self, vendor_code):
+        """Get vendor info from Alma."""
+        endpoint = f"{self.base_url}acq/vendors/{vendor_code}"
+        r = requests.get(endpoint, headers=self.headers)
+        r.raise_for_status()
+        return r.json()
+
+    def mark_invoice_paid(self, invoice_id: str, invoice_xml_path: str) -> str:
+        """Mark an invoice as paid using the invoice process endpoint."""
+        endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
+        params = {"op": "paid"}
+        files = {"file": open(invoice_xml_path, "rb")}
+        r = requests.post(endpoint, headers=self.headers, params=params, files=files)
+        r.raise_for_status()
+        # TODO: check for Alma-specific error codes. Do we also need to check for
+        # alerts? See https://developers.exlibrisgroup.com/alma/apis/docs/acq/
+        # UE9TVCAvYWxtYXdzL3YxL2FjcS9pbnZvaWNlcy97aW52b2ljZV9pZH0=/ and https://
+        # developers.exlibrisgroup.com/blog/Creating-an-invoice-using-APIs/ for more
+        # info.
+        return r.text

@@ -1,0 +1,50 @@
+{
+  "total_record_count": 999,
+  "fund": [
+    {
+      "link": "string",
+      "code": "ABC",
+      "name": "Biology",
+      "external_id": "1239410001021",
+      "type": {
+        "value": "General"
+      },
+      "entity_type": {
+        "value": "SUMMARY"
+      },
+      "owner": {
+        "value": "LAW"
+      },
+      "description": "desc",
+      "fiscal_period": {
+        "value": "29"
+      },
+      "currency": {
+        "value": "USD"
+      },
+      "available_for_library": [
+        {
+          "value": "string"
+        }
+      ],
+      "parent": {
+        "value": "43417015650001021"
+      },
+      "overencumbrance_allowed": {
+        "value": "yes"
+      },
+      "overexpenditure_allowed": {
+        "value": "no"
+      },
+      "overencumbrance_warning_percent": 15,
+      "overexpenditure_warning_sum": 17.44,
+      "overencumbrance_limit_percent": 8,
+      "overexpenditure_limit_sum": 10.44,
+      "encumbrances_prior_to_fiscal_period": 11,
+      "expenditures_prior_to_fiscal_period": 16,
+      "transfers_prior_to_fiscal_period": 12,
+      "fiscal_period_end_encumbrance_grace_period": 5,
+      "fiscal_period_end_expenditure_grace_period": 8
+    }
+  ]
+}
