@@ -16,8 +16,8 @@ class Alma_API_Client:
 
     def set_content_headers(self, accept, content_type):
         """Set headers for requesting and receiving content from the Alma API."""
-        self.headers["accept"] = accept
-        self.headers["content-type"] = content_type
+        self.headers["Accept"] = accept
+        self.headers["Content-Type"] = content_type
 
     def get_brief_po_lines(self, acquisition_method=""):
         """Get brief PO lines with an option to narrow by acquisition_method. The
@@ -91,9 +91,9 @@ class Alma_API_Client:
         """Mark an invoice as paid using the invoice process endpoint."""
         endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
         params = {"op": "paid"}
-        files = {"file": open(invoice_xml_path, "rb")}
-        r = requests.post(endpoint, headers=self.headers, params=params, files=files)
-        r.raise_for_status()
+        with open(invoice_xml_path, "rb") as file:
+            r = requests.post(endpoint, headers=self.headers, params=params, data=file)
+            r.raise_for_status()
         time.sleep(0.1)
         # TODO: check for Alma-specific error codes. Do we also need to check for
         # alerts? See https://developers.exlibrisgroup.com/alma/apis/docs/acq/
