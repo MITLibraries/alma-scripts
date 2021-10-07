@@ -20,8 +20,8 @@ def test_alma_set_content_headers():
     assert len(client.headers) == 1
     client.set_content_headers("application/json", "application/json")
     assert len(client.headers) == 3
-    assert client.headers["accept"] == "application/json"
-    assert client.headers["content-type"] == "application/json"
+    assert client.headers["Accept"] == "application/json"
+    assert client.headers["Content-Type"] == "application/json"
 
 
 def test_alma_get_brief_po_lines(mocked_alma, mocked_alma_api_client):
