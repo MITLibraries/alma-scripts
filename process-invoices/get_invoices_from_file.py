@@ -22,6 +22,10 @@ alma_client.set_content_headers("application/json", "application/json")
 today = date.today().strftime("%Y%m%d")
 rightnow = datetime.now().strftime("%Y%m%d%H%M%S")
 
+count_total_invoices = 0
+count_monographs = 0
+count_serials = 0
+
 file = open("countries.txt", "r")
 
 contents = file.read()
@@ -55,13 +59,21 @@ f = open(file)
 lines = f.read().splitlines()
 f.close()
 
+count_total_invoices = len(lines)
+print(f"Begin processing {count_total_invoices} invoices\n")
+
 for line in lines:
     if (line):
+        print(f"Processing invoice #{line}")
+        print("Retrieving invoice from Alma")
         invoice = alma_client.get_invoice(line)
+        print(f"Invoice #{line} retrieved from Alma")
         datetime_object = datetime.strptime(invoice['invoice_date'], '%Y-%m-%dZ')
         invoice_date = datetime_object.strftime('%y%m%d')
         biginvoice = invoice['number'] + invoice_date
+        print("Retrieving vendor info from Alma")
         vendor_info = alma_client.get_vendor_details(invoice['vendor']['value'])
+        print(f"Vendor {invoice['vendor']['value']} data retrieved from Alma")
         vendornum = '400000'
         netpay = "{:16.2f}".format(invoice['total_amount'])
         netsign = ' '
@@ -72,8 +84,10 @@ for line in lines:
 
         if vendor_info["code"].endswith("-S"):
             type = "S"
+            count_serials += 1
         else:
             type = "M"
+            count_monographs += 1
 
         address_found = 0
         for address in vendor_info['contact_info']['address']:
@@ -184,7 +198,9 @@ for line in lines:
                     invoice_line['fund_distribution'][0]['amount'] > 0
                ):
                 for fd in invoice_line['fund_distribution']:
+                    print("Retrieving fund info from Alma")
                     fund_info = alma_client.get_fund_by_code(fd["fund_code"]["value"])
+                    print(f"Fund {fd['fund_code']['value']} data retrieved from Alma")
                     external_id = fund_info["fund"][0]["external_id"].strip()
                     if external_id in funds.keys():
                         funds[external_id] += fd['amount']
@@ -204,6 +220,14 @@ for line in lines:
             typer[type].write(thispay)
             typer[type].write(" ")
             typer[type].write("\n")
+        print(f"Finished processing invoice #{invoice['id']}\n")
 
 serials.close()
 monos.close()
+
+print("'get_invoices_from_file' process complete")
+print("Summary:")
+print(f"  Total invoices processed: {count_total_invoices}")
+print(f"  Monograph invoices: {count_monographs}")
+print(f"  Serial invoices: {count_serials}")
+print(f"  SAP sequence numbers added: {mstamp}, {sstamp}")

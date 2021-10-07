@@ -1,3 +1,5 @@
+import time
+
 import requests
 
 from llama import config
@@ -35,6 +37,7 @@ class Alma_API_Client:
                 params=po_line_payload,
                 headers=self.headers,
             ).json()
+            time.sleep(0.1)
             brief_po_lines = response.get("po_line", [])
             for brief_po_line in brief_po_lines:
                 yield brief_po_line
@@ -46,6 +49,7 @@ class Alma_API_Client:
             f"{self.base_url}acq/po-lines/{po_line_id}",
             headers=self.headers,
         ).json()
+        time.sleep(0.1)
         return full_po_line
 
     def get_fund_by_code(self, fund_code):
@@ -54,6 +58,7 @@ class Alma_API_Client:
         params = {"q": f"fund_code~{fund_code}", "view": "full"}
         r = requests.get(endpoint, headers=self.headers, params=params)
         r.raise_for_status()
+        time.sleep(0.1)
         return r.json()
 
     def get_invoice(self, invoice_id):
@@ -61,6 +66,7 @@ class Alma_API_Client:
         endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
         r = requests.get(endpoint, headers=self.headers)
         r.raise_for_status()
+        time.sleep(0.1)
         return r.json()
 
     def get_invoices_by_status(self, status):
@@ -70,6 +76,7 @@ class Alma_API_Client:
         params = {"invoice_workflow_status": status, "limit": "100"}
         r = requests.get(endpoint, headers=self.headers, params=params)
         r.raise_for_status()
+        time.sleep(0.1)
         return r.json()
 
     def get_vendor_details(self, vendor_code):
@@ -77,6 +84,7 @@ class Alma_API_Client:
         endpoint = f"{self.base_url}acq/vendors/{vendor_code}"
         r = requests.get(endpoint, headers=self.headers)
         r.raise_for_status()
+        time.sleep(0.1)
         return r.json()
 
     def mark_invoice_paid(self, invoice_id: str, invoice_xml_path: str) -> str:
@@ -86,6 +94,7 @@ class Alma_API_Client:
         files = {"file": open(invoice_xml_path, "rb")}
         r = requests.post(endpoint, headers=self.headers, params=params, files=files)
         r.raise_for_status()
+        time.sleep(0.1)
         # TODO: check for Alma-specific error codes. Do we also need to check for
         # alerts? See https://developers.exlibrisgroup.com/alma/apis/docs/acq/
         # UE9TVCAvYWxtYXdzL3YxL2FjcS9pbnZvaWNlcy97aW52b2ljZV9pZH0=/ and https://

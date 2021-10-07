@@ -6,9 +6,11 @@ Take a file of Alma invoice IDs and create report files
 
 import ast
 import sys
+import time
 import re
 import json
 import urllib
+from pathlib import Path
 from urllib.request import urlopen
 from datetime import date
 from datetime import datetime
@@ -30,8 +32,17 @@ contents = file.read()
 countries = ast.literal_eval(contents)
 file.close()
 
+# Create some counter variables for summary info
+count_total_invoices = 0
+count_invoices_to_be_paid = 0
+count_special_invoices = 0
+count_monographs = 0
+count_serials = 0
+
 # Create output filenames for monograph and serials review reports and open them both
 # in write mode
+if not Path("output-files").is_dir():
+    Path("output-files").mkdir()
 mfile = "output-files/review_mono_report_" + rightnow + ".txt"
 sfile = "output-files/review_serial_report_" + rightnow + ".txt"
 monos = open(mfile, "w")
@@ -40,8 +51,6 @@ serials = open(sfile, "w")
 # Create output filename for invoice IDs file and open it in write mode
 iIDS = "output-files/invoice_ids_" + rightnow + ".txt"
 invoice_ids = open(iIDS, "w")
-# Print the invoice IDs file filename (why?)
-print(iIDS)
 
 # Create output filename for other IDs file and why_note file and open them both in
 # write mode
@@ -71,7 +80,10 @@ alma_client = Alma_API_Client(config.get_alma_api_key("ALMA_API_ACQ_READ_KEY"))
 alma_client.set_content_headers("application/json", "application/json")
 
 # Get invoices waiting to be sent
+print("Retrieving invoices from Alma")
 data = alma_client.get_invoices_by_status("Waiting to be Sent")
+count_total_invoices = len(data["invoice"])
+print(f"{count_total_invoices} invoices retrieved from Alma\n")
 
 # Sort results by vendor code
 data["invoice"].sort(key=invoice_sap.extract_vendor)
@@ -86,6 +98,7 @@ HEAD = """
 
 # Loop through each invoice record in the sorted API response
 for invoice in data["invoice"]:
+    print(f"Processing invoice #{invoice['id']}")
 
     # Extract invoice_date field and convert to a Python datetime object
     invoice_date = invoice["invoice_date"]
@@ -97,24 +110,30 @@ for invoice in data["invoice"]:
 
     # Calls a function from another module, more details there and sets result to local
     # variable vendor_info
+    print("Retrieving vendor info from Alma")
     vendor_info = alma_client.get_vendor_details(invoice["vendor"]["value"])
+    print(f"Vendor {invoice['vendor']['value']} data retrieved from Alma")
 
     # If vendor code ends with -S, set type variable to S (for serials), otherwise set
     # to M (for monographs)
     if vendor_info["code"].endswith("-S"):
         type = "S"
+        count_serials += 1
     else:
         type = "M"
+        count_monographs += 1
 
     # ?
     if invoice["payment_method"]["value"] == "ACCOUNTINGDEPARTMENT":
         invoice_ids.write(invoice["id"] + "\n")
+        count_invoices_to_be_paid += 1
     else:
         other_ids.write(invoice["id"] + "\n")
         why_note.write("Status not ACCOUNTINGDEPARTMENT:\t")
         why_note.write(invoice["number"] + "\t")
         why_note.write(vendor_info["name"] + "\t")
         why_note.write(vendor_info["code"] + "\n")
+        count_special_invoices += 1
 
     # Write record HEAD string, today's date, vendor code, accounting id (which appears to be blank?), and vendor name to either serials or monos file based on type variable in this loop
     typer[type].write(HEAD)
@@ -240,7 +259,9 @@ for invoice in data["invoice"]:
             and invoice_line["fund_distribution"][0]["amount"] > 0
         ):
             for fd in invoice_line["fund_distribution"]:
+                print("Retrieving fund info from Alma")
                 fund_info = alma_client.get_fund_by_code(fd["fund_code"]["value"])
+                print(f"Fund {fd['fund_code']['value']} data retrieved from Alma")
                 external_id = fund_info["fund"][0]["external_id"].strip()
                 if external_id in funds.keys():
                     funds[external_id] += fd["amount"]
@@ -278,3 +299,13 @@ for invoice in data["invoice"]:
     typer[type].write("\n\n")
     typer[type].write("\n\f")
     typer[type].write("\n\f")
+
+    print(f"Finished processing invoice #{invoice['id']}\n")
+
+print("'print_reports_by_status' process complete")
+print("Summary:")
+print(f"  Total invoices processed: {count_total_invoices}")
+print(f"  Invoices to be paid: {count_invoices_to_be_paid}")
+print(f"  Special invoices: {count_special_invoices}")
+print(f"  Monograph invoices: {count_monographs}")
+print(f"  Serial invoices: {count_serials}")
