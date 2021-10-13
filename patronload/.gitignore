@@ -1,3 +1,5 @@
 patron.config
 STAFF/*.xml
 STUDENT/*.xml
+rejects_staff_script.txt
+rejects_students_script.txt
