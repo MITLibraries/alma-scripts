@@ -9,8 +9,5 @@
 # https://mitlibraries.atlassian.net/browse/IMP-2321
 #30 0 5 * * gituser /mnt/alma/alma-scripts/scripts/Full-Export.sh
 
-# do the git pull once a week, on monday, at 0005 
-5 0 * * 1 gituser /mnt/alma/alma-scripts/scripts/Gitrepo-pull.sh 
-
 #make sure to keep required newline at end of file -
 

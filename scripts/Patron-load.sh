@@ -26,3 +26,7 @@ perl scripts/pack_all_records.pl >> /mnt/alma/logs/patron-load.log 2>&1
 #Sync to the s3 bucket s3://alma-sftp-prod/exlibris/PatronLoad/
 # MV also deletes the zip files if they are succesfully copied
 aws s3 mv SEND/ s3://$ALMA_BUCKET/exlibris/PatronLoad/ --exclude "*" --include "*.zip" --recursive  >> /mnt/alma/logs/patron-load.log 2>&1
+
+# Remove the "rejects" files from the filesystem
+rm rejects_students_script.txt
+rm rejects_staff_script.txt
