@@ -129,4 +129,13 @@ dmypy.json
 .pyre/
 
 .DS_Store
+
+#Patronload
+patronload/patron.config
+patronload/STAFF/*.xml
+patronload/STUDENT/*.xml
+patronload/rejects_staff_script.txt
+patronload/rejects_students_script.txt
+
+#Invoices
 process-invoices/output-files/
