@@ -1,3 +1,5 @@
+import time
+
 import requests
 
 from llama import config
@@ -14,8 +16,8 @@ class Alma_API_Client:
 
     def set_content_headers(self, accept, content_type):
         """Set headers for requesting and receiving content from the Alma API."""
-        self.headers["accept"] = accept
-        self.headers["content-type"] = content_type
+        self.headers["Accept"] = accept
+        self.headers["Content-Type"] = content_type
 
     def get_brief_po_lines(self, acquisition_method=""):
         """Get brief PO lines with an option to narrow by acquisition_method. The
@@ -35,6 +37,7 @@ class Alma_API_Client:
                 params=po_line_payload,
                 headers=self.headers,
             ).json()
+            time.sleep(0.1)
             brief_po_lines = response.get("po_line", [])
             for brief_po_line in brief_po_lines:
                 yield brief_po_line
@@ -46,4 +49,55 @@ class Alma_API_Client:
             f"{self.base_url}acq/po-lines/{po_line_id}",
             headers=self.headers,
         ).json()
+        time.sleep(0.1)
         return full_po_line
+
+    def get_fund_by_code(self, fund_code):
+        """Get fund details using the fund code."""
+        endpoint = f"{self.base_url}acq/funds"
+        params = {"q": f"fund_code~{fund_code}", "view": "full"}
+        r = requests.get(endpoint, headers=self.headers, params=params)
+        r.raise_for_status()
+        time.sleep(0.1)
+        return r.json()
+
+    def get_invoice(self, invoice_id):
+        """Get an invoice by ID."""
+        endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
+        r = requests.get(endpoint, headers=self.headers)
+        r.raise_for_status()
+        time.sleep(0.1)
+        return r.json()
+
+    def get_invoices_by_status(self, status):
+        """Get all invoices with a provided status."""
+        endpoint = f"{self.base_url}acq/invoices"
+        # TODO: handle paged requests
+        params = {"invoice_workflow_status": status, "limit": "100"}
+        r = requests.get(endpoint, headers=self.headers, params=params)
+        r.raise_for_status()
+        time.sleep(0.1)
+        return r.json()
+
+    def get_vendor_details(self, vendor_code):
+        """Get vendor info from Alma."""
+        endpoint = f"{self.base_url}acq/vendors/{vendor_code}"
+        r = requests.get(endpoint, headers=self.headers)
+        r.raise_for_status()
+        time.sleep(0.1)
+        return r.json()
+
+    def mark_invoice_paid(self, invoice_id: str, invoice_xml_path: str) -> str:
+        """Mark an invoice as paid using the invoice process endpoint."""
+        endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
+        params = {"op": "paid"}
+        with open(invoice_xml_path, "rb") as file:
+            r = requests.post(endpoint, headers=self.headers, params=params, data=file)
+            r.raise_for_status()
+        time.sleep(0.1)
+        # TODO: check for Alma-specific error codes. Do we also need to check for
+        # alerts? See https://developers.exlibrisgroup.com/alma/apis/docs/acq/
+        # UE9TVCAvYWxtYXdzL3YxL2FjcS9pbnZvaWNlcy97aW52b2ljZV9pZH0=/ and https://
+        # developers.exlibrisgroup.com/blog/Creating-an-invoice-using-APIs/ for more
+        # info.
+        return r.text
