@@ -1,4 +1,3 @@
-import requests
 from defusedxml import ElementTree as ET
 
 
@@ -56,13 +55,7 @@ def get_account_from_fund_code(client, fund_code):
     if fund_code == "":
         account = "No fund code"
     else:
-        fund_payload = {"q": f"fund_code~{fund_code}"}
-        # TODO: this needs to move to the alma client class
-        response = requests.get(
-            f"{client.base_url}acq/funds",
-            params=fund_payload,
-            headers=client.headers,
-        ).json()
+        response = client.get_fund_by_code(fund_code)
         account = response["fund"][0]["external_id"]
     return account
 
