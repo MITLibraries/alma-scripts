@@ -16,6 +16,3 @@ cd /mnt/alma/alma-scripts
 [[ $WORKSPACE =~ .*prod* ]] && /usr/bin/python3.8 -m pipenv run llama cc-slips --source_email noreply@libraries.mit.edu --recipient_email ils-lib@mit.edu --recipient_email monoacq@mit.edu > /mnt/alma/logs/credit-card-slips.log 2>&1 || /usr/bin/python3.8 -m pipenv run llama cc-slips --source_email noreply@libraries.mit.edu --recipient_email zoto@vt.edu --recipient_email ehanson@mit.edu > /mnt/alma/logs/credit-card-slips.log 2>&1
 
 aws ses send-email --region us-east-1 --from noreply@libraries.mit.edu --to zoto@mit.edu --to ehanson@mit.edu --subject "Creditcardslips Job Completed" --text file:///mnt/alma/logs/credit-card-slips.log
-
-
-
