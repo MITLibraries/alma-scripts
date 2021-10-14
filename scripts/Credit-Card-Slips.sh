@@ -1,4 +1,6 @@
 #!/bin/bash
+#source the environment variables here so that the script runs correctly for the cron user
+source /etc/profile
 
 #make the logs dir if it doesn't already exist
 mkdir /mnt/alma/logs
