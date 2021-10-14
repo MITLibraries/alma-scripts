@@ -298,7 +298,7 @@ for invoice in data["invoice"]:
     )
     typer[type].write("\n\n")
     typer[type].write("\n\f")
-    typer[type].write("\n\f")
+
 
     print(f"Finished processing invoice #{invoice['id']}\n")
 
