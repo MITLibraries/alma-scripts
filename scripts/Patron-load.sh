@@ -31,7 +31,7 @@ aws s3 rm s3://$ALMA_BUCKET/exlibris/PatronLoad/ --exclude "*" --include "*.zip"
 aws s3 mv SEND/ s3://$ALMA_BUCKET/exlibris/PatronLoad/ --exclude "*" --include "*.zip" --recursive  >> /mnt/alma/logs/patron-load.log 2>&1
 
 #Send notify of job completion
-aws ses send-email --region us-east-1 --from noreply@libraries.mit.edu --to zoto@mit.edu --to hbailey@mit.edu --subject "Patronload Job Completed" --text file:///mnt/alma/logs/patron-load.log
+aws ses send-email --region us-east-1 --from noreply@libraries.mit.edu --to lib-alma-notifications@mit.edu --subject "Patronload Job Completed" --text file:///mnt/alma/logs/patron-load.log
 
 # Remove the "rejects" files from the filesystem
 #rm rejects_students_script.txt
