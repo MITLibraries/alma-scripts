@@ -8,8 +8,11 @@ mkdir /mnt/alma/logs
 #change to the alma-scripts directory
 cd /mnt/alma/alma-scripts
 
-#install the dependencies and dev tools for them
-/usr/bin/python3.8 -m pipenv --python 3.8 install --dev
+#install the dependencies
+/usr/bin/python3.8 -m pipenv --python 3.8 install
 
 #run the update, which automatically only uses the current days files
-/usr/bin/python3.8 -m pipenv run llama cc-slips --source_email noreply@libraries.mit.edu --recipient_email ils-lib@mit.edu --recipient_email monoacq@mit.edu > /mnt/alma/logs/credit-card-slips.log 2>&1
+# IF its the PROD instance, send it to the prod email address
+[[ $WORKSPACE == "prod" ]] && /usr/bin/python3.8 -m pipenv run llama cc-slips --source_email noreply@libraries.mit.edu --recipient_email ils-lib@mit.edu --recipient_email monoacq@mit.edu > /mnt/alma/logs/credit-card-slips.log 2>&1 || /usr/bin/python3.8 -m pipenv run llama cc-slips --source_email noreply@libraries.mit.edu --recipient_email lib-alma-notifications@mit.edu > /mnt/alma/logs/credit-card-slips.log 2>&1
+
+aws ses send-email --region us-east-1 --from noreply@libraries.mit.edu --to lib-alma-notifications@mit.edu --subject "Creditcardslips Job Completed" --text file:///mnt/alma/logs/credit-card-slips.log
