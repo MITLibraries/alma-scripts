@@ -3,11 +3,11 @@ import os
 
 from llama.ssm import SSM
 
-logger = logging.getLogger(__name__)
-
 ENV = os.getenv("WORKSPACE")
 SSM_PATH = os.getenv("SSM_PATH")
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 logger.info("Configuring llama for current env: %s", ENV)
 
 ssm = SSM()
