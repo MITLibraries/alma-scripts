@@ -1,13 +1,16 @@
 import datetime
+import logging
 
 import click
 import sentry_sdk
 from botocore.exceptions import ClientError
 
-from llama import config, credit_card_slips
+from llama import config, credit_card_slips, sap
 from llama.alma import Alma_API_Client
 from llama.s3 import S3
 from llama.ses import SES
+
+logger = logging.getLogger(__name__)
 
 
 @click.group()
@@ -115,3 +118,78 @@ def concat_timdex_export(ctx, export_type, source_bucket, destination_bucket, da
         f"Concatenated file {output_filename} succesfully created and moved to bucket "
         f"{destination_bucket}."
     )
+
+
+@cli.command()
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="If dry-run flag is passed, files will not be emailed or sent to SAP, instead "
+    "their contents will be logged for review. Invoices will also not be marked as "
+    "paid in Alma. Can be used with the final-run flag to do a dry run of the entire "
+    "process, or without the final-run flag to only dry run the creation of review "
+    "reports.",
+)
+@click.option(
+    "--final-run",
+    is_flag=True,
+    help="Flag to indicate this is a final run and files should be submitted to SAP.",
+)
+@click.pass_context
+def sap_invoices(ctx, dry_run, final_run):
+    """Process invoices for payment via SAP.
+
+    Retrieves "Waiting to be sent" invoices from Alma, extracts and formats data
+    needed for submission to SAP for payment. If not a final run, creates and sends
+    formatted review reports to Acquisitions staff. If a final run, creates and sends
+    formatted cover sheets and summary reports to Acquisitions staff, submits data and
+    control files to SAP, and marks invoices as paid in Alma after submission to SAP.
+    """
+    logger.info(
+        f"Starting SAP invoices process with options:\n"
+        f"    Date: {ctx.obj['today']}\n"
+        f"    Dry run: {dry_run}\n"
+        f"    Final run: {final_run}\n"
+    )
+
+    # Retrieve and sort invoices from Alma. Log result.
+    alma_client = Alma_API_Client(config.get_alma_api_key("ALMA_API_ACQ_READ_KEY"))
+    alma_client.set_content_headers("application/json", "application/json")
+    invoice_records = sap.retrieve_sorted_invoices(alma_client)
+    if len(invoice_records) > 0:
+        logger.info(f"{len(invoice_records)} invoices retrieved from Alma")
+    else:
+        logger.info(
+            "No invoices waiting to be sent in Alma, aborting SAP invoice process"
+        )
+        raise click.Abort()
+
+    # For each invoice retrieved, parse and extract invoice data and save to either
+    # monograph or serials invoice list depending on invoice type. Log result.
+    monograph_invoices = []
+    serial_invoices = []
+    for invoice_record in invoice_records:
+        invoice_data = sap.extract_invoice_data(alma_client, invoice_record)
+        if invoice_data["type"] == "monograph":
+            monograph_invoices.append(invoice_data)
+        else:
+            serial_invoices.append(invoice_data)
+    logger.info(f"{len(monograph_invoices)} monograph invoices processed.")
+    logger.info(f"{len(serial_invoices)} serial invoices processed.")
+
+    # Generate formatted reports for review
+
+    # If not dry run:
+    # Send email with reports as attachments (note that email subject and attachment
+    # file names will differ for review vs. final run)
+
+    # If final run:
+    # Generate data files to send to SAP (updating sequence numbers from SSM in the
+    # process
+    # Generate control files to send to SAP
+    # Generate summary files
+
+    # If not dry run:
+    # Send data and control files to SAP dropbox via SFTP
+    # Email summary files
+    # Update invoice statuses in Alma
