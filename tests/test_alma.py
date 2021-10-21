@@ -43,7 +43,7 @@ def test_alma_get_invoice(mocked_alma, mocked_alma_api_client):
 
 def test_alma_get_invoices_by_status(mocked_alma, mocked_alma_api_client):
     invoices = mocked_alma_api_client.get_invoices_by_status("paid")
-    assert invoices["total_record_count"] == 999
+    assert invoices["total_record_count"] == 2
     assert invoices["invoice"][0]["payment"]["payment_status"]["value"] == "PAID"
 
 

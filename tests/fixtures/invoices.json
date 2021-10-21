@@ -1,5 +1,5 @@
 {
-  "total_record_count": 999,
+  "total_record_count": 2,
   "invoice": [
     {
       "link": "string",
@@ -18,6 +18,124 @@
         "value": "CASH"
       },
       "reference_number": "1234",
+      "owner": {
+        "value": "LAW"
+      },
+      "additional_charges": {
+        "use_pro_rata": false,
+        "shipment": 0,
+        "overhead": 0,
+        "insurance": 0,
+        "discount": 0
+      },
+      "invoice_vat": {
+        "report_tax": false,
+        "vat_per_invoice_line": false,
+        "vat_code": {
+          "value": "REGULAR"
+        },
+        "percentage": 17,
+        "vat_amount": 17.44,
+        "type": {
+          "value": "INCLUSIVE"
+        },
+        "expended_from_fund": true,
+        "vendor_tax": "ILS"
+      },
+      "explicit_ratio": [
+        {
+          "foreign_currency": {
+            "value": "ILS"
+          },
+          "rate": 10
+        }
+      ],
+      "payment": {
+        "prepaid": false,
+        "internal_copy": false,
+        "export_to_erp": false,
+        "payment_status": {
+          "value": "PAID"
+        },
+        "voucher_date": "2015-07-20",
+        "voucher_number": "A-1234",
+        "voucher_amount": "120",
+        "voucher_currency": {
+          "value": "USD"
+        }
+      },
+      "notes": [
+        {
+          "note_text": "Created by: John Smith"
+        }
+      ],
+      "invoice_lines": {
+        "total_record_count": 999,
+        "invoice_line": [
+          {
+            "link": "string",
+            "type": {
+              "value": "REGULAR"
+            },
+            "number": "10",
+            "po_line": "20",
+            "price": 50,
+            "price_note": "string",
+            "quantity": 10,
+            "vat_note": "string",
+            "check_subscription_date_overlap": false,
+            "fully_invoiced": false,
+            "subscription_from_date": "2015-07-20",
+            "subscription_to_date": "2015-07-20",
+            "additional_info": "string",
+            "release_remaining_encumbrance": false,
+            "reporting_code": {
+              "value": "b"
+            },
+            "secondary_reporting_code": {
+              "value": "sso"
+            },
+            "tertiary_reporting_code": {
+              "value": "u"
+            },
+            "note": "string",
+            "invoice_line_vat": {
+              "vat_code": {
+                "value": "string"
+              },
+              "percentage": 0,
+              "vat_amount": 0
+            },
+            "fund_distribution": [
+              {
+                "fund_code": {
+                  "value": "SLM"
+                },
+                "percent": 100,
+                "amount": -40.99
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "link": "string",
+      "number": "0501130658",
+      "invoice_date": "2015-07-20",
+      "invoice_due_date": "2015-07-20",
+      "vendor": {
+        "value": "AAA"
+      },
+      "vendor_account": "ACCOUNT2",
+      "total_amount": 120,
+      "currency": {
+        "value": "USD"
+      },
+      "payment_method": {
+        "value": "CASH"
+      },
+      "reference_number": "5678",
       "owner": {
         "value": "LAW"
       },
