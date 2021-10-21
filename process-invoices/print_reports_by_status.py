@@ -254,10 +254,7 @@ for invoice in data["invoice"]:
     # need to combine lines with the same external_id
     funds = {}
     for invoice_line in invoice["invoice_lines"]["invoice_line"]:
-        if (
-            len(invoice_line["fund_distribution"]) > 0
-            and invoice_line["fund_distribution"][0]["amount"] > 0
-        ):
+        if len(invoice_line["fund_distribution"]) > 0:
             for fd in invoice_line["fund_distribution"]:
                 print("Retrieving fund info from Alma")
                 fund_info = alma_client.get_fund_by_code(fd["fund_code"]["value"])
