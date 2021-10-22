@@ -152,7 +152,8 @@ def sap_invoices(ctx, dry_run, final_run):
         f"    Final run: {final_run}\n"
     )
 
-    # Retrieve and sort invoices from Alma. Log result.
+    # Retrieve and sort invoices from Alma. Log result or abort process if no invoices
+    # retrieved.
     alma_client = Alma_API_Client(config.get_alma_api_key("ALMA_API_ACQ_READ_KEY"))
     alma_client.set_content_headers("application/json", "application/json")
     invoice_records = sap.retrieve_sorted_invoices(alma_client)
@@ -165,21 +166,49 @@ def sap_invoices(ctx, dry_run, final_run):
         raise click.Abort()
 
     # For each invoice retrieved, parse and extract invoice data and save to either
-    # monograph or serials invoice list depending on invoice type. Log result.
+    # monograph or serial invoice list depending on purchase type. Log result.
     monograph_invoices = []
     serial_invoices = []
-    for invoice_record in invoice_records:
+    retrieved_vendors = {}
+    retrieved_funds = {}
+    for count, invoice_record in enumerate(invoice_records):
+        logger.info(
+            f"Extracting data for invoice #{invoice_record['id']}, "
+            f"record {count} of {len(invoice_records)}"
+        )
         invoice_data = sap.extract_invoice_data(alma_client, invoice_record)
+        vendor_code = invoice_record["vendor"]["value"]
+        try:
+            invoice_data["vendor"] = retrieved_vendors[vendor_code]
+        except KeyError:
+            logger.info(f"Retrieving data for vendor {vendor_code}")
+            retrieved_vendors[vendor_code] = sap.populate_vendor_data(
+                alma_client, vendor_code
+            )
+            invoice_data["vendor"] = retrieved_vendors[vendor_code]
+        invoice_data["funds"], retrieved_funds = sap.populate_fund_data(
+            alma_client, invoice_record, retrieved_funds
+        )
         if invoice_data["type"] == "monograph":
             monograph_invoices.append(invoice_data)
         else:
             serial_invoices.append(invoice_data)
-    logger.info(f"{len(monograph_invoices)} monograph invoices processed.")
-    logger.info(f"{len(serial_invoices)} serial invoices processed.")
+    logger.info(
+        f"{len(monograph_invoices)} monograph invoices retrieved and extracted."
+    )
+    logger.info(f"{len(serial_invoices)} serial invoices retrieved and extracted.")
 
     # Generate formatted reports for review
+    logger.info("Generating monographs report")
+    monograph_report = sap.generate_report(ctx.obj["today"], monograph_invoices)
+    logger.info("Generating serials report")
+    serial_report = sap.generate_report(ctx.obj["today"], serial_invoices)
 
-    # If not dry run:
+    if dry_run:
+        logger.info(f"Monograph report:\n{monograph_report}")
+        logger.info(f"Serials report:\n{serial_report}")
+    else:
+        pass
     # Send email with reports as attachments (note that email subject and attachment
     # file names will differ for review vs. final run)
 
@@ -193,3 +222,10 @@ def sap_invoices(ctx, dry_run, final_run):
     # Send data and control files to SAP dropbox via SFTP
     # Email summary files
     # Update invoice statuses in Alma
+
+    logger.info(
+        "SAP invoice process completed for a review run:\n"
+        f"    {len(monograph_invoices)} monograph invoices retrieved and processed\n"
+        f"    {len(serial_invoices)} serial invoices retrieved and processed\n"
+        f"    {len(invoice_records)} total invoices retrieved and processed\n"
+    )

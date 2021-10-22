@@ -12,7 +12,7 @@ def test_create_po_line_dict_all_fields(
         mocked_alma_api_client,
         po_line_record_all_fields,
     )
-    assert po_line_dict["account_1"] == "1239410001021"
+    assert po_line_dict["account_1"] == "1234567-000001"
     assert "account_2" not in po_line_dict
     assert po_line_dict["cardholder"] == "abc"
     assert po_line_dict["invoice_num"] == "Invoice #: 210513BOO"
@@ -51,7 +51,7 @@ def test_create_po_line_dict_multiple_funds(
         mocked_alma_api_client,
         po_line_record_multiple_funds,
     )
-    assert po_line_dict_multiple_funds["account_2"] == "1239410001021"
+    assert po_line_dict_multiple_funds["account_2"] == "1234567-000002"
 
 
 def test_create_po_line_dict_spaces_in_title(
@@ -74,7 +74,7 @@ def test_create_po_line_dicts(
         mocked_alma_api_client, po_line_records
     )
     for po_line_dict in po_line_dicts:
-        assert po_line_dict["account_1"] == "1239410001021"
+        assert po_line_dict["account_1"] == "1234567-000001"
         assert "account_2" not in po_line_dict
         assert po_line_dict["cardholder"] == "abc"
         assert po_line_dict["invoice_num"] == "Invoice #: 210513BOO"
@@ -91,7 +91,7 @@ def test_get_account_from_fund_code_with_fund_code(
     account = credit_card_slips.get_account_from_fund_code(
         mocked_alma_api_client, "ABC"
     )
-    assert account == "1239410001021"
+    assert account == "1234567-000001"
 
 
 def test_get_account_from_fund_code_without_fund_code(mocked_alma_api_client):
