@@ -131,20 +131,6 @@ def po_line_record_all_fields():
 
 
 @pytest.fixture()
-def po_line_record_missing_fields():
-    po_line_record_missing_fields = {
-        "vendor_account": "Corporation",
-        "number": "POL-123",
-        "resource_metadata": {"title": None},
-        "price": {"sum": "0.0"},
-        "created_date": "2021-05-13Z",
-        "fund_distribution": [{"fund_code": {"value": ""}, "amount": {"sum": ""}}],
-        "note": [],
-    }
-    return po_line_record_missing_fields
-
-
-@pytest.fixture()
 def po_line_record_multiple_funds():
     po_line_record_multiple_funds = {
         "vendor_account": "Corporation",
