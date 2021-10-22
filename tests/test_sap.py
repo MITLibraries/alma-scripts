@@ -19,21 +19,11 @@ def test_extract_invoice_data_all_present(mocked_alma, mocked_alma_api_client):
     assert invoice_data == {
         "date": datetime(2021, 9, 27),
         "id": "00000055555000000",
+        "number": "123456",
         "type": "monograph",
         "payment method": "ACCOUNTINGDEPARTMENT",
         "total amount": 4056.07,
         "currency": "USD",
-        "vendor": {
-            "name": "The Bookhouse, Inc.",
-            "code": "BKHS",
-            "address": {
-                "lines": ["string", "string", "string", "string", "string"],
-                "city": "string",
-                "state or province": None,
-                "postal code": "string",
-                "country": "VU",
-            },
-        },
     }
 
 
@@ -166,3 +156,116 @@ def test_country_code_from_address_country_not_present():
     address = {}
     code = sap.country_code_from_address(address)
     assert "US" == code
+
+
+def test_populate_fund_data_success(mocked_alma, mocked_alma_api_client):
+    with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
+        invoice_record = json.load(f)
+    retrieved_funds = {}
+    fund_data, retrieved_funds = sap.populate_fund_data(
+        mocked_alma_api_client, invoice_record, retrieved_funds
+    )
+    assert fund_data == {
+        "1234567-000001": {
+            "amount": 3687.32,
+            "G/L account": "1234567",
+            "cost object": "000001",
+        },
+        "1234567-000002": {
+            "amount": 299,
+            "G/L account": "1234567",
+            "cost object": "000002",
+        },
+        "1234567-000003": {
+            "amount": 69.75,
+            "G/L account": "1234567",
+            "cost object": "000003",
+        },
+    }
+    assert list(retrieved_funds) == ["ABC", "DEF", "GHI", "JKL"]
+
+
+def test_generate_report_success():
+    invoices = [
+        {
+            "date": datetime(2021, 9, 27),
+            "id": "00000055555000000",
+            "number": "123456",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 4056.07,
+            "currency": "USD",
+            "vendor": {
+                "name": "The Bookhouse, Inc.",
+                "code": "BKHS",
+                "address": {
+                    "lines": [
+                        "123 Main Street",
+                        "Building 4",
+                        "Suite 5",
+                        "C/O Mickey Mouse",
+                    ],
+                    "city": "Anytown",
+                    "state or province": None,
+                    "postal code": "12345",
+                    "country": "VU",
+                },
+            },
+            "funds": {
+                "1234567-000001": {
+                    "amount": 3687.32,
+                    "G/L account": "1234567",
+                    "cost object": "000001",
+                },
+                "1234567-000002": {
+                    "amount": 299,
+                    "G/L account": "1234567",
+                    "cost object": "000002",
+                },
+                "1234567-000003": {
+                    "amount": 69.75,
+                    "G/L account": "1234567",
+                    "cost object": "000003",
+                },
+            },
+        }
+    ]
+    today = datetime(2021, 10, 1)
+    report = sap.generate_report(today, invoices)
+    assert (
+        report
+        == """
+
+                                 MIT LIBRARIES
+
+
+Date: 10/01/2021                          Vendor code   : BKHS
+                                          Accounting ID :
+
+Vendor:  The Bookhouse, Inc.
+         123 Main Street
+         Building 4
+         Suite 5
+         C/O Mickey Mouse
+         Anytown, 12345
+         VU
+
+Invoice no.            Fiscal Account     Amount            Inv. Date
+------------------     -----------------  -------------     ----------
+123456210927           1234567 000001     3,687.32          09/27/2021
+123456210927           1234567 000002     299.00            09/27/2021
+123456210927           1234567 000003     69.75             09/27/2021
+
+
+Total/Currency:             4,056.07      USD
+
+Payment Method:  ACCOUNTINGDEPARTMENT
+
+
+                       Departmental Approval __________________________________
+
+                       Financial Services Approval ____________________________
+
+
+\f"""
+    )

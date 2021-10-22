@@ -3,6 +3,7 @@
 import json
 import logging
 from datetime import datetime
+from typing import List, Tuple
 
 from llama.alma import Alma_API_Client
 
@@ -32,11 +33,11 @@ def extract_invoice_data(alma_client: Alma_API_Client, invoice_record: dict) -> 
     invoice_data = {
         "date": datetime.strptime(invoice_record["invoice_date"], "%Y-%m-%dZ"),
         "id": invoice_record["id"],
+        "number": invoice_record["number"],
         "type": purchase_type(vendor_code),
         "payment method": invoice_record["payment_method"]["value"],
         "total amount": invoice_record["total_amount"],
         "currency": invoice_record["currency"]["value"],
-        "vendor": populate_vendor_data(alma_client, vendor_code),
     }
     return invoice_data
 
@@ -115,3 +116,89 @@ def country_code_from_address(address: dict) -> str:
         return COUNTRIES[country]
     except KeyError:
         return "US"
+
+
+def populate_fund_data(
+    alma_client: Alma_API_Client, invoice_record: dict, retrieved_funds: dict
+) -> Tuple[dict, dict]:
+    """Populate a dict with fund data needed for SAP.
+
+    Given an invoice record, a dict of already retrieved funds, and an authenticated
+    Alma client, return a dict populated with the fund data needed for SAP.
+
+    Note: Also returns a dict of all fund records retrieved from Alma so we can pass
+    that to subsequent calls to this function. That way we only call the Alma API once
+    throughout the entire process for each fund we need, rather than retrieving the
+    same fund record every time the fund appears in an invoice.
+    """
+    fund_data = {}
+    invoice_lines_total = 0
+    for invoice_line in invoice_record["invoice_lines"]["invoice_line"]:
+        for fund_distribution in invoice_line["fund_distribution"]:
+            fund_code = fund_distribution["fund_code"]["value"]
+            amount = fund_distribution["amount"]
+            try:
+                fund_record = retrieved_funds[fund_code]
+            except KeyError:
+                logger.info(f"Retrieving data for fund {fund_code}")
+                retrieved_funds[fund_code] = alma_client.get_fund_by_code(fund_code)
+                fund_record = retrieved_funds[fund_code]
+            external_id = fund_record["fund"][0]["external_id"].strip()
+            try:
+                # Combine amounts for funds that have the same external ID (AKA the
+                # same MIT G/L account and cost object)
+                fund_data[external_id]["amount"] += amount
+            except KeyError:
+                fund_data[external_id] = {
+                    "amount": amount,
+                    "G/L account": external_id.split("-")[0],
+                    "cost object": external_id.split("-")[1],
+                }
+            invoice_lines_total += amount
+    return fund_data, retrieved_funds
+
+
+def generate_report(today: datetime, invoices: List[dict]) -> str:
+    today_string = today.strftime("%m/%d/%Y")
+    report = ""
+    for invoice in invoices:
+        report += f"\n\n{'':33}MIT LIBRARIES\n\n\n"
+        report += (
+            f"Date: {today_string:<36}Vendor code   : {invoice['vendor']['code']}\n"
+        )
+        report += f"{'Accounting ID :':>57}\n\n"
+        report += f"Vendor:  {invoice['vendor']['name']}\n"
+        for line in invoice["vendor"]["address"]["lines"]:
+            report += f"         {line}\n"
+        report += "         "
+        if invoice["vendor"]["address"]["city"]:
+            report += f"{invoice['vendor']['address']['city']}, "
+        if invoice["vendor"]["address"]["state or province"]:
+            report += f"{invoice['vendor']['address']['state or province']} "
+        if invoice["vendor"]["address"]["postal code"]:
+            report += f"{invoice['vendor']['address']['postal code']}"
+        report += f"\n         {invoice['vendor']['address']['country']}\n\n"
+        report += (
+            "Invoice no.            Fiscal Account     Amount            Inv. Date\n"
+        )
+        report += (
+            "------------------     -----------------  -------------     ----------\n"
+        )
+        for fund in invoice["funds"]:
+            report += f"{invoice['number'] + invoice['date'].strftime('%y%m%d'):<23}"
+            report += (
+                f"{invoice['funds'][fund]['G/L account']} "
+                f"{invoice['funds'][fund]['cost object']}     "
+            )
+            report += f"{invoice['funds'][fund]['amount']:<18,.2f}"
+            report += f"{invoice['date'].strftime('%m/%d/%Y')}\n"
+        report += "\n\n"
+        report += (
+            f"Total/Currency:             {invoice['total amount']:,.2f}      "
+            f"{invoice['currency']}\n\n"
+        )
+        report += f"Payment Method:  {invoice['payment method']}\n\n\n"
+        report += f"{'Departmental Approval':>44} {'':_<34}\n\n"
+        report += f"{'Financial Services Approval':>50} {'':_<28}\n\n\n"
+        report += "\f"
+    return report

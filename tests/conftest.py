@@ -35,7 +35,23 @@ def mocked_alma(po_line_record_all_fields):
             ]
         }
         with open("tests/fixtures/funds.json") as f:
-            m.get("http://example.com/acq/funds", json=json.load(f))
+            funds = json.load(f)
+            m.get(
+                "http://example.com/acq/funds?q=fund_code~ABC",
+                json={"fund": [funds["fund"][0]]},
+            )
+            m.get(
+                "http://example.com/acq/funds?q=fund_code~DEF",
+                json={"fund": [funds["fund"][1]]},
+            )
+            m.get(
+                "http://example.com/acq/funds?q=fund_code~GHI",
+                json={"fund": [funds["fund"][2]]},
+            )
+            m.get(
+                "http://example.com/acq/funds?q=fund_code~JKL",
+                json={"fund": [funds["fund"][3]]},
+            )
         with open("tests/fixtures/invoices.json") as f:
             m.get(
                 "http://example.com/acq/invoices/0501130657",
@@ -156,7 +172,7 @@ def po_line_record_multiple_funds():
         "created_date": "2021-05-13Z",
         "fund_distribution": [
             {"fund_code": {"value": "ABC"}, "amount": {"sum": "6.0"}},
-            {"fund_code": {"value": "DEF"}, "amount": {"sum": "6.0"}},
+            {"fund_code": {"value": "GHI"}, "amount": {"sum": "6.0"}},
         ],
         "note": [{"note_text": ""}],
     }
