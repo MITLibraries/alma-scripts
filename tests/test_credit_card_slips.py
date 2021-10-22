@@ -25,16 +25,21 @@ def test_create_po_line_dict_all_fields(
 def test_create_po_line_dict_missing_fields(
     mocked_alma,
     mocked_alma_api_client,
-    po_line_record_missing_fields,
 ):
     po_line_dict_missing_fields = credit_card_slips.create_po_line_dict(
         mocked_alma_api_client,
-        po_line_record_missing_fields,
+        {},
     )
+    assert po_line_dict_missing_fields["vendor"] == "No vendor found"
+    assert po_line_dict_missing_fields["poline"] == "No PO Line number found"
+    assert po_line_dict_missing_fields["account_1"] == "No fund code found"
+    assert po_line_dict_missing_fields["po_date"] == "No PO Line created date found"
     assert po_line_dict_missing_fields["item_title"] == "Unknown title"
     assert po_line_dict_missing_fields["price"] == "$0.00"
-    assert po_line_dict_missing_fields["invoice_num"] == "Invoice #: 210513UNK"
-    assert po_line_dict_missing_fields["cardholder"] == "No cardholder note"
+    assert po_line_dict_missing_fields["invoice_num"] == (
+        "Invoice #: No PO Line created date foundUNK"
+    )
+    assert po_line_dict_missing_fields["cardholder"] == "No cardholder note found"
 
 
 def test_create_po_line_dict_multiple_funds(
@@ -90,8 +95,8 @@ def test_get_account_from_fund_code_with_fund_code(
 
 
 def test_get_account_from_fund_code_without_fund_code(mocked_alma_api_client):
-    account = credit_card_slips.get_account_from_fund_code(mocked_alma_api_client, "")
-    assert account == "No fund code"
+    account = credit_card_slips.get_account_from_fund_code(mocked_alma_api_client, None)
+    assert account == "No fund code found"
 
 
 def test_get_cardholder_from_notes_with_cardholder_note(
@@ -101,13 +106,9 @@ def test_get_cardholder_from_notes_with_cardholder_note(
     assert cardholder == "abc"
 
 
-def test_get_cardholder_from_notes_without_cardholder_note(
-    po_line_record_missing_fields,
-):
-    cardholder = credit_card_slips.get_cardholder_from_notes(
-        po_line_record_missing_fields
-    )
-    assert cardholder == "No cardholder note"
+def test_get_cardholder_from_notes_without_cardholder_note():
+    cardholder = credit_card_slips.get_cardholder_from_notes({})
+    assert cardholder == "No cardholder note found"
 
 
 def test_get_credit_card_full_po_lines_from_date(mocked_alma, mocked_alma_api_client):
@@ -117,6 +118,18 @@ def test_get_credit_card_full_po_lines_from_date(mocked_alma, mocked_alma_api_cl
     for po_line_record in po_line_records:
         assert po_line_record["resource_metadata"]["title"] == "Book title"
         assert po_line_record["created_date"] == "2021-05-13Z"
+
+
+def test_get_po_line_created_date_with_date(po_line_record_all_fields):
+    po_line_created_date = credit_card_slips.get_po_line_created_date(
+        po_line_record_all_fields
+    )
+    assert po_line_created_date == "210513"
+
+
+def test_get_po_line_created_date_without_date():
+    po_line_created_date = credit_card_slips.get_po_line_created_date({})
+    assert po_line_created_date == "No PO Line created date found"
 
 
 def test_get_po_title_with_title():
