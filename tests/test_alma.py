@@ -33,7 +33,7 @@ def test_alma_get_brief_po_lines(mocked_alma, mocked_alma_api_client):
 def test_alma_get_fund_by_code(mocked_alma, mocked_alma_api_client):
     fund = mocked_alma_api_client.get_fund_by_code("ABC")
     assert fund["fund"][0]["code"] == "ABC"
-    assert fund["fund"][0]["external_id"] == "1239410001021"
+    assert fund["fund"][0]["external_id"] == "1234567-000001"
 
 
 def test_alma_get_invoice(mocked_alma, mocked_alma_api_client):
