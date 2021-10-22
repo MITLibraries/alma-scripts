@@ -167,36 +167,29 @@ for line in lines:
         typer[type].write('B')
         typer[type].write(today)
         typer[type].write(today)
-        if len(biginvoice) > 16:
-            biginvoice = biginvoice[0:16]
-        typer[type].write(f"{biginvoice: <16}")
+        typer[type].write(f"{str(biginvoice): <16.16}")
         typer[type].write('X000')
         typer[type].write(vendornum)
         typer[type].write(netpay)
         typer[type].write(netsign)
         typer[type].write(pay_meth)
         typer[type].write('       X')
-        if len(vname) > 35:
-            vname = vname[0:35]
-        typer[type].write(f"{vname: <35}")
-        typer[type].write(f"{city: <35}")
-        typer[type].write(f"{add1: <35}")
+        typer[type].write(f"{str(vname): <35.35}")
+        typer[type].write(f"{str(city): <35.35}")
+        typer[type].write(f"{str(add1): <35.35}")
         typer[type].write(ispobox)
-        typer[type].write(f"{add2: <35}")
-        typer[type].write(f"{zip: <10}")
-        typer[type].write(f"{state: <3}")
-        typer[type].write(f"{country: <3}")
-        typer[type].write(f"{some_text: <50}")
-        typer[type].write(f"{add3: <35}")
+        typer[type].write(f"{str(add2): <35.35}")
+        typer[type].write(f"{str(zip): <10.10}")
+        typer[type].write(f"{str(state): <3.3}")
+        typer[type].write(f"{str(country): <3.3}")
+        typer[type].write(f"{str(some_text): <50.50}")
+        typer[type].write(f"{str(add3): <35.35}")
         typer[type].write("\n")
         # do we need to combine lines with the same external_id??
         funds = {}
         count = 0
         for invoice_line in invoice['invoice_lines']['invoice_line']:
-            if (
-                    len(invoice_line['fund_distribution']) > 0 and
-                    invoice_line['fund_distribution'][0]['amount'] > 0
-               ):
+            if len(invoice_line['fund_distribution']) > 0:
                 for fd in invoice_line['fund_distribution']:
                     print("Retrieving fund info from Alma")
                     fund_info = alma_client.get_fund_by_code(fd["fund_code"]["value"])
@@ -214,8 +207,8 @@ for line in lines:
                 typer[type].write('D')
             else:
                 typer[type].write('C')
-            typer[type].write(f"{parts[1]: <10}")
-            typer[type].write(f"{parts[0]: <12}")
+            typer[type].write(f"{str(parts[1]): <10.10}")
+            typer[type].write(f"{str(parts[0]): <12.12}")
             thispay = "{:16.2f}".format(funds[fund])
             typer[type].write(thispay)
             typer[type].write(" ")
