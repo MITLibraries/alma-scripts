@@ -19,8 +19,8 @@ def retrieve_sorted_invoices(alma_client):
     Retrieve invoices from Alma with status 'Waiting to be sent' and return them
     sorted by vendor code.
     """
-    data = alma_client.get_invoices_by_status("Waiting to be Sent")
-    return sorted(data["invoice"], key=lambda i: i["vendor"].get("value", 0))
+    data = list(alma_client.get_invoices_by_status("Waiting to be Sent"))
+    return sorted(data, key=lambda i: i["vendor"].get("value", 0))
 
 
 def extract_invoice_data(alma_client: Alma_API_Client, invoice_record: dict) -> dict:
