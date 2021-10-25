@@ -28,33 +28,45 @@ def bucket_env():
 @pytest.fixture()
 def mocked_alma(po_line_record_all_fields):
     with requests_mock.Mocker() as m:
-        po_lines = {
-            "po_line": [
-                {"number": "POL-123", "created_date": "2021-05-13Z"},
-                {"number": "POL-456", "created_date": "2021-05-02Z"},
-            ]
-        }
         with open("tests/fixtures/funds.json") as f:
             m.get("http://example.com/acq/funds", json=json.load(f))
         with open("tests/fixtures/invoices.json") as f:
-            m.get(
-                "http://example.com/acq/invoices/0501130657",
-                json=json.load(f)["invoice"][0],
-            )
-            f.seek(0)
-            m.get("http://example.com/acq/invoices", json=json.load(f))
+            invoices_json = json.load(f)
+        m.get("http://example.com/acq/invoices", json=invoices_json)
         m.get(
-            "http://example.com/acq/po-lines?status=ACTIVE&limit=100&offset=0",
-            json=po_lines,
+            "http://example.com/acq/invoices/0501130657",
+            json=invoices_json["invoice"][0],
         )
         m.get(
-            "http://example.com/acq/po-lines?status=ACTIVE&limit=100&offset=100",
-            json={},
+            "http://example.com/acq/po-lines?status=ACTIVE",
+            json={
+                "total_record_count": 2,
+                "po_line": [
+                    {"number": "POL-123", "created_date": "2021-05-13Z"},
+                    {"number": "POL-456", "created_date": "2021-05-02Z"},
+                ],
+            },
         )
         m.get("http://example.com/acq/po-lines/POL-123", json=po_line_record_all_fields)
         m.get("http://example.com/acq/po-lines/POL-456", json=po_line_record_wrong_date)
         with open("tests/fixtures/vendor.json") as f:
             m.get("http://example.com/acq/vendors/BKHS", json=json.load(f))
+        m.get(
+            "http://example.com/paged?limit=10&offset=0",
+            complete_qs=True,
+            json={
+                "total_record_count": 15,
+                "fake_records": [{"record_number": i} for i in range(10)],
+            },
+        )
+        m.get(
+            "http://example.com/paged?limit=10&offset=10",
+            complete_qs=True,
+            json={
+                "total_record_count": 15,
+                "fake_records": [{"record_number": i} for i in range(10, 15)],
+            },
+        )
         with open("tests/fixtures/invoice_paid.xml") as f:
             m.post("http://example.com/acq/invoices/0501130657", text=f.read())
         yield m
