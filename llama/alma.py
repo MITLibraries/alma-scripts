@@ -74,24 +74,11 @@ class Alma_API_Client:
         PO line records retrieved from this endpoint do not contain all of the PO line
         data and users may wish to retrieve the full PO line record with the
         get_full_po_line method."""
-        po_line_payload = {
+        po_line_params = {
             "status": "ACTIVE",
-            "limit": "100",
-            "offset": 0,
             "acquisition_method": acquisition_method,
         }
-        brief_po_lines = ""
-        while brief_po_lines != []:
-            response = requests.get(
-                f"{self.base_url}acq/po-lines",
-                params=po_line_payload,
-                headers=self.headers,
-            ).json()
-            time.sleep(0.1)
-            brief_po_lines = response.get("po_line", [])
-            for brief_po_line in brief_po_lines:
-                yield brief_po_line
-            po_line_payload["offset"] += 100
+        return self.get_paged("acq/po-lines", "po_line", params=po_line_params)
 
     def get_full_po_line(self, po_line_id):
         """Get a full PO line record using the PO line ID."""
