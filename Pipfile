@@ -12,6 +12,7 @@ lxml = "*"
 python-dateutil = "*"
 requests = "*"
 s3-concat = "*"
+sentry-sdk = "*"
 
 [dev-packages]
 bandit = "*"

@@ -1,6 +1,7 @@
 import datetime
 
 import click
+import sentry_sdk
 from botocore.exceptions import ClientError
 
 from llama import config, credit_card_slips
@@ -12,6 +13,8 @@ from llama.ses import SES
 @click.group()
 @click.pass_context
 def cli(ctx):
+    if config.SENTRY_DSN:
+        sentry_sdk.init(dsn=config.SENTRY_DSN)
     ctx.ensure_object(dict)
     ctx.obj["today"] = datetime.datetime.today()
 
