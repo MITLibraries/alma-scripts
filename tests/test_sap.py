@@ -4,6 +4,7 @@ from datetime import datetime
 import pytest
 
 from llama import sap
+from llama.ssm import SSM
 
 
 def test_retrieve_sorted_invoices(mocked_alma, mocked_alma_api_client):
@@ -166,3 +167,29 @@ def test_country_code_from_address_country_not_present():
     address = {}
     code = sap.country_code_from_address(address)
     assert "US" == code
+
+
+def test_update_sap_sequence():
+    new_sap_sequence = sap.generate_sap_sequence(
+        "1001,20210722000000,ser", "20210723", "mono"
+    )
+    assert new_sap_sequence == "1002,20210723000000,mono"
+
+
+def test_update_sap_sequence_parameter(mocked_ssm):
+    ssm = SSM()
+    assert (
+        ssm.get_parameter_value("/test/example/SAP_SEQUENCE")
+        == "1001,20210722000000,ser"
+    )
+    sap.update_sap_sequence_parameter(
+        "1001,20210722000000,ser",
+        "20210723",
+        "mono",
+        "/test/example/SAP_SEQUENCE",
+        "SecureString",
+    )
+    assert (
+        ssm.get_parameter_value("/test/example/SAP_SEQUENCE")
+        == "1002,20210723000000,mono"
+    )
