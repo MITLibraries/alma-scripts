@@ -39,7 +39,15 @@ else:
     DATA_WAREHOUSE_HOST = os.getenv("ALMA_DATA_WAREHOUSE_HOST")
     DATA_WAREHOUSE_PORT = os.getenv("ALMA_DATA_WAREHOUSE_PORT")
     DATA_WAREHOUSE_SID = os.getenv("ALMA_DATA_WAREHOUSE_SID")
-    SENTRY_DSN = None
+    SENTRY_DSN = os.getenv("SENTRY_DSN")
+
+
+def check_sentry():
+    if SENTRY_DSN:
+        logger.info("Sending a Zero Division Error to Sentry")
+        1 / 0
+    else:
+        logger.info("No Sentry DSN found")
 
 
 def get_alma_api_key(parameter_name=None):

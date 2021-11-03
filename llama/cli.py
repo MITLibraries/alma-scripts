@@ -13,8 +13,7 @@ from llama.ses import SES
 @click.group()
 @click.pass_context
 def cli(ctx):
-    if config.SENTRY_DSN:
-        sentry_sdk.init(dsn=config.SENTRY_DSN)
+    sentry_sdk.init(config.SENTRY_DSN, environment=config.ENV)
     ctx.ensure_object(dict)
     ctx.obj["today"] = datetime.datetime.today()
 
