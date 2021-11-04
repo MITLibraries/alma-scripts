@@ -25,9 +25,10 @@ def test_ssm_get_parameter_history(mocked_ssm):
 
 def test_ssm_update_parameter_value(mocked_ssm):
     ssm = SSM()
+    parameter_value = ssm.get_parameter_value("/test/example/ALMA_API_ACQ_READ_KEY")
+    assert parameter_value == "abc123"
     parameter_value = ssm.update_parameter_value(
         "/test/example/ALMA_API_ACQ_READ_KEY", "def456", "SecureString"
     )
-    assert parameter_value["ResponseMetadata"]["HTTPStatusCode"] == 200
     parameter_value = ssm.get_parameter_value("/test/example/ALMA_API_ACQ_READ_KEY")
     assert parameter_value == "def456"
