@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 
 from llama.alma import Alma_API_Client
+from llama.ssm import SSM
 
 logger = logging.getLogger(__name__)
 
@@ -115,3 +116,31 @@ def country_code_from_address(address: dict) -> str:
         return COUNTRIES[country]
     except KeyError:
         return "US"
+
+
+def generate_sap_sequence(old_sap_sequence: str, date: str, sequence_type: str) -> str:
+    """Generate new SAP sequence by adding 1, adding new date, and a mono or ser type."""
+    split_sequence = old_sap_sequence.split(",")
+    split_sequence[0] = str(int(split_sequence[0]) + 1)
+    split_sequence[1] = date.ljust(14, "0")
+    split_sequence[2] = sequence_type
+    new_sap_sequence = ",".join(split_sequence)
+    return new_sap_sequence
+
+
+def update_sap_sequence_parameter(
+    old_sap_sequence: str,
+    date: str,
+    sequence_type: str,
+    parameter_key: str,
+    parameter_type: str,
+) -> str:
+    """Get SAP sequence parameter, update it according to specified values, and update in
+    Parameter Store."""
+    ssm = SSM()
+    old_sap_sequence = ssm.get_parameter_value(parameter_key)
+    new_sap_sequence = generate_sap_sequence(old_sap_sequence, date, sequence_type)
+    response = ssm.update_parameter_value(
+        parameter_key, new_sap_sequence, parameter_type
+    )
+    return response
