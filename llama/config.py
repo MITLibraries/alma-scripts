@@ -21,6 +21,7 @@ if ENV == "stage" or ENV == "prod":
     DATA_WAREHOUSE_HOST = ssm.get_parameter_value(f"{SSM_PATH}ALMA_DATA_WAREHOUSE_HOST")
     DATA_WAREHOUSE_PORT = ssm.get_parameter_value(f"{SSM_PATH}ALMA_DATA_WAREHOUSE_PORT")
     DATA_WAREHOUSE_SID = ssm.get_parameter_value(f"{SSM_PATH}ALMA_DATA_WAREHOUSE_SID")
+    SENTRY_DSN = ssm.get_parameter_value(f"{SSM_PATH}SENTRY_DSN")
 elif ENV == "test":
     ALMA_API_KEY = "abc123"
     ALMA_API_URL = "http://example.com/"
@@ -29,6 +30,7 @@ elif ENV == "test":
     DATA_WAREHOUSE_HOST = "database.example.com"
     DATA_WAREHOUSE_PORT = "5500"
     DATA_WAREHOUSE_SID = "abcdef"
+    SENTRY_DSN = None
 else:
     ALMA_API_KEY = os.getenv("ALMA_API_KEY")
     ALMA_API_URL = os.getenv("ALMA_API_URL")
@@ -37,6 +39,15 @@ else:
     DATA_WAREHOUSE_HOST = os.getenv("ALMA_DATA_WAREHOUSE_HOST")
     DATA_WAREHOUSE_PORT = os.getenv("ALMA_DATA_WAREHOUSE_PORT")
     DATA_WAREHOUSE_SID = os.getenv("ALMA_DATA_WAREHOUSE_SID")
+    SENTRY_DSN = os.getenv("SENTRY_DSN")
+
+
+def check_sentry():
+    if SENTRY_DSN:
+        logger.info("Sending a Zero Division Error to Sentry")
+        1 / 0
+    else:
+        logger.info("No Sentry DSN found")
 
 
 def get_alma_api_key(parameter_name=None):
