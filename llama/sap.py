@@ -1,5 +1,6 @@
 """Module with functions necessary for processing invoices to send to SAP."""
 
+import collections
 import json
 import logging
 from datetime import datetime
@@ -155,6 +156,7 @@ def populate_fund_data(
                     "cost object": external_id.split("-")[1],
                 }
             invoice_lines_total += amount
+    fund_data = collections.OrderedDict(sorted(fund_data.items()))
     return fund_data, retrieved_funds
 
 
