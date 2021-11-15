@@ -21,7 +21,7 @@ def retrieve_sorted_invoices(alma_client):
     sorted by vendor code.
     """
     data = list(alma_client.get_invoices_by_status("Waiting to be Sent"))
-    return sorted(data, key=lambda i: i["vendor"].get("value", 0))
+    return sorted(data, key=lambda i: (i["vendor"].get("value", 0), i.get("number", 0)))
 
 
 def extract_invoice_data(alma_client: Alma_API_Client, invoice_record: dict) -> dict:
