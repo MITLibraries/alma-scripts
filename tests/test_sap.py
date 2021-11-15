@@ -10,7 +10,11 @@ from llama import sap
 def test_retrieve_sorted_invoices(mocked_alma, mocked_alma_api_client):
     invoices = sap.retrieve_sorted_invoices(mocked_alma_api_client)
     assert invoices[0]["vendor"]["value"] == "AAA"
-    assert invoices[1]["vendor"]["value"] == "VEND1"
+    assert invoices[0]["number"] == "0501130656"
+    assert invoices[1]["vendor"]["value"] == "AAA"
+    assert invoices[1]["number"] == "0501130658"
+    assert invoices[2]["vendor"]["value"] == "VEND1"
+    assert invoices[2]["number"] == "0501130657"
 
 
 def test_extract_invoice_data_all_present(mocked_alma, mocked_alma_api_client):
