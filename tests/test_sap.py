@@ -1,3 +1,4 @@
+import collections
 import json
 from datetime import datetime
 
@@ -165,27 +166,24 @@ def test_populate_fund_data_success(mocked_alma, mocked_alma_api_client):
     fund_data, retrieved_funds = sap.populate_fund_data(
         mocked_alma_api_client, invoice_record, retrieved_funds
     )
-    assert fund_data == {
-        "1234567-000001": {
-            "amount": 3687.32,
-            "G/L account": "1234567",
-            "cost object": "000001",
-        },
-        "1234567-000002": {
-            "amount": 299,
-            "G/L account": "1234567",
-            "cost object": "000002",
-        },
-        "1234567-000003": {
-            "amount": 69.75,
-            "G/L account": "1234567",
-            "cost object": "000003",
-        },
+    fund_data_ordereddict = collections.OrderedDict()
+    fund_data_ordereddict["1234567-000001"] = {
+        "amount": 3687.32,
+        "G/L account": "1234567",
+        "cost object": "000001",
     }
-    fund_iter = iter(fund_data)
-    assert next(fund_iter) == "1234567-000001"
-    assert next(fund_iter) == "1234567-000002"
-    assert next(fund_iter) == "1234567-000003"
+    fund_data_ordereddict["1234567-000002"] = {
+        "amount": 299,
+        "G/L account": "1234567",
+        "cost object": "000002",
+    }
+    fund_data_ordereddict["1234567-000003"] = {
+        "amount": 69.75,
+        "G/L account": "1234567",
+        "cost object": "000003",
+    }
+
+    assert fund_data == fund_data_ordereddict
     assert list(retrieved_funds) == ["JKL", "ABC", "DEF", "GHI"]
 
 
