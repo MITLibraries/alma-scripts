@@ -182,33 +182,6 @@ def test_populate_fund_data_success(mocked_alma, mocked_alma_api_client):
             "cost object": "000003",
         },
     }
-    assert list(retrieved_funds) == ["ABC", "DEF", "GHI", "JKL"]
-
-
-def test_populate_fund_data_out_of_order_funds(mocked_alma, mocked_alma_api_client):
-    with open("tests/fixtures/invoice_waiting_to_be_sent_out_of_order_funds.json") as f:
-        invoice_record = json.load(f)
-    retrieved_funds = {}
-    fund_data, retrieved_funds = sap.populate_fund_data(
-        mocked_alma_api_client, invoice_record, retrieved_funds
-    )
-    assert fund_data == {
-        "1234567-000001": {
-            "amount": 3687.32,
-            "G/L account": "1234567",
-            "cost object": "000001",
-        },
-        "1234567-000002": {
-            "amount": 299,
-            "G/L account": "1234567",
-            "cost object": "000002",
-        },
-        "1234567-000003": {
-            "amount": 69.75,
-            "G/L account": "1234567",
-            "cost object": "000003",
-        },
-    }
     fund_iter = iter(fund_data)
     assert next(fund_iter) == "1234567-000001"
     assert next(fund_iter) == "1234567-000002"
