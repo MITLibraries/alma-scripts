@@ -1,4 +1,7 @@
 #!/usr/bin/perl -w
+
+# This script is not in use and can be deleted.
+
 use strict;
 use List::Util qw(shuffle);
 
