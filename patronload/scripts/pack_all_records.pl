@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# Use strict regex matching
+# Force the use of declared/scoped variables
 use strict;
 
 # Set variable for working directory to STAFF
