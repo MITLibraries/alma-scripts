@@ -269,3 +269,297 @@ Payment Method:  ACCOUNTINGDEPARTMENT
 
 \f"""
     )
+
+
+def test_format_address_street_1_line():
+    address_lines = ["123 salad Street"]
+    (
+        po_box_indicator,
+        payee_name_line_2,
+        street_or_po_box_num,
+        payee_name_line_3,
+    ) = sap.format_address_for_sap(address_lines)
+    assert po_box_indicator == " "
+    assert payee_name_line_2 == address_lines[0]
+    assert street_or_po_box_num == " "
+    assert payee_name_line_3 == " "
+
+
+def test_format_address_street_2_lines():
+    address_lines = ["123 salad Street", "Second Floor"]
+    (
+        po_box_indicator,
+        payee_name_line_2,
+        street_or_po_box_num,
+        payee_name_line_3,
+    ) = sap.format_address_for_sap(address_lines)
+    assert po_box_indicator == " "
+    assert payee_name_line_2 == address_lines[0]
+    assert street_or_po_box_num == address_lines[1]
+    assert payee_name_line_3 == " "
+
+
+def test_format_address_street_3_lines():
+    address_lines = ["123 salad Street", "Second Floor", "c/o salad guy"]
+    (
+        po_box_indicator,
+        payee_name_line_2,
+        street_or_po_box_num,
+        payee_name_line_3,
+    ) = sap.format_address_for_sap(address_lines)
+    assert po_box_indicator == " "
+    assert payee_name_line_2 == address_lines[0]
+    assert street_or_po_box_num == address_lines[1]
+    assert payee_name_line_3 == address_lines[2]
+
+
+def test_format_address_po_box_1_line():
+    address_lines = ["P.O. Box 123456"]
+    (
+        po_box_indicator,
+        payee_name_line_2,
+        street_or_po_box_num,
+        payee_name_line_3,
+    ) = sap.format_address_for_sap(address_lines)
+    assert po_box_indicator == "X"
+    assert payee_name_line_2 == " "
+    assert street_or_po_box_num == "123456"
+    assert payee_name_line_3 == " "
+
+
+def test_format_address_po_box_2_lines():
+    address_lines = ["c/o salad guy", "P.O. Box 123456"]
+    (
+        po_box_indicator,
+        payee_name_line_2,
+        street_or_po_box_num,
+        payee_name_line_3,
+    ) = sap.format_address_for_sap(address_lines)
+    assert po_box_indicator == "X"
+    assert payee_name_line_2 == address_lines[0]
+    assert street_or_po_box_num == "123456"
+    assert payee_name_line_3 == " "
+
+
+def test_generate_sap_data_success():
+    today = datetime(2021, 5, 18)
+    invoices = [
+        {
+            "date": datetime(2021, 5, 12),
+            "id": "0000055555000000",
+            "number": "456789",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 150,
+            "currency": "USD",
+            "vendor": {
+                "name": "Danger Inc.",
+                "code": "FOOBAR-M",
+                "address": {
+                    "lines": [
+                        "123 salad Street",
+                        "Second Floor",
+                    ],
+                    "city": "San Francisco",
+                    "state or province": "CA",
+                    "postal code": "94109",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 150,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+            },
+        },
+        {
+            "date": datetime(2021, 5, 11),
+            "id": "0000055555000000",
+            "number": "444555",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 1067.04,
+            "currency": "USD",
+            "vendor": {
+                "name": "some library solutions from salad",
+                "code": "YBPE-M",
+                "address": {
+                    "lines": [
+                        "P.O. Box 123456",
+                    ],
+                    "city": "Atlanta",
+                    "state or province": "GA",
+                    "postal code": "30384-7991",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 608,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+                "123456-0000002": {
+                    "amount": 148.50,
+                    "G/L account": "123456",
+                    "cost object": "0000002",
+                },
+                "1123456-0000003": {
+                    "amount": 235.54,
+                    "G/L account": "123456",
+                    "cost object": "0000003",
+                },
+                "123456-0000004": {
+                    "amount": 75,
+                    "G/L account": "123456",
+                    "cost object": "0000004",
+                },
+            },
+        },
+        {
+            "date": datetime(2021, 5, 12),
+            "id": "0000055555000000",
+            "number": "456789",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 150,
+            "currency": "USD",
+            "vendor": {
+                "name": "one address line",
+                "code": "FOOBAR-M",
+                "address": {
+                    "lines": [
+                        "123 some street",
+                    ],
+                    "city": "San Francisco",
+                    "state or province": "CA",
+                    "postal code": "94109",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 150,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+            },
+        },
+    ]
+    report = sap.generate_sap_data(today, invoices)
+    # test data is formatted to make it more readable
+    # each line corresponds to a field in the SAP data file spec
+    # See https://docs.google.com/spreadsheets/d/1PSEYSlPaQ0g2LTEIR6hdyBPzWrZLRK2K/
+    # edit#gid=1667272331
+    assert report == (
+        "B\
+20210518\
+20210518\
+456789210512    \
+X000\
+400000\
+          150.00\
+ \
+ \
+  \
+    \
+ \
+X\
+Danger Inc.                        \
+San Francisco                      \
+123 salad Street                   \
+ \
+Second Floor                       \
+94109     \
+CA \
+US \
+                                                  \
+                                   \
+\n\
+D\
+123456    \
+0000001     \
+          150.00\
+ \
+\n\
+B\
+20210518\
+20210518\
+444555210511    \
+X000\
+400000\
+         1067.04\
+ \
+ \
+  \
+    \
+ \
+X\
+some library solutions from salad  \
+Atlanta                            \
+                                   \
+X\
+123456                             \
+30384-7991\
+GA \
+US \
+                                                  \
+                                   \
+\n\
+C\
+123456    \
+0000001     \
+          608.00\
+ \
+\n\
+C\
+123456    \
+0000002     \
+          148.50\
+ \
+\n\
+C\
+123456    \
+0000003     \
+          235.54\
+ \
+\n\
+D\
+123456    \
+0000004     \
+           75.00\
+ \
+\n\
+B\
+20210518\
+20210518\
+456789210512    \
+X000\
+400000\
+          150.00\
+ \
+ \
+  \
+    \
+ \
+X\
+one address line                   \
+San Francisco                      \
+123 some street                    \
+ \
+                                   \
+94109     \
+CA \
+US \
+                                                  \
+                                   \
+\n\
+D\
+123456    \
+0000001     \
+          150.00\
+ \
+\n"
+    )
