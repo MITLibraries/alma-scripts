@@ -55,6 +55,22 @@ def mocked_alma(po_line_record_all_fields):
         m.get("http://example.com/acq/po-lines/POL-456", json=po_line_record_wrong_date)
         with open("tests/fixtures/vendor.json") as f:
             m.get("http://example.com/acq/vendors/BKHS", json=json.load(f))
+        m.get(
+            "http://example.com/paged?limit=10&offset=0",
+            complete_qs=True,
+            json={
+                "total_record_count": 15,
+                "fake_records": [{"record_number": i} for i in range(10)],
+            },
+        )
+        m.get(
+            "http://example.com/paged?limit=10&offset=10",
+            complete_qs=True,
+            json={
+                "total_record_count": 15,
+                "fake_records": [{"record_number": i} for i in range(10, 15)],
+            },
+        )
         with open("tests/fixtures/invoice_paid.xml") as f:
             m.post("http://example.com/acq/invoices/0501130657", text=f.read())
         yield m
