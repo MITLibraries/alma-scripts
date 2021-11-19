@@ -41,12 +41,6 @@ def test_alma_get_invoice(mocked_alma, mocked_alma_api_client):
     assert invoice["number"] == "0501130657"
 
 
-def test_alma_get_invoices_by_status(mocked_alma, mocked_alma_api_client):
-    invoices = mocked_alma_api_client.get_invoices_by_status("paid")
-    assert invoices["total_record_count"] == 999
-    assert invoices["invoice"][0]["payment"]["payment_status"]["value"] == "PAID"
-
-
 def test_alma_get_vendor_details(mocked_alma, mocked_alma_api_client):
     vendor = mocked_alma_api_client.get_vendor_details("BKHS")
     assert vendor["code"] == "BKHS"
@@ -65,3 +59,20 @@ def test_alma_mark_invoice_paid(mocked_alma):
         invoice_id="0501130657", invoice_xml_path="tests/fixtures/invoice_empty.xml"
     )
     assert "<number>0501130657</number>" in paid
+
+
+def test_alma_get_invoices_by_status(mocked_alma, mocked_alma_api_client):
+    invoices = mocked_alma_api_client.get_invoices_by_status("paid")
+    i = next(invoices)
+    assert i["number"] == "0501130657"
+    assert i["payment"]["payment_status"]["value"] == "PAID"
+    assert next(invoices)["number"] == "0501130658"
+
+
+def test_alma_get_paged(mocked_alma, mocked_alma_api_client):
+    records = mocked_alma_api_client.get_paged(
+        endpoint="paged",
+        record_type="fake_records",
+        limit=10,
+    )
+    assert len(list(records)) == 15

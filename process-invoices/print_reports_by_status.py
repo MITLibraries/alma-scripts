@@ -81,12 +81,12 @@ alma_client.set_content_headers("application/json", "application/json")
 
 # Get invoices waiting to be sent
 print("Retrieving invoices from Alma")
-data = alma_client.get_invoices_by_status("Waiting to be Sent")
-count_total_invoices = len(data["invoice"])
+data = list(alma_client.get_invoices_by_status("Waiting to be Sent"))
+count_total_invoices = len(data)
 print(f"{count_total_invoices} invoices retrieved from Alma\n")
 
 # Sort results by vendor code
-data["invoice"].sort(key=invoice_sap.extract_vendor)
+data.sort(key=invoice_sap.extract_vendor)
 
 # HEAD variable used for output reports
 HEAD = """
@@ -97,7 +97,7 @@ HEAD = """
 """
 
 # Loop through each invoice record in the sorted API response
-for invoice in data["invoice"]:
+for invoice in data:
     print(f"Processing invoice #{invoice['id']}")
 
     # Extract invoice_date field and convert to a Python datetime object
