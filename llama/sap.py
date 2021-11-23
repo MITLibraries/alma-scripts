@@ -307,3 +307,34 @@ def generate_sap_data(today: datetime, invoices: List[dict]) -> str:
             sap_data += " "
             sap_data += "\n"
     return sap_data
+
+
+def generate_summary(
+    invoices: List[dict], data_file_name: str, control_file_name: str
+) -> str:
+    excluded_invoices = ""
+    invoice_count = 0
+    sum_of_invoices = 0
+    summary = "--- MIT Libraries--- Alma to SAP Invoice Feed\n\n\n\n"
+    summary += f"Data file: {data_file_name}\n\n"
+    summary += f"Control file: {control_file_name}\n\n\n\n"
+
+    for invoice in invoices:
+        if invoice["payment method"] == "ACCOUNTINGDEPARTMENT":
+            summary += f"{invoice['vendor']['name']: <39.39}"
+            summary += (
+                f"{invoice['number'] + invoice['date'].strftime('%y%m%d'): <20.20}"
+            )
+            summary += f"{invoice['total amount']:.2f}\n"
+            sum_of_invoices += float(invoice["total amount"])
+            invoice_count += 1
+        else:
+            excluded_invoices += f"{invoice['payment method']}:\t"
+            excluded_invoices += f"{invoice['number']}\t"
+            excluded_invoices += f"{invoice['vendor']['name']}\t"
+            excluded_invoices += f"{invoice['vendor']['code']}\n"
+    summary += f"\nTotal payment:       ${sum_of_invoices:,.2f}\n\n"
+    summary += f"Invoice count:       {invoice_count}\n\n\n"
+    summary += "Authorized signature __________________________________\n\n\n"
+    summary += f"{excluded_invoices}"
+    return summary
