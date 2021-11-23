@@ -563,3 +563,37 @@ D\
  \
 \n"
     )
+
+
+def test_generate_summary(mono_invoices_with_different_payment_method):
+    dfile = "dlibsapg.1001.202110518000000"
+    cfile = "clibsapg.1001.202110518000000"
+    summary = sap.generate_summary(
+        mono_invoices_with_different_payment_method, dfile, cfile
+    )
+    assert (
+        summary
+        == """--- MIT Libraries--- Alma to SAP Invoice Feed
+
+
+
+Data file: dlibsapg.1001.202110518000000
+
+Control file: clibsapg.1001.202110518000000
+
+
+
+Danger Inc.                            456789210512        150.00
+some library solutions from salad      444555210511        1067.04
+
+Total payment:       $1,217.04
+
+Invoice count:       2
+
+
+Authorized signature __________________________________
+
+
+BAZ:\t12345\tFoo Bar Books\tFOOBAR
+"""
+    )
