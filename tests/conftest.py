@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 import boto3
 import pytest
@@ -230,3 +231,116 @@ def runner():
 @pytest.fixture(scope="function")
 def s3():
     return S3()
+
+
+@pytest.fixture()
+def mono_invoices_with_different_payment_method():
+    """a list of monograph invoices which includes an invoice with
+    a payment method other than ACCOUNTINGDEPARTMENT which should
+    get filtered out when generating summary reports"""
+    monograph_invoices = [
+        {
+            "date": datetime(2021, 5, 12),
+            "id": "0000055555000000",
+            "number": "456789",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 150,
+            "currency": "USD",
+            "vendor": {
+                "name": "Danger Inc.",
+                "code": "DANGER",
+                "address": {
+                    "lines": [
+                        "123 salad Street",
+                        "Second Floor",
+                    ],
+                    "city": "San Francisco",
+                    "state or province": "CA",
+                    "postal code": "94109",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 150,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+            },
+        },
+        {
+            "date": datetime(2021, 5, 11),
+            "id": "0000055555000000",
+            "number": "444555",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 1067.04,
+            "currency": "USD",
+            "vendor": {
+                "name": "some library solutions from salad",
+                "code": "YBPE-M",
+                "address": {
+                    "lines": [
+                        "P.O. Box 123456",
+                    ],
+                    "city": "Atlanta",
+                    "state or province": "GA",
+                    "postal code": "30384-7991",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 608,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+                "123456-0000002": {
+                    "amount": 148.50,
+                    "G/L account": "123456",
+                    "cost object": "0000002",
+                },
+                "1123456-0000003": {
+                    "amount": 235.54,
+                    "G/L account": "123456",
+                    "cost object": "0000003",
+                },
+                "123456-0000004": {
+                    "amount": 75,
+                    "G/L account": "123456",
+                    "cost object": "0000004",
+                },
+            },
+        },
+        {
+            "date": datetime(2021, 5, 12),
+            "id": "0000055555000000",
+            "number": "12345",
+            "type": "monograph",
+            "payment method": "BAZ",
+            "total amount": 150,
+            "currency": "USD",
+            "vendor": {
+                "name": "Foo Bar Books",
+                "code": "FOOBAR",
+                "address": {
+                    "lines": [
+                        "123 some street",
+                    ],
+                    "city": "San Francisco",
+                    "state or province": "CA",
+                    "postal code": "94109",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 150,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+            },
+        },
+    ]
+    return monograph_invoices
