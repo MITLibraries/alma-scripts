@@ -2,10 +2,9 @@ import datetime
 import logging
 
 import click
-import sentry_sdk
 from botocore.exceptions import ClientError
 
-from llama import config, credit_card_slips, sap
+from llama import CONFIG, credit_card_slips, sap
 from llama.alma import Alma_API_Client
 from llama.s3 import S3
 from llama.ses import SES
@@ -16,7 +15,6 @@ logger = logging.getLogger(__name__)
 @click.group()
 @click.pass_context
 def cli(ctx):
-    sentry_sdk.init(config.SENTRY_DSN, environment=config.ENV)
     ctx.ensure_object(dict)
     ctx.obj["today"] = datetime.datetime.today()
 
@@ -44,7 +42,7 @@ def cli(ctx):
 def cc_slips(ctx, date, source_email, recipient_email):
     if date is None:
         date = (ctx.obj["today"] - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-    alma_api_key = config.get_alma_api_key("ALMA_API_ACQ_READ_KEY")
+    alma_api_key = CONFIG.get_alma_api_key("ALMA_API_ACQ_READ_KEY")
     alma_api_client = Alma_API_Client(alma_api_key)
     alma_api_client.set_content_headers("application/json", "application/json")
     credit_card_full_po_lines = (
@@ -154,7 +152,7 @@ def sap_invoices(ctx, dry_run, final_run):
 
     # Retrieve and sort invoices from Alma. Log result or abort process if no invoices
     # retrieved.
-    alma_client = Alma_API_Client(config.get_alma_api_key("ALMA_API_ACQ_READ_KEY"))
+    alma_client = Alma_API_Client(CONFIG.get_alma_api_key("ALMA_API_ACQ_READ_KEY"))
     alma_client.set_content_headers("application/json", "application/json")
     invoice_records = sap.retrieve_sorted_invoices(alma_client)
     if len(invoice_records) > 0:

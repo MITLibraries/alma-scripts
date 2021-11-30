@@ -1,4 +1,4 @@
-from llama import config
+from llama import CONFIG
 from llama.alma import Alma_API_Client
 
 
@@ -9,7 +9,7 @@ def test_client_init_with_params():
 
 
 def test_client_init_from_config():
-    api_key = config.get_alma_api_key()
+    api_key = CONFIG.get_alma_api_key("ALMA_API_ACQ_READ_KEY")
     client = Alma_API_Client(api_key)
     assert client.base_url == "http://example.com/"
     assert client.headers == {"Authorization": "apikey abc123"}
@@ -54,7 +54,7 @@ def test_alma_get_po_line_full_record(mocked_alma, mocked_alma_api_client):
 
 
 def test_alma_mark_invoice_paid(mocked_alma):
-    client = Alma_API_Client(config.get_alma_api_key())
+    client = Alma_API_Client("abc123")
     paid = client.mark_invoice_paid(
         invoice_id="0501130657", invoice_xml_path="tests/fixtures/invoice_empty.xml"
     )

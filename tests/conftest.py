@@ -139,6 +139,41 @@ def mocked_ssm(aws_credentials):
             Value="http://example.com/",
             Type="String",
         )
+        ssm.put_parameter(
+            Name="/test/example/ALMA_DATA_WAREHOUSE_USER",
+            Value="fake_dw_user",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/ALMA_DATA_WAREHOUSE_PASSWORD",
+            Value="fake_dw_password",
+            Type="SecureString",
+        )
+        ssm.put_parameter(
+            Name="/test/example/ALMA_DATA_WAREHOUSE_HOST",
+            Value="dw.fake.edu",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/ALMA_DATA_WAREHOUSE_PORT",
+            Value="0000",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/ALMA_DATA_WAREHOUSE_SID",
+            Value="ABCDE",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/LLAMA_LOG_LEVEL",
+            Value="warning",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SENTRY_DSN",
+            Value="sentry_123456",
+            Type="SecureString",
+        )
         yield ssm
 
 

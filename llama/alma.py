@@ -2,7 +2,7 @@ import time
 
 import requests
 
-from llama import config
+from llama import CONFIG
 
 
 class Alma_API_Client:
@@ -10,7 +10,7 @@ class Alma_API_Client:
     and specific functionality necessary for llama scripts.
     """
 
-    def __init__(self, api_key, base_api_url=config.ALMA_API_URL):
+    def __init__(self, api_key, base_api_url=CONFIG.ALMA_API_URL):
         self.base_url = base_api_url
         self.headers = {"Authorization": f"apikey {api_key}"}
 
