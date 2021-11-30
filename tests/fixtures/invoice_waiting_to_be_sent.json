@@ -101,6 +101,57 @@
   },
   "invoice_lines": {
     "invoice_line": [{
+      "id": "00000050014000000",
+      "type": {
+        "value": "OTHER",
+        "desc": "Other"
+      },
+      "number": "14",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "",
+      "price": 69.75,
+      "price_note": "",
+      "total_price": 69.75,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": true,
+      "fully_invoiced": false,
+      "additional_info": "",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "JKL",
+          "desc": "Fund JKL"
+        },
+        "percent": 100.0,
+        "amount": 69.75
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050014000000"
+    }, {
       "id": "00000050001000000",
       "type": {
         "value": "REGULAR",
@@ -776,57 +827,6 @@
         "amount": 159
       }],
       "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050013000000"
-    }, {
-      "id": "00000050014000000",
-      "type": {
-        "value": "OTHER",
-        "desc": "Other"
-      },
-      "number": "14",
-      "status": {
-        "value": "READY",
-        "desc": "Ready"
-      },
-      "po_line": "",
-      "price": 69.75,
-      "price_note": "",
-      "total_price": 69.75,
-      "quantity": 1,
-      "vat_note": "Approximately 0.00 included in line Total Price.",
-      "check_subscription_date_overlap": true,
-      "fully_invoiced": false,
-      "additional_info": "",
-      "release_remaining_encumbrance": false,
-      "reporting_code": {
-        "value": "",
-        "desc": null
-      },
-      "secondary_reporting_code": {
-        "value": "",
-        "desc": null
-      },
-      "tertiary_reporting_code": {
-        "value": "",
-        "desc": null
-      },
-      "note": "",
-      "invoice_line_vat": {
-        "vat_code": {
-          "value": "",
-          "desc": null
-        },
-        "percentage": 0.0,
-        "vat_amount": 0
-      },
-      "fund_distribution": [{
-        "fund_code": {
-          "value": "JKL",
-          "desc": "Fund JKL"
-        },
-        "percent": 100.0,
-        "amount": 69.75
-      }],
-      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050014000000"
     }],
     "total_record_count": 14
   },
