@@ -170,6 +170,26 @@ def mocked_ssm(aws_credentials):
             Type="String",
         )
         ssm.put_parameter(
+            Name="/test/example/SAP_REPLY_TO_EMAIL",
+            Value="replyto@example.com",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_REPORT_RECIPIENT_EMAILS",
+            Value="report_1@example.com,report_2@example.com",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_SUMMARY_RECIPIENT_EMAILS",
+            Value="summary@example.com",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SES_SEND_FROM_EMAIL",
+            Value="from@example.com",
+            Type="String",
+        )
+        ssm.put_parameter(
             Name="/test/example/SENTRY_DSN",
             Value="sentry_123456",
             Type="SecureString",

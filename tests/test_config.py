@@ -16,6 +16,12 @@ def test_prod_stage_config_success(mocked_ssm, monkeypatch):
     assert config.DATA_WAREHOUSE_PORT == "0000"
     assert config.DATA_WAREHOUSE_SID == "ABCDE"
     assert config.LOG_LEVEL == "warning"
+    assert config.SAP_REPORT_RECIPIENT_EMAILS == (
+        "report_1@example.com,report_2@example.com"
+    )
+    assert config.SAP_SUMMARY_RECIPIENT_EMAILS == "summary@example.com"
+    assert config.SAP_REPLY_TO_EMAIL == "replyto@example.com"
+    assert config.SES_SEND_FROM_EMAIL == "from@example.com"
     assert config.SENTRY_DSN == "sentry_123456"
 
 
@@ -41,6 +47,12 @@ def test_load_other_env_config_success():
     assert config.DATA_WAREHOUSE_PORT == "5500"
     assert config.DATA_WAREHOUSE_SID == "abcdef"
     assert config.LOG_LEVEL == "INFO"
+    assert config.SAP_REPORT_RECIPIENT_EMAILS == (
+        "report_1@example.com,report_2@example.com"
+    )
+    assert config.SAP_SUMMARY_RECIPIENT_EMAILS == "summary@example.com"
+    assert config.SAP_REPLY_TO_EMAIL == "replyto@example.com"
+    assert config.SES_SEND_FROM_EMAIL == "from@example.com"
     assert config.SENTRY_DSN is None
 
 
