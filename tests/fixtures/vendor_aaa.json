@@ -1,0 +1,24 @@
+{
+  "code": "AAA",
+  "name": "AAA vendor_record",
+  "contact_info": {
+    "address": [
+      {
+        "preferred": false,
+        "line1": "AAA Vendor",
+        "line2": "123 Sesame St.",
+        "city": "Anytown",
+        "state_province": "MA",
+        "postal_code": "12345",
+        "country": {
+          "value": "USA"
+        },
+        "address_type": [
+          {
+            "value": "billing"
+          }
+        ]
+      }
+    ]
+  }
+}
