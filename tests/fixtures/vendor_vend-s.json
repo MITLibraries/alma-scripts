@@ -1,0 +1,22 @@
+{
+  "code": "VEND-S",
+  "name": "Vendor One",
+  "contact_info": {
+    "address": [
+      {
+        "preferred": true,
+        "line1": "PO Box 1234",
+        "city": "Tomorrowland",
+        "postal_code": "09876",
+        "country": {
+          "value": "USA"
+        },
+        "address_type": [
+          {
+            "value": "billing"
+          }
+        ]
+      }
+    ]
+  }
+}

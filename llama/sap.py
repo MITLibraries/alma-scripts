@@ -4,9 +4,11 @@ import collections
 import json
 import logging
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 
+from llama import CONFIG
 from llama.alma import Alma_API_Client
+from llama.email import Email
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ def retrieve_sorted_invoices(alma_client):
     return sorted(data, key=lambda i: (i["vendor"].get("value", 0), i.get("number", 0)))
 
 
-def extract_invoice_data(alma_client: Alma_API_Client, invoice_record: dict) -> dict:
+def extract_invoice_data(invoice_record: dict) -> dict:
     """Extract data needed for SAP from Alma invoice record and return as a dict.
 
     Raises:
@@ -204,6 +206,31 @@ def generate_report(today: datetime, invoices: List[dict]) -> str:
         report += f"{'Financial Services Approval':>50} {'':_<28}\n\n\n"
         report += "\f"
     return report
+
+
+def email_report(
+    report: str, report_type: Literal["mono", "serial"], date: datetime, final: bool
+):
+    report_email = Email()
+    if final:
+        subject_string = f"Coversheets – {report_type}s - {date.strftime('%Y%M%D')}"
+        attachment_name = (
+            f"cover_sheets_{report_type}_{date.strftime('%Y%m%d%H%M%S')}.txt"
+        )
+    else:
+        subject_string = f"Review Report – {report_type}s - {date.strftime('%Y%M%D')}"
+        attachment_name = (
+            f"review_{report_type}_report_{date.strftime('%Y%m%d%H%M%S')}.txt"
+        )
+    report_email.populate(
+        from_address=CONFIG.SES_SEND_FROM_EMAIL,
+        to_addresses=CONFIG.SAP_REPORT_RECIPIENT_EMAILS,
+        reply_to=CONFIG.SAP_REPLY_TO_EMAIL,
+        subject=subject_string,
+        attachments=[{"content": report, "filename": attachment_name}],
+    )
+    response = report_email.send()
+    return response
 
 
 def format_address_for_sap(address_lines: List):

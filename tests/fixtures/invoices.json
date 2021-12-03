@@ -2,12 +2,13 @@
   "total_record_count": 3,
   "invoice": [
     {
+      "id": "01",
       "link": "string",
       "number": "0501130657",
-      "invoice_date": "2015-07-20",
+      "invoice_date": "2015-07-20Z",
       "invoice_due_date": "2015-07-20",
       "vendor": {
-        "value": "VEND1"
+        "value": "VEND-S"
       },
       "vendor_account": "ACCOUNT1",
       "total_amount": 120,
@@ -15,7 +16,7 @@
         "value": "USD"
       },
       "payment_method": {
-        "value": "CASH"
+        "value": "ACCOUNTINGDEPARTMENT"
       },
       "reference_number": "1234",
       "owner": {
@@ -70,7 +71,7 @@
         }
       ],
       "invoice_lines": {
-        "total_record_count": 999,
+        "total_record_count": 1,
         "invoice_line": [
           {
             "link": "string",
@@ -109,7 +110,7 @@
             "fund_distribution": [
               {
                 "fund_code": {
-                  "value": "SLM"
+                  "value": "ABC"
                 },
                 "percent": 100,
                 "amount": -40.99
@@ -120,9 +121,10 @@
       }
     },
     {
+      "id": "02",
       "link": "string",
       "number": "0501130658",
-      "invoice_date": "2015-07-20",
+      "invoice_date": "2015-07-20Z",
       "invoice_due_date": "2015-07-20",
       "vendor": {
         "value": "AAA"
@@ -133,7 +135,7 @@
         "value": "USD"
       },
       "payment_method": {
-        "value": "CASH"
+        "value": "ACCOUNTINGDEPARTMENT"
       },
       "reference_number": "5678",
       "owner": {
@@ -188,7 +190,7 @@
         }
       ],
       "invoice_lines": {
-        "total_record_count": 999,
+        "total_record_count": 1,
         "invoice_line": [
           {
             "link": "string",
@@ -227,7 +229,7 @@
             "fund_distribution": [
               {
                 "fund_code": {
-                  "value": "SLM"
+                  "value": "ABC"
                 },
                 "percent": 100,
                 "amount": -40.99
@@ -238,9 +240,9 @@
       }
     },
     {
-      "link": "string",
+      "id": "03",
       "number": "0501130656",
-      "invoice_date": "2015-07-20",
+      "invoice_date": "2015-07-20Z",
       "invoice_due_date": "2015-07-20",
       "vendor": {
         "value": "AAA"
@@ -345,7 +347,7 @@
             "fund_distribution": [
               {
                 "fund_code": {
-                  "value": "SLM"
+                  "value": "ABC"
                 },
                 "percent": 100,
                 "amount": -40.99

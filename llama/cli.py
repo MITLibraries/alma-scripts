@@ -2,12 +2,11 @@ import datetime
 import logging
 
 import click
-from botocore.exceptions import ClientError
 
 from llama import CONFIG, credit_card_slips, sap
 from llama.alma import Alma_API_Client
+from llama.email import Email
 from llama.s3 import S3
-from llama.ses import SES
 
 logger = logging.getLogger(__name__)
 
@@ -57,22 +56,20 @@ def cc_slips(ctx, date, source_email, recipient_email):
         credit_card_slip_xml_data = (
             "<html><p>No credit card orders on this date</p></html>"
         )
-    ses_client = SES()
-    message = ses_client.create_email(
+    message = Email()
+    message.populate(
+        source_email,
+        list(recipient_email),
         f"Credit card slips {date}",
-        credit_card_slip_xml_data,
-        f"{date}_credit_card_slips.htm",
+        attachments=[
+            {
+                "content": credit_card_slip_xml_data,
+                "filename": f"{date}_credit_card_slips.htm",
+            }
+        ],
     )
-    try:
-        response = ses_client.send_email(
-            source_email,
-            list(recipient_email),
-            message,
-        )
-    except ClientError as e:
-        click.echo(e.response["Error"]["Message"])
-    else:
-        click.echo(f'Email sent! Message ID: {response["MessageId"]}')
+    response = message.send()
+    logger.info(f'Email sent! Message ID: {response["MessageId"]}')
 
 
 @cli.command()
@@ -174,7 +171,7 @@ def sap_invoices(ctx, dry_run, final_run):
             f"Extracting data for invoice #{invoice_record['id']}, "
             f"record {count} of {len(invoice_records)}"
         )
-        invoice_data = sap.extract_invoice_data(alma_client, invoice_record)
+        invoice_data = sap.extract_invoice_data(invoice_record)
         vendor_code = invoice_record["vendor"]["value"]
         try:
             invoice_data["vendor"] = retrieved_vendors[vendor_code]
@@ -202,13 +199,24 @@ def sap_invoices(ctx, dry_run, final_run):
     logger.info("Generating serials report")
     serial_report = sap.generate_report(ctx.obj["today"], serial_invoices)
 
+    # Log reports if dry run, otherwise send email with reports as attachments (email
+    # subject and attachment file name differ for review vs. final run)
     if dry_run:
         logger.info(f"Monograph report:\n{monograph_report}")
         logger.info(f"Serials report:\n{serial_report}")
     else:
-        pass
-    # Send email with reports as attachments (note that email subject and attachment
-    # file names will differ for review vs. final run)
+        response = sap.email_report(
+            monograph_report, "mono", ctx.obj["today"], final_run
+        )
+        logger.info(
+            "Monographs report email sent with message ID: %s", response["MessageId"]
+        )
+        response = sap.email_report(
+            serial_report, "serial", ctx.obj["today"], final_run
+        )
+        logger.info(
+            "Serials report email sent with message ID: %s", response["MessageId"]
+        )
 
     # If final run:
     # Generate data files to send to SAP (updating sequence numbers from SSM in the
@@ -221,8 +229,9 @@ def sap_invoices(ctx, dry_run, final_run):
     # Email summary files
     # Update invoice statuses in Alma
 
+    run_type = "final" if final_run else "review"
     logger.info(
-        "SAP invoice process completed for a review run:\n"
+        f"SAP invoice process completed for a {run_type} run:\n"
         f"    {len(monograph_invoices)} monograph invoices retrieved and processed\n"
         f"    {len(serial_invoices)} serial invoices retrieved and processed\n"
         f"    {len(invoice_records)} total invoices retrieved and processed\n"

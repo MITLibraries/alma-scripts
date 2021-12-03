@@ -13,14 +13,14 @@ def test_retrieve_sorted_invoices(mocked_alma, mocked_alma_api_client):
     assert invoices[0]["number"] == "0501130656"
     assert invoices[1]["vendor"]["value"] == "AAA"
     assert invoices[1]["number"] == "0501130658"
-    assert invoices[2]["vendor"]["value"] == "VEND1"
+    assert invoices[2]["vendor"]["value"] == "VEND-S"
     assert invoices[2]["number"] == "0501130657"
 
 
-def test_extract_invoice_data_all_present(mocked_alma, mocked_alma_api_client):
+def test_extract_invoice_data_all_present():
     with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
         invoice_record = json.load(f)
-    invoice_data = sap.extract_invoice_data(mocked_alma_api_client, invoice_record)
+    invoice_data = sap.extract_invoice_data(invoice_record)
     assert invoice_data == {
         "date": datetime(2021, 9, 27),
         "id": "00000055555000000",
@@ -32,13 +32,11 @@ def test_extract_invoice_data_all_present(mocked_alma, mocked_alma_api_client):
     }
 
 
-def test_extract_invoice_data_missing_data_raises_error(
-    mocked_alma, mocked_alma_api_client
-):
+def test_extract_invoice_data_missing_data_raises_error():
     with open("tests/fixtures/invoice_waiting_to_be_sent_incomplete.json") as f:
         invoice_record = json.load(f)
     with pytest.raises(KeyError):
-        sap.extract_invoice_data(mocked_alma_api_client, invoice_record)
+        sap.extract_invoice_data(invoice_record)
 
 
 def test_purchase_type_serial():
@@ -275,6 +273,12 @@ Payment Method:  ACCOUNTINGDEPARTMENT
 
 \f"""
     )
+
+
+def test_email_report_success(mocked_ses):
+    response = sap.email_report("Report contents", "mono", datetime(2021, 10, 1), False)
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
+    assert response["MessageId"]
 
 
 def test_format_address_street_1_line():
