@@ -340,3 +340,38 @@ def generate_summary(
     summary += "Authorized signature __________________________________\n\n\n"
     summary += f"{excluded_invoices}"
     return summary
+
+
+def generate_sap_control(sap_data_file: str, invoice_total: float) -> str:
+    """Given a string representing the data file to be sent to SAP and the
+    total amount of the invoices in that data file, returns a string
+    representing the corresponding control file. see
+    https://wikis.mit.edu/confluence/display/SAPdev/MIT+SAP+Dropbox for
+    control file format"""
+
+    # 0-16 count bytes
+    sap_control_file = f"{len(sap_data_file.encode('utf-8')):016}"
+
+    # 17-32 the spec says "record count", but accounts payable says that
+    # this should be a count of the number of lines in the data file.
+    sap_control_file += f"{len(sap_data_file.splitlines()):016}"
+
+    # 33-52 credit total
+    # we don't send credits to SAP so this will always be 20 0's
+    sap_control_file += "0" * 20
+
+    # 53-72 debit total (in cents)
+    sap_control_file += f"{int(invoice_total * 100):020}"
+
+    # 73-92 control 3 summarizing the data file
+    # we just repeat the invoice total here
+    sap_control_file += f"{int(invoice_total * 100):020}"
+
+    # 93-112 control 4 summarizing the data file
+    # Accounts payable told us to use this string
+    sap_control_file += "00100100000000000000"
+
+    # control file ends with a new line
+    sap_control_file += "\n"
+
+    return sap_control_file
