@@ -220,11 +220,121 @@ def s3():
 
 
 @pytest.fixture()
-def mono_invoices_with_different_payment_method():
-    """a list of monograph invoices which includes an invoice with
+def invoices_for_sap():
+    invoices = [
+        {
+            "date": datetime(2021, 5, 12),
+            "id": "0000055555000000",
+            "number": "456789",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 150,
+            "currency": "USD",
+            "vendor": {
+                "name": "Danger Inc.",
+                "code": "FOOBAR-M",
+                "address": {
+                    "lines": [
+                        "123 salad Street",
+                        "Second Floor",
+                    ],
+                    "city": "San Francisco",
+                    "state or province": "CA",
+                    "postal code": "94109",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 150,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+            },
+        },
+        {
+            "date": datetime(2021, 5, 11),
+            "id": "0000055555000000",
+            "number": "444555",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 1067.04,
+            "currency": "USD",
+            "vendor": {
+                "name": "some library solutions from salad",
+                "code": "YBPE-M",
+                "address": {
+                    "lines": [
+                        "P.O. Box 123456",
+                    ],
+                    "city": "Atlanta",
+                    "state or province": "GA",
+                    "postal code": "30384-7991",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 608,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+                "123456-0000002": {
+                    "amount": 148.50,
+                    "G/L account": "123456",
+                    "cost object": "0000002",
+                },
+                "1123456-0000003": {
+                    "amount": 235.54,
+                    "G/L account": "123456",
+                    "cost object": "0000003",
+                },
+                "123456-0000004": {
+                    "amount": 75,
+                    "G/L account": "123456",
+                    "cost object": "0000004",
+                },
+            },
+        },
+        {
+            "date": datetime(2021, 5, 12),
+            "id": "0000055555000000",
+            "number": "456789",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 150,
+            "currency": "USD",
+            "vendor": {
+                "name": "one address line",
+                "code": "FOOBAR-M",
+                "address": {
+                    "lines": [
+                        "123 some street",
+                    ],
+                    "city": "San Francisco",
+                    "state or province": "CA",
+                    "postal code": "94109",
+                    "country": "US",
+                },
+            },
+            "funds": {
+                "123456-0000001": {
+                    "amount": 150,
+                    "G/L account": "123456",
+                    "cost object": "0000001",
+                },
+            },
+        },
+    ]
+    return invoices
+
+
+@pytest.fixture()
+def invoices_for_sap_with_different_payment_method():
+    """a list of invoices which includes an invoice with
     a payment method other than ACCOUNTINGDEPARTMENT which should
     get filtered out when generating summary reports"""
-    monograph_invoices = [
+    invoices = [
         {
             "date": datetime(2021, 5, 12),
             "id": "0000055555000000",
@@ -329,4 +439,122 @@ def mono_invoices_with_different_payment_method():
             },
         },
     ]
-    return monograph_invoices
+    return invoices
+
+
+@pytest.fixture()
+def sap_data_file():
+    """a string representing a datafile of invoices to send to SAP"""
+    # this test data is formatted to make it more readable
+    # each line corresponds to a field in the SAP data file spec
+    # See https://docs.google.com/spreadsheets/d/1PSEYSlPaQ0g2LTEIR6hdyBPzWrZLRK2K/
+    # edit#gid=1667272331
+    sap_data = "B\
+20210518\
+20210518\
+456789210512    \
+X000\
+400000\
+          150.00\
+ \
+ \
+  \
+    \
+ \
+X\
+Danger Inc.                        \
+San Francisco                      \
+123 salad Street                   \
+ \
+Second Floor                       \
+94109     \
+CA \
+US \
+                                                  \
+                                   \
+\n\
+D\
+123456    \
+0000001     \
+          150.00\
+ \
+\n\
+B\
+20210518\
+20210518\
+444555210511    \
+X000\
+400000\
+         1067.04\
+ \
+ \
+  \
+    \
+ \
+X\
+some library solutions from salad  \
+Atlanta                            \
+                                   \
+X\
+123456                             \
+30384-7991\
+GA \
+US \
+                                                  \
+                                   \
+\n\
+C\
+123456    \
+0000001     \
+          608.00\
+ \
+\n\
+C\
+123456    \
+0000002     \
+          148.50\
+ \
+\n\
+C\
+123456    \
+0000003     \
+          235.54\
+ \
+\n\
+D\
+123456    \
+0000004     \
+           75.00\
+ \
+\n\
+B\
+20210518\
+20210518\
+456789210512    \
+X000\
+400000\
+          150.00\
+ \
+ \
+  \
+    \
+ \
+X\
+one address line                   \
+San Francisco                      \
+123 some street                    \
+ \
+                                   \
+94109     \
+CA \
+US \
+                                                  \
+                                   \
+\n\
+D\
+123456    \
+0000001     \
+          150.00\
+ \
+\n"
+    return sap_data
