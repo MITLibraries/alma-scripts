@@ -3,55 +3,103 @@ import os
 
 from llama.ssm import SSM
 
-ENV = os.getenv("WORKSPACE")
-SSM_PATH = os.getenv("SSM_PATH")
-
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.info("Configuring llama for current env: %s", ENV)
 
-ssm = SSM()
+# Expected configuration values in the form
+# "name_of_config_value": "name_of_env_variable_or_ssm_parameter"
+EXPECTED_CONFIG_VALUES = {
+    "ALMA_API_URL": "ALMA_API_URL",
+    "DATA_WAREHOUSE_USER": "ALMA_DATA_WAREHOUSE_USER",
+    "DATA_WAREHOUSE_PASSWORD": "ALMA_DATA_WAREHOUSE_PASSWORD",
+    "DATA_WAREHOUSE_HOST": "ALMA_DATA_WAREHOUSE_HOST",
+    "DATA_WAREHOUSE_PORT": "ALMA_DATA_WAREHOUSE_PORT",
+    "DATA_WAREHOUSE_SID": "ALMA_DATA_WAREHOUSE_SID",
+    "LOG_LEVEL": "LLAMA_LOG_LEVEL",
+    "SENTRY_DSN": "SENTRY_DSN",
+}
 
-if ENV == "stage" or ENV == "prod":
-    ALMA_API_URL = ssm.get_parameter_value(f"{SSM_PATH}ALMA_API_URL")
-    DATA_WAREHOUSE_USER = ssm.get_parameter_value(f"{SSM_PATH}ALMA_DATA_WAREHOUSE_USER")
-    DATA_WAREHOUSE_PASSWORD = ssm.get_parameter_value(
-        f"{SSM_PATH}ALMA_DATA_WAREHOUSE_PASSWORD"
-    )
-    DATA_WAREHOUSE_HOST = ssm.get_parameter_value(f"{SSM_PATH}ALMA_DATA_WAREHOUSE_HOST")
-    DATA_WAREHOUSE_PORT = ssm.get_parameter_value(f"{SSM_PATH}ALMA_DATA_WAREHOUSE_PORT")
-    DATA_WAREHOUSE_SID = ssm.get_parameter_value(f"{SSM_PATH}ALMA_DATA_WAREHOUSE_SID")
-    SENTRY_DSN = ssm.get_parameter_value(f"{SSM_PATH}SENTRY_DSN")
-elif ENV == "test":
-    ALMA_API_KEY = "abc123"
-    ALMA_API_URL = "http://example.com/"
-    DATA_WAREHOUSE_USER = "test_dw_user"
-    DATA_WAREHOUSE_PASSWORD = "test_dw_password"  # nosec
-    DATA_WAREHOUSE_HOST = "database.example.com"
-    DATA_WAREHOUSE_PORT = "5500"
-    DATA_WAREHOUSE_SID = "abcdef"
-    SENTRY_DSN = None
-else:
-    ALMA_API_KEY = os.getenv("ALMA_API_KEY")
-    ALMA_API_URL = os.getenv("ALMA_API_URL")
-    DATA_WAREHOUSE_USER = os.getenv("ALMA_DATA_WAREHOUSE_USER")
-    DATA_WAREHOUSE_PASSWORD = os.getenv("ALMA_DATA_WAREHOUSE_PASSWORD")
-    DATA_WAREHOUSE_HOST = os.getenv("ALMA_DATA_WAREHOUSE_HOST")
-    DATA_WAREHOUSE_PORT = os.getenv("ALMA_DATA_WAREHOUSE_PORT")
-    DATA_WAREHOUSE_SID = os.getenv("ALMA_DATA_WAREHOUSE_SID")
-    SENTRY_DSN = os.getenv("SENTRY_DSN")
+SSM_ENVS = ("prod", "stage")
 
 
-def check_sentry():
-    if SENTRY_DSN:
-        logger.info("Sending a Zero Division Error to Sentry")
-        1 / 0
-    else:
-        logger.info("No Sentry DSN found")
+class Config:
+    def __init__(self):
+        self.ENV = self.get_env()
+        print(f"Loading llama config settings for env: {self.ENV}")
 
+        self.SSM_PATH = self.get_ssm_path(self.ENV)
+        self.ssm_safety_check()
 
-def get_alma_api_key(parameter_name=None):
-    if ENV == "stage" or ENV == "prod":
-        return ssm.get_parameter_value(SSM_PATH + parameter_name)
-    else:
-        return ALMA_API_KEY
+        self._set_attributes()
+        if self.missing_values() and self.ENV in SSM_ENVS:
+            raise Exception(
+                "LLAMA config is missing the following required config variables "
+                f"for {self.ENV} environment: {(', ').join(self.missing_values)}"
+            )
+        if self.missing_values():
+            logger.info(
+                "LLAMA config is missing config values, set if needed: %s",
+                (", ").join(self.missing_values()),
+            )
+
+    def _set_attributes(self):
+        if self.ENV in SSM_ENVS:
+            ssm = SSM()
+            for key, value in EXPECTED_CONFIG_VALUES.items():
+                setattr(self, key, ssm.get_parameter_value(self.SSM_PATH + value))
+        else:
+            for key, value in EXPECTED_CONFIG_VALUES.items():
+                setattr(self, key, os.getenv(value))
+
+    @staticmethod
+    def get_env():
+        try:
+            return os.environ["WORKSPACE"]
+        except KeyError as e:
+            raise Exception(
+                "Env variable 'WORKSPACE' is required in all environments, please set "
+                "it and try again."
+            ) from e
+
+    @staticmethod
+    def get_ssm_path(env):
+        try:
+            return os.environ["SSM_PATH"]
+        except KeyError as e:
+            if env in SSM_ENVS:
+                raise Exception(
+                    f"Env variable 'SSM_PATH' is required in the {env} "
+                    "environment, please set it and try again."
+                ) from e
+        return None
+
+    def check_sentry(self):
+        if self.SENTRY_DSN:
+            logger.info("Sending a Zero Division Error to Sentry")
+            1 / 0
+        else:
+            logger.info("No Sentry DSN found")
+
+    def get_alma_api_key(self, key_name="no_key_name_provided"):
+        if self.ENV in SSM_ENVS:
+            ssm = SSM()
+            return ssm.get_parameter_value(self.SSM_PATH + key_name)
+        else:
+            return os.environ[key_name]
+
+    def missing_values(self):
+        return list(
+            set(["ENV", "SSM_PATH"] + list(EXPECTED_CONFIG_VALUES.keys()))
+            - set(
+                attribute
+                for attribute, value in self.__dict__.items()
+                if value and value.strip()
+            )
+        )
+
+    def ssm_safety_check(self):
+        if self.SSM_PATH is not None:
+            if "prod" in self.SSM_PATH and self.ENV != "prod":
+                raise Exception(
+                    "Production SSM_PATH may ONLY be used in the production "
+                    "environment. Check your env variables and try again."
+                )
