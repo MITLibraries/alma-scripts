@@ -1,13 +1,13 @@
 # Cron jobs for TIMDEX exports
 #
 # Daily at 0853
-53 08 * * * gituser /mnt/alma/alma-scripts/scripts/Update-Export.sh
+53 08 * * * gituser /home/gituser/alma-scripts/scripts/Update-Export.sh
 #
 # # At 0030 on the 2nd of the month (runs on full export from the 1st of the
 # # month)
 #disabled semi permenantely for now due to - 
 # https://mitlibraries.atlassian.net/browse/IMP-2321
-#30 0 5 * * gituser /mnt/alma/alma-scripts/scripts/Full-Export.sh
+#30 0 5 * * gituser /home/gituser/alma-scripts/scripts/Full-Export.sh
 
 #make sure to keep required newline at end of file -
 
