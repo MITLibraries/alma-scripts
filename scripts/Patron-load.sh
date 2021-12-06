@@ -9,13 +9,13 @@ mkdir /home/gituser/logs
 cd /home/gituser/alma-scripts/patronload
 
 #install the dependencies
-/usr/bin/python3.8 -m pipenv --python 3.8 install
+pipenv install
 
 #Run the staff load
-/usr/bin/python3.8 -m pipenv run python staff.py > /home/gituser/logs/patron-load.log 2>&1
+pipenv run python staff.py > /home/gituser/logs/patron-load.log 2>&1
 
 #Run the student load
-/usr/bin/python3.8 -m pipenv run python student.py >> /home/gituser/logs/patron-load.log 2>&1
+pipenv run python student.py >> /home/gituser/logs/patron-load.log 2>&1
 
 #make the folder if it doesn't already exist, this perl script errors out without the folder
 mkdir SEND
