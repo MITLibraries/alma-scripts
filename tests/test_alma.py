@@ -37,7 +37,7 @@ def test_alma_get_fund_by_code(mocked_alma, mocked_alma_api_client):
 
 
 def test_alma_get_invoice(mocked_alma, mocked_alma_api_client):
-    invoice = mocked_alma_api_client.get_invoice("0501130657")
+    invoice = mocked_alma_api_client.get_invoice("558809630001021")
     assert invoice["number"] == "0501130657"
 
 
@@ -56,9 +56,15 @@ def test_alma_get_po_line_full_record(mocked_alma, mocked_alma_api_client):
 def test_alma_mark_invoice_paid(mocked_alma):
     client = Alma_API_Client("abc123")
     paid = client.mark_invoice_paid(
-        invoice_id="0501130657", invoice_xml_path="tests/fixtures/invoice_empty.xml"
+        invoice_id="558809630001021",
+        payment_date="2021-07-22Z12:00:00Z",
+        payment_amount="120",
+        payment_currency="USD",
     )
-    assert "<number>0501130657</number>" in paid
+    assert paid["payment"]["payment_status"]["value"] == "PAID"
+    assert paid["payment"]["voucher_date"] == "2021-07-22Z"
+    assert paid["payment"]["voucher_amount"] == "120"
+    assert paid["payment"]["voucher_currency"]["value"] == "USD"
 
 
 def test_alma_get_invoices_by_status(mocked_alma, mocked_alma_api_client):

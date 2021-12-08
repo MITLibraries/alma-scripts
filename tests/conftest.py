@@ -88,8 +88,8 @@ def mocked_alma(po_line_record_all_fields):
                 "fake_records": [{"record_number": i} for i in range(10, 15)],
             },
         )
-        with open("tests/fixtures/invoice_paid.xml") as f:
             m.post("http://example.com/acq/invoices/0501130657", text=f.read())
+        with open("tests/fixtures/invoice_paid.json") as f:
         yield m
 
 
