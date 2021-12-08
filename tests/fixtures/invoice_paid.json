@@ -86,7 +86,7 @@
             "desc": "string",
             "value": "PAID"
         },
-        "voucher_date": "2021-07-22T12:00:00Z",
+        "voucher_date": "2021-07-22Z",
         "voucher_number": "A-1234",
         "voucher_amount": "120",
         "voucher_currency": {
