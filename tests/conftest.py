@@ -51,7 +51,7 @@ def mocked_alma(po_line_record_all_fields):
             invoices_json = json.load(f)
         m.get("http://example.com/acq/invoices", json=invoices_json)
         m.get(
-            "http://example.com/acq/invoices/0501130657",
+            "http://example.com/acq/invoices/558809630001021",
             json=invoices_json["invoice"][0],
         )
         m.get(
@@ -88,8 +88,8 @@ def mocked_alma(po_line_record_all_fields):
                 "fake_records": [{"record_number": i} for i in range(10, 15)],
             },
         )
-            m.post("http://example.com/acq/invoices/0501130657", text=f.read())
         with open("tests/fixtures/invoice_paid.json") as f:
+            m.post("http://example.com/acq/invoices/558809630001021", text=f.read())
         yield m
 
 
