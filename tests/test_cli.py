@@ -24,7 +24,6 @@ def test_cc_slips_date_provided(mocked_alma, mocked_ssm, runner):
         ],
     )
     assert result.exit_code == 0
-    assert result.output.startswith("Email sent! Message ID:")
 
 
 @mock_ses
@@ -45,7 +44,6 @@ def test_cc_slips_no_date_provided(mocked_alma, mocked_ssm, runner):
         ],
     )
     assert result.exit_code == 0
-    assert result.output.startswith("Email sent! Message ID:")
 
 
 @mock_ses
@@ -67,7 +65,6 @@ def test_cc_slips_no_records_for_date_provided(mocked_alma, mocked_ssm, runner):
         ],
     )
     assert result.exit_code == 0
-    assert result.output.startswith("Email sent! Message ID:")
 
 
 def test_concat_timdex_export_all_options_provided_success(mocked_s3, runner, s3):
@@ -155,3 +152,28 @@ def test_concat_timdex_export_bucket_error(mocked_s3, runner):
     )
     assert result.exit_code == 1
     assert "One or more supplied buckets does not exist" in result.output
+
+
+def test_sap_invoices_review_run(runner, mocked_alma, mocked_ses):
+    result = runner.invoke(cli, ["sap-invoices"])
+    assert result.exit_code == 0
+
+
+def test_sap_invoices_review_run_no_invoices(runner, mocked_alma_no_invoices):
+    result = runner.invoke(cli, ["sap-invoices"])
+    assert result.exit_code == 1
+
+
+def test_sap_invoices_review_run_dry_run(runner, mocked_alma):
+    result = runner.invoke(cli, ["sap-invoices", "--dry-run"])
+    assert result.exit_code == 0
+
+
+def test_sap_invoices_final_run(runner, mocked_alma, mocked_ses):
+    result = runner.invoke(cli, ["sap-invoices", "--final-run"])
+    assert result.exit_code == 0
+
+
+def test_sap_invoices_final_run_dry_run(runner, mocked_alma):
+    result = runner.invoke(cli, ["sap-invoices", "--final-run", "--dry-run"])
+    assert result.exit_code == 0

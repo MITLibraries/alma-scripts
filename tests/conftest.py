@@ -6,7 +6,7 @@ import boto3
 import pytest
 import requests_mock
 from click.testing import CliRunner
-from moto import mock_s3, mock_ssm
+from moto import mock_s3, mock_ses, mock_ssm
 
 from llama.alma import Alma_API_Client
 from llama.s3 import S3
@@ -66,8 +66,12 @@ def mocked_alma(po_line_record_all_fields):
         )
         m.get("http://example.com/acq/po-lines/POL-123", json=po_line_record_all_fields)
         m.get("http://example.com/acq/po-lines/POL-456", json=po_line_record_wrong_date)
+        with open("tests/fixtures/vendor_aaa.json") as f:
+            m.get("http://example.com/acq/vendors/AAA", json=json.load(f))
         with open("tests/fixtures/vendor.json") as f:
             m.get("http://example.com/acq/vendors/BKHS", json=json.load(f))
+        with open("tests/fixtures/vendor_vend-s.json") as f:
+            m.get("http://example.com/acq/vendors/VEND-S", json=json.load(f))
         m.get(
             "http://example.com/paged?limit=10&offset=0",
             complete_qs=True,
@@ -86,6 +90,13 @@ def mocked_alma(po_line_record_all_fields):
         )
         with open("tests/fixtures/invoice_paid.xml") as f:
             m.post("http://example.com/acq/invoices/0501130657", text=f.read())
+        yield m
+
+
+@pytest.fixture()
+def mocked_alma_no_invoices():
+    with requests_mock.Mocker() as m:
+        m.get("http://example.com/acq/invoices", json={"total_record_count": 0})
         yield m
 
 
@@ -123,6 +134,14 @@ def mocked_s3(aws_credentials):
         )
         s3.create_bucket(Bucket="dip-ils-bucket")
         yield s3
+
+
+@pytest.fixture()
+def mocked_ses(aws_credentials):
+    with mock_ses():
+        ses = boto3.client("ses", region_name="us-east-1")
+        ses.verify_email_identity(EmailAddress="from@example.com")
+        yield ses
 
 
 @pytest.fixture(scope="function")
@@ -167,6 +186,26 @@ def mocked_ssm(aws_credentials):
         ssm.put_parameter(
             Name="/test/example/LLAMA_LOG_LEVEL",
             Value="warning",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_REPLY_TO_EMAIL",
+            Value="replyto@example.com",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_REPORT_RECIPIENT_EMAILS",
+            Value="report_1@example.com,report_2@example.com",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_SUMMARY_RECIPIENT_EMAILS",
+            Value="summary@example.com",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SES_SEND_FROM_EMAIL",
+            Value="from@example.com",
             Type="String",
         )
         ssm.put_parameter(
