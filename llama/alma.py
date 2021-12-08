@@ -1,3 +1,4 @@
+import json
 import time
 
 import requests
@@ -121,17 +122,33 @@ class Alma_API_Client:
         time.sleep(0.1)
         return r.json()
 
-    def mark_invoice_paid(self, invoice_id: str, invoice_xml_path: str) -> str:
+    def mark_invoice_paid(
+        self,
+        invoice_id: str,
+        payment_date: str,
+        payment_amount: str,
+        payment_currency: str,
+    ) -> str:
         """Mark an invoice as paid using the invoice process endpoint."""
         endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
         params = {"op": "paid"}
-        with open(invoice_xml_path, "rb") as file:
-            r = requests.post(endpoint, headers=self.headers, params=params, data=file)
-            r.raise_for_status()
+        invoice_payment_data = {"payment": {}}
+        invoice_payment_data["payment"]["voucher_date"] = payment_date
+        invoice_payment_data["payment"]["voucher_amount"] = payment_amount
+        invoice_payment_data["payment"]["voucher_currency"] = {
+            "value": payment_currency
+        }
+        r = requests.post(
+            endpoint,
+            headers=self.headers,
+            params=params,
+            data=json.dumps(invoice_payment_data),
+        )
+        r.raise_for_status()
         time.sleep(0.1)
         # TODO: check for Alma-specific error codes. Do we also need to check for
         # alerts? See https://developers.exlibrisgroup.com/alma/apis/docs/acq/
         # UE9TVCAvYWxtYXdzL3YxL2FjcS9pbnZvaWNlcy97aW52b2ljZV9pZH0=/ and https://
         # developers.exlibrisgroup.com/blog/Creating-an-invoice-using-APIs/ for more
         # info.
-        return r.text
+        return r.json()
