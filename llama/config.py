@@ -37,19 +37,25 @@ class Config:
         if self.missing_values() and self.ENV in SSM_ENVS:
             raise Exception(
                 "LLAMA config is missing the following required config variables "
-                f"for {self.ENV} environment: {(', ').join(self.missing_values)}"
+                f"for {self.ENV} environment: {self.missing_values()}"
             )
         if self.missing_values():
-            logger.info(
+            print(
                 "LLAMA config is missing config values, set if needed: %s",
-                (", ").join(self.missing_values()),
+                self.missing_values(),
             )
 
     def _set_attributes(self):
         if self.ENV in SSM_ENVS:
             ssm = SSM()
             for key, value in EXPECTED_CONFIG_VALUES.items():
-                setattr(self, key, ssm.get_parameter_value(self.SSM_PATH + value))
+                try:
+                    setattr(self, key, ssm.get_parameter_value(self.SSM_PATH + value))
+                except ssm.client.exceptions.ParameterNotFound as e:
+                    raise Exception(
+                        f"Parameter does not exist: {self.SSM_PATH + value}"
+                    ) from e
+
         else:
             for key, value in EXPECTED_CONFIG_VALUES.items():
                 setattr(self, key, os.getenv(value))
@@ -83,10 +89,15 @@ class Config:
         else:
             logger.info("No Sentry DSN found")
 
-    def get_alma_api_key(self, key_name="no_key_name_provided"):
+    def get_alma_api_key(self, key_name):
         if self.ENV in SSM_ENVS:
             ssm = SSM()
-            return ssm.get_parameter_value(self.SSM_PATH + key_name)
+            try:
+                return ssm.get_parameter_value(self.SSM_PATH + key_name)
+            except ssm.client.exceptions.ParameterNotFound as e:
+                raise Exception(
+                    f"Parameter does not exist: {self.SSM_PATH + key_name}"
+                ) from e
         else:
             return os.environ[key_name]
 

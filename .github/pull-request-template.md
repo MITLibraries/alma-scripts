@@ -20,12 +20,25 @@ Delete this section if it isn't applicable to the PR.
 
 - https://mitlibraries.atlassian.net/browse/DIP-
 
-#### Screenshots (if appropriate)
-
-Delete this section if it isn't applicable to the PR.
-
-#### Requires Database Migrations?
-YES | NO
-
 #### Includes new or updated dependencies?
+
 YES | NO
+
+#### Changes expectations for external applications?
+
+YES | NO
+
+#### Developer
+
+- [ ] All new config values are documented in README
+- [ ] All new config values have been added to staging and production environments
+- [ ] All related Jira tickets are linked in commit message(s)
+
+#### Code Reviewer
+
+- [ ] The commit message is clear and follows our guidelines
+      (not just this pull request message)
+- [ ] There are appropriate tests covering any new functionality
+- [ ] The documentation has been updated or is unnecessary
+- [ ] The changes have been verified
+- [ ] New dependencies are appropriate or there were no changes
