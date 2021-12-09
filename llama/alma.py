@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 
@@ -125,18 +126,19 @@ class Alma_API_Client:
     def mark_invoice_paid(
         self,
         invoice_id: str,
-        payment_date: str,
+        payment_date: datetime,
         payment_amount: str,
         payment_currency: str,
     ) -> str:
         """Mark an invoice as paid using the invoice process endpoint."""
         endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
         params = {"op": "paid"}
-        invoice_payment_data = {"payment": {}}
-        invoice_payment_data["payment"]["voucher_date"] = payment_date
-        invoice_payment_data["payment"]["voucher_amount"] = payment_amount
-        invoice_payment_data["payment"]["voucher_currency"] = {
-            "value": payment_currency
+        invoice_payment_data = {
+            "payment": {
+                "voucher_date": payment_date.strftime("%Y-%m-%dT12:00:00Z"),
+                "voucher_amount": payment_amount,
+                "voucher_currency": {"value": payment_currency},
+            }
         }
         r = requests.post(
             endpoint,

@@ -1,3 +1,5 @@
+import datetime
+
 from llama import CONFIG
 from llama.alma import Alma_API_Client
 
@@ -57,7 +59,7 @@ def test_alma_mark_invoice_paid(mocked_alma):
     client = Alma_API_Client("abc123")
     paid = client.mark_invoice_paid(
         invoice_id="558809630001021",
-        payment_date="2021-07-22Z12:00:00Z",
+        payment_date=datetime.datetime(2021, 7, 22),
         payment_amount="120",
         payment_currency="USD",
     )
