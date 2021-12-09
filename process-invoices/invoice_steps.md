@@ -8,7 +8,7 @@
 
 1.  Retrieve all invoices with a status of "Waiting to be Sent" from Alma.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python print_reports_by_status.py`
+      `pipenv run python print_reports_by_status.py`
     Outputs (all written to output-files folder):
       - File invoice_ids_YYYYMMDDhhmmss.txt: IDs of invoices to be sent to SAP
       - File invoice_special_YYYYMMDDhhmmss.txt: IDs of invoices that are paid via
@@ -44,7 +44,7 @@
 1.  Retrieve all invoices with a status of "Waiting to be Sent" from Alma (this is
     exactly the same as step 1 in the Review Run above).
     Command:
-      `/usr/bin/python3.8 -m pipenv run python print_reports_by_status.py`
+      `pipenv run python print_reports_by_status.py`
     Outputs (all written to output-files folder):
       - File invoice_ids_YYYYMMDDhhmmss.txt: IDs of invoices to be sent to SAP
       - File invoice_special_YYYYMMDDhhmmss.txt: IDs of invoices that are paid via
@@ -79,7 +79,7 @@
 
 4.  Create invoice data files (one for monographs and one for serials) to send to SAP.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python get_invoices_from_file.py output-files/[invoice_ids_YYYYMMDDhhmmss.txt filename from step 1]`
+      `pipenv run python get_invoices_from_file.py output-files/[invoice_ids_YYYYMMDDhhmmss.txt filename from step 1]`
     Outputs (all written to output-files folder):
       - File dlibsapg.###1.YYYYMMDD000000: Monographs SAP invoice data file (where ###1
         is the next sequence number according to seq-sap)
@@ -97,34 +97,34 @@
 
 5.  Create monographs control file to send to SAP.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python make_cfile.py output-files/[dlibsapg.###1.YYYYMMDD000000 filename from step 4]`
+      `pipenv run python make_cfile.py output-files/[dlibsapg.###1.YYYYMMDD000000 filename from step 4]`
     Outputs (written to output-files folder):
       - File clibsapg.###1.YYYYMMDD000000: Monographs SAP invoice control file
     Note:
       You can optionally check the control file by running
-        `/usr/bin/python3.8 -m pipenv run python parse_cfile.py output-files/[clibsapg.###1.YYYYMMDD000000 filename from this step]`
+        `pipenv run python parse_cfile.py output-files/[clibsapg.###1.YYYYMMDD000000 filename from this step]`
       This will print human-readable information from the control file to std-out for verification.
 
 6.  Create serials control file to send to SAP.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python make_cfile.py output-files/[dlibsapg.###2.YYYYMMDD000000 filename from step 4]`
+      `pipenv run python make_cfile.py output-files/[dlibsapg.###2.YYYYMMDD000000 filename from step 4]`
     Outputs (written to output-files folder):
       - File clibsapg.###2.YYYYMMDD000000: Serials SAP invoice control file
     Note:
       You can optionally check the control file by running
-        `/usr/bin/python3.8 -m pipenv run python parse_cfile.py output-files/[clibsapg.###2.YYYYMMDD000000 filename from this step]`
+        `pipenv run python parse_cfile.py output-files/[clibsapg.###2.YYYYMMDD000000 filename from this step]`
       This will print human-readable information from the control file to std-out for
       verification.
 
 7.  Create monographs summary file.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python make_summary.py output-files/[dlibsapg.###1.YYYYMMDD000000 filename from step 4] > output-files/mono_summary_YYYYMMDD.txt`
+      `pipenv run python make_summary.py output-files/[dlibsapg.###1.YYYYMMDD000000 filename from step 4] > output-files/mono_summary_YYYYMMDD.txt`
     Outputs (written to output-files folder):
       - File mono_summary_YYYYMMDD.txt: Monographs summary file
 
 8.  Create serials summary file.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python make_summary.py output-files/[dlibsapg.###2.YYYYMMDD000000 filename from step 4] > output-files/ser_summary_YYYYMMDD.txt`
+      `pipenv run python make_summary.py output-files/[dlibsapg.###2.YYYYMMDD000000 filename from step 4] > output-files/ser_summary_YYYYMMDD.txt`
     Outputs (written to output-files folder):
       - File ser_summary_YYYYMMDD.txt: Serials summary file
 
@@ -153,4 +153,4 @@
 
 11. Update invoice status in Alma for all invoice IDs retrieved in step 1.
     Command:
-      `/usr/bin/python3.8 -m pipenv run python update_invoice_statuses.py`
+      `pipenv run python update_invoice_statuses.py`
