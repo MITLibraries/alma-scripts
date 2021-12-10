@@ -189,38 +189,17 @@ def sap_invoices(ctx, dry_run, final_run):
         )
         raise click.Abort()
 
-    # For each invoice retrieved, parse and extract invoice data and save to either
-    # monograph or serial invoice list depending on purchase type. Log result.
-    monograph_invoices = []
-    serial_invoices = []
-    retrieved_vendors = {}
-    retrieved_funds = {}
-    for count, invoice_record in enumerate(invoice_records):
-        logger.info(
-            f"Extracting data for invoice #{invoice_record['id']}, "
-            f"record {count} of {len(invoice_records)}"
-        )
-        invoice_data = sap.extract_invoice_data(invoice_record)
-        vendor_code = invoice_record["vendor"]["value"]
-        try:
-            invoice_data["vendor"] = retrieved_vendors[vendor_code]
-        except KeyError:
-            logger.info(f"Retrieving data for vendor {vendor_code}")
-            retrieved_vendors[vendor_code] = sap.populate_vendor_data(
-                alma_client, vendor_code
-            )
-            invoice_data["vendor"] = retrieved_vendors[vendor_code]
-        invoice_data["funds"], retrieved_funds = sap.populate_fund_data(
-            alma_client, invoice_record, retrieved_funds
-        )
-        if invoice_data["type"] == "monograph":
-            monograph_invoices.append(invoice_data)
-        else:
-            serial_invoices.append(invoice_data)
-    logger.info(
-        f"{len(monograph_invoices)} monograph invoices retrieved and extracted."
+    # Parse retrieved invoices and extract data needed for SAP
+    parsed_invoices = sap.parse_invoice_records(alma_client, invoice_records)
+
+    # Split invoices into monographs and serials
+    monograph_invoices, serial_invoices = sap.split_invoices_by_field_value(
+        parsed_invoices, "type", "monograph", "serial"
     )
-    logger.info(f"{len(serial_invoices)} serial invoices retrieved and extracted.")
+    logger.info(
+        f"{len(monograph_invoices)} monograph invoices retrieved and parsed."
+    )
+    logger.info(f"{len(serial_invoices)} serial invoices retrieved and parsed.")
 
     # Generate next sequence numbers from SSM and create data and control file names
     monograph_data_file_name = "TODO: monos-data-file-name-from-sequence-number"
@@ -263,9 +242,45 @@ def sap_invoices(ctx, dry_run, final_run):
         logger.info("Serials email sent with message ID: %s", response["MessageId"])
 
     if final_run:
+        # Split both monograph and serial invoices by payment method
+        monograph_invoices_sap, monograph_invoices_other = sap.split_invoices_by_field_value(
+            monograph_invoices, "payment method", "ACCOUNTINGDEPARTMENT"
+        )
+        serial_invoices_sap, serial_invoices_other = sap.split_invoices_by_field_value(
+            serial_invoices, "payment method", "ACCOUNTINGDEPARTMENT"
+        )
+
+        # Calculate total amounts of invoices to be paid for monographs and serials
+        monograph_invoices_total = sap.calculate_invoices_total_amount(
+            monograph_invoices_sap
+        )
+        serial_invoices_total = sap.calculate_invoices_total_amount(
+            serial_invoices_sap
+        )
+
         # Generate data files to send to SAP
+        logger.info("Final run, generating data files")
+        monograph_data_file_contents = sap.generate_sap_data(
+            ctx.obj["today"], monograph_invoices_sap
+        )
+        serial_data_file_contents = sap.generate_sap_data(
+            ctx.obj["today"], serial_invoices_sap
+        )
+        logger.info(f"Monographs data file contents: {monograph_data_file_contents}")
+        logger.info(f"Serials data file contents: {serial_data_file_contents}")
 
         # Generate control files to send to SAP
+        logger.info("Final run, generating control files")
+        monograph_control_file_contents = sap.generate_sap_control(
+            monograph_data_file_contents, monograph_invoices_total
+        )
+        serial_control_file_contents = sap.generate_sap_control(
+            serial_data_file_contents, serial_invoices_total
+        )
+        logger.info(
+            f"Monographs control file contents: {monograph_control_file_contents}"
+        )
+        logger.info(f"Serials control file contents: {serial_control_file_contents}")
 
         if dry_run:
             # Log data and control file contents
