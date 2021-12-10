@@ -1,0 +1,180 @@
+{
+    "link": "",
+    "id": "558809630001021",
+    "number": "0501130657",
+    "invoice_date": "2001-06-06Z",
+    "invoice_due_date": "2007-06-16Z",
+    "vendor": {
+        "desc": "string",
+        "value": "VEND1"
+    },
+    "vendor_account": "ACCOUNT1",
+    "total_amount": "120",
+    "currency": {
+        "desc": "string",
+        "value": "USD"
+    },
+    "total_invoice_lines_amount": "120",
+    "vendor_contact_person": {
+        "first_name": "John",
+        "last_name": "Smith"
+    },
+    "payment_method": {
+        "desc": "string",
+        "value": "CASH"
+    },
+    "reference_number": "1234",
+    "creation_form": {
+        "desc": "string",
+        "value": "EDI"
+    },
+    "owner": {
+        "desc": "string",
+        "value": "LAW"
+    },
+    "invoice_status": {
+        "desc": "string",
+        "value": "ACTIVE"
+    },
+    "invoice_workflow_status": {
+        "desc": "string",
+        "value": "InReview"
+    },
+    "invoice_approval_status": {
+        "desc": "string",
+        "value": "PENDING"
+    },
+    "approved_by": "Smith John",
+    "approval_date": "2021-06-06Z",
+    "additional_charges": {
+        "use_pro_rata": "false",
+        "shipment": "0.00",
+        "overhead": "0.00",
+        "insurance": "0.00",
+        "discount": "0.00"
+    },
+    "invoice_vat": {
+        "report_tax": "false",
+        "vat_per_invoice_line": "false",
+        "vat_code": {
+            "desc": "string",
+            "value": "REGULAR"
+        },
+        "percentage": "17.00",
+        "vat_amount": "17.44",
+        "type": {
+            "desc": "string",
+            "value": "INCLUSIVE"
+        },
+        "expended_from_fund": "true",
+        "vendor_tax": "ILS"
+    },
+    "explicit_ratio": [
+        {
+            "foreign_currency": {
+                "desc": "string",
+                "value": "ILS"
+            },
+            "rate": "10"
+        }
+    ],
+    "payment": {
+        "prepaid": "false",
+        "internal_copy": "false",
+        "export_to_erp": "false",
+        "payment_status": {
+            "desc": "string",
+            "value": "PAID"
+        },
+        "voucher_date": "2021-07-22Z",
+        "voucher_number": "A-1234",
+        "voucher_amount": "120",
+        "voucher_currency": {
+            "desc": "string",
+            "value": "USD"
+        }
+    },
+    "alert": [
+        {
+            "desc": "string",
+            "value": "NOT_READY_LINES"
+        }
+    ],
+    "notes": [
+        {
+            "content": "This is a note",
+            "creation_date": "2019-11-10Z",
+            "created_by": "exl_api",
+            "type": "ADDRESS"
+        }
+    ],
+    "number_of_lines": {
+        "link": "string",
+        "value": "5"
+    },
+    "invoice_lines": {
+        "total_record_count": "",
+        "invoice_line": [
+            {
+                "link": "",
+                "id": "15334101100001021",
+                "type": {
+                    "desc": "string",
+                    "value": "REGULAR"
+                },
+                "number": "10",
+                "status": {
+                    "desc": "string",
+                    "value": "READY"
+                },
+                "po_line": "20",
+                "price": "50.0",
+                "price_note": "",
+                "total_price": "100.0",
+                "quantity": "10",
+                "vat_note": "",
+                "check_subscription_date_overlap": "false",
+                "fully_invoiced": "false",
+                "subscription_from_date": "2013-03-03Z",
+                "subscription_to_date": "2015-02-01Z",
+                "additional_info": "",
+                "release_remaining_encumbrance": "false",
+                "reporting_code": {
+                    "desc": "string",
+                    "value": "b"
+                },
+                "secondary_reporting_code": {
+                    "desc": "string",
+                    "value": "sso"
+                },
+                "tertiary_reporting_code": {
+                    "desc": "string",
+                    "value": "u"
+                },
+                "note": "",
+                "invoice_line_vat": {
+                    "vat_code": {
+                        "desc": "string",
+                        "value": ""
+                    },
+                    "percentage": "0.00",
+                    "vat_amount": "0"
+                },
+                "fund_distribution": [
+                    {
+                        "fund_code": {
+                            "desc": "string",
+                            "value": "SLM"
+                        },
+                        "percent": "100.00",
+                        "amount": "-40.99"
+                    }
+                ]
+            }
+        ]
+    },
+    "number_of_attachments": {
+        "link": "string",
+        "value": "3"
+    }
+}
