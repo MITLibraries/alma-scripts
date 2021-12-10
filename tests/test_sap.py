@@ -391,6 +391,12 @@ BAZ:\t12345\tFoo Bar Books\tFOOBAR
     )
 
 
+def test_email_summary_success(mocked_ses):
+    response = sap.email_summary("Summary contents", datetime(2021, 10, 1))
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
+    assert response["MessageId"]
+
+
 def test_generate_sap_control(sap_data_file):
     invoice_total = 1367.04
     sap_control = sap.generate_sap_control(sap_data_file, invoice_total)

@@ -213,12 +213,12 @@ def email_report(
 ):
     report_email = Email()
     if final:
-        subject_string = f"Coversheets – {report_type}s - {date.strftime('%Y%M%D')}"
+        subject_string = f"Coversheets - {report_type}s - {date.strftime('%Y%m%d')}"
         attachment_name = (
             f"cover_sheets_{report_type}_{date.strftime('%Y%m%d%H%M%S')}.txt"
         )
     else:
-        subject_string = f"Review Report – {report_type}s - {date.strftime('%Y%M%D')}"
+        subject_string = f"Review Report - {report_type}s - {date.strftime('%Y%m%d')}"
         attachment_name = (
             f"review_{report_type}_report_{date.strftime('%Y%m%d%H%M%S')}.txt"
         )
@@ -367,6 +367,20 @@ def generate_summary(
     summary += "Authorized signature __________________________________\n\n\n"
     summary += f"{excluded_invoices}"
     return summary
+
+
+def email_summary(summary: str, date: datetime):
+    subject_string = f"Libraries invoice feed {date.strftime('%Y%m%d')}"
+    summary_email = Email()
+    summary_email.populate(
+        from_address=CONFIG.SES_SEND_FROM_EMAIL,
+        to_addresses=CONFIG.SAP_SUMMARY_RECIPIENT_EMAILS,
+        reply_to=CONFIG.SAP_REPLY_TO_EMAIL,
+        subject=subject_string,
+        body=summary,
+    )
+    response = summary_email.send()
+    return response
 
 
 def generate_sap_control(sap_data_file: str, invoice_total: float) -> str:
