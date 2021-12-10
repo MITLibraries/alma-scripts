@@ -4,7 +4,7 @@ import collections
 import json
 import logging
 from datetime import datetime
-from typing import List, Literal, Tuple
+from typing import List, Literal, Optional, Tuple
 
 from llama import CONFIG
 from llama.alma import Alma_API_Client
@@ -25,6 +25,35 @@ def retrieve_sorted_invoices(alma_client):
     """
     data = list(alma_client.get_invoices_by_status("Waiting to be Sent"))
     return sorted(data, key=lambda i: (i["vendor"].get("value", 0), i.get("number", 0)))
+
+
+def parse_invoice_records(
+    alma_client: Alma_API_Client, invoice_records: List[dict]
+) -> List[dict]:
+    """Parse a list of invoice records from Alma and return extracted SAP data."""
+    parsed_invoices = []
+    retrieved_vendors = {}
+    retrieved_funds = {}
+    for count, invoice_record in enumerate(invoice_records):
+        logger.debug(
+            f"Extracting data for invoice {invoice_record['id']}, "
+            f"record {count} of {len(invoice_records)}"
+        )
+        invoice_data = extract_invoice_data(invoice_record)
+        vendor_code = invoice_record["vendor"]["value"]
+        try:
+            invoice_data["vendor"] = retrieved_vendors[vendor_code]
+        except KeyError:
+            logger.debug(f"Retrieving data for vendor {vendor_code}")
+            retrieved_vendors[vendor_code] = populate_vendor_data(
+                alma_client, vendor_code
+            )
+            invoice_data["vendor"] = retrieved_vendors[vendor_code]
+        invoice_data["funds"], retrieved_funds = populate_fund_data(
+            alma_client, invoice_record, retrieved_funds
+        )
+        parsed_invoices.append(invoice_data)
+    return parsed_invoices
 
 
 def extract_invoice_data(invoice_record: dict) -> dict:
@@ -161,6 +190,31 @@ def populate_fund_data(
             invoice_lines_total += amount
     fund_data = collections.OrderedDict(sorted(fund_data.items()))
     return fund_data, retrieved_funds
+
+
+def split_invoices_by_field_value(
+    invoices: List[dict],
+    field: str,
+    first_value: str,
+    second_value: Optional[str] = None,
+) -> List[dict]:
+    """Split a list of parsed invoices into two based on an invoice field's value.
+
+    Returns two lists, one of invoice dicts with the first value in the provided
+    field, and another of invoice dicts with the second value in the provided field. If
+    no second value is provided, the second list returned includes all invoices with
+    anything other than the first value in the field.
+    """
+    invoices_with_first_value = []
+    invoices_with_second_value = []
+    for invoice in invoices:
+        if invoice[field] == first_value:
+            invoices_with_first_value.append(invoice)
+        elif second_value is not None and invoice[field] == second_value:
+            invoices_with_second_value.append(invoice)
+        elif second_value is None:
+            invoices_with_second_value.append(invoice)
+    return invoices_with_first_value, invoices_with_second_value
 
 
 def generate_report(today: datetime, invoices: List[dict]) -> str:
@@ -436,3 +490,10 @@ def update_sap_sequence(
         CONFIG.SSM_PATH + "SAP_SEQUENCE", new_sap_sequence, "StringList"
     )
     return response
+
+
+def calculate_invoices_total_amount(invoices: List[dict]) -> float:
+    total_amount = 0
+    for invoice in invoices:
+        total_amount += float(invoice["total amount"])
+    return total_amount
