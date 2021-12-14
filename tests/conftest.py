@@ -213,6 +213,11 @@ def mocked_ssm(aws_credentials):
             Value="sentry_123456",
             Type="SecureString",
         )
+        ssm.put_parameter(
+            Name="/test/example/SAP_SEQUENCE",
+            Value="1001,20210722000000,ser",
+            Type="StringList",
+        )
         yield ssm
 
 

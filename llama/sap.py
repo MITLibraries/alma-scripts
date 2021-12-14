@@ -9,6 +9,7 @@ from typing import List, Literal, Tuple
 from llama import CONFIG
 from llama.alma import Alma_API_Client
 from llama.email import Email
+from llama.ssm import SSM
 
 logger = logging.getLogger(__name__)
 
@@ -413,3 +414,25 @@ def generate_sap_control(sap_data_file: str, invoice_total: float) -> str:
     sap_control_file += "\n"
 
     return sap_control_file
+
+
+def generate_next_sap_sequence_number() -> str:
+    """Get the current SAP sequence parameter from SSM and return only the sequence
+    number incremented by 1."""
+    ssm = SSM()
+    sap_sequence_parameter = ssm.get_parameter_value(CONFIG.SSM_PATH + "SAP_SEQUENCE")
+    split_parameter = sap_sequence_parameter.split(",")
+    return str(int(split_parameter[0]) + 1)
+
+
+def update_sap_sequence(
+    sap_sequence_number: str, date: datetime, sequence_type: str
+) -> str:
+    """Update SAP sequence and post it to SSM Parameter Store."""
+    ssm = SSM()
+    date_string = date.strftime("%Y%m%d").ljust(14, "0")
+    new_sap_sequence = f"{sap_sequence_number},{date_string},{sequence_type}"
+    response = ssm.update_parameter_value(
+        CONFIG.SSM_PATH + "SAP_SEQUENCE", new_sap_sequence, "StringList"
+    )
+    return response

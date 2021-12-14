@@ -1,6 +1,17 @@
 from llama.ssm import SSM
 
 
+def test_initialize_ssm_without_endpoint_url():
+    ssm = SSM()
+    assert ssm.client.meta.endpoint_url == "https://ssm.us-east-1.amazonaws.com"
+
+
+def test_initialize_ssm_with_endpoint_url(monkeypatch):
+    monkeypatch.setenv("SSM_ENDPOINT_URL", "http://example.com")
+    ssm = SSM()
+    assert ssm.client.meta.endpoint_url == "http://example.com"
+
+
 def test_ssm_get_parameter_value(mocked_ssm):
     ssm = SSM()
     parameter_value = ssm.get_parameter_value("/test/example/ALMA_API_ACQ_READ_KEY")

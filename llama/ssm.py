@@ -1,4 +1,9 @@
+import logging
+import os
+
 from boto3 import client
+
+logger = logging.getLogger(__name__)
 
 
 class SSM:
@@ -6,7 +11,15 @@ class SSM:
     functionality necessary for llama scripts"""
 
     def __init__(self):
-        self.client = client("ssm", region_name="us-east-1")
+        endpoint_from_env = os.getenv("SSM_ENDPOINT_URL")
+        self.client = client(
+            "ssm",
+            region_name="us-east-1",
+            endpoint_url=endpoint_from_env if endpoint_from_env else None,
+        )
+        logger.info(
+            f"Initializing SSM client with endpoint: {self.client.meta.endpoint_url}"
+        )
 
     def get_parameter_history(self, parameter_key):
         """Get parameter history based on the specified key."""

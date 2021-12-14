@@ -67,40 +67,19 @@ def test_load_other_env_config_success():
     assert config.SENTRY_DSN is None
 
 
-def test_get_env_success():
-    env = Config.get_env()
+def test_get_required_env_variable_success():
+    env = Config.get_required_env_variable("WORKSPACE")
     assert env == "test"
 
 
-def test_get_env_without_workspace_raises_error(monkeypatch):
+def test_get_required_env_variable_raises_error(monkeypatch):
     monkeypatch.delenv("WORKSPACE", raising=False)
     with pytest.raises(Exception) as e:
-        Config.get_env()
+        Config.get_required_env_variable("WORKSPACE")
     assert str(e.value) == (
         "Env variable 'WORKSPACE' is required in all environments, please set it and "
         "try again."
     )
-
-
-def test_get_ssm_path_success():
-    ssm_path = Config.get_ssm_path("whatever")
-    assert ssm_path == "/test/example/"
-
-
-def test_get_ssm_path_raises_error_in_prod_stage(monkeypatch):
-    monkeypatch.delenv("SSM_PATH", raising=False)
-    with pytest.raises(Exception) as e:
-        Config.get_ssm_path("stage")
-    assert str(e.value) == (
-        "Env variable 'SSM_PATH' is required in the stage environment, please set it "
-        "and try again."
-    )
-
-
-def test_get_ssm_path_returns_none_if_not_set_in_non_prod_stage_env(monkeypatch):
-    monkeypatch.delenv("SSM_PATH", raising=False)
-    ssm_path = Config.get_ssm_path("whatever")
-    assert ssm_path is None
 
 
 def test_check_sentry_raises_error():

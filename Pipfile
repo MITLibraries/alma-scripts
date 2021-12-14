@@ -13,6 +13,7 @@ python-dateutil = "*"
 requests = "*"
 s3-concat = "*"
 sentry-sdk = "*"
+moto = {extras = ["server"], version = "*"}
 
 [dev-packages]
 bandit = "*"
