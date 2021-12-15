@@ -218,16 +218,50 @@ def sap_invoices(ctx, dry_run, final_run):
             "Serials report email sent with message ID: %s", response["MessageId"]
         )
 
-    # If final run:
-    # Generate data files to send to SAP (updating sequence numbers from SSM in the
-    # process
-    # Generate control files to send to SAP
-    # Generate summary files
+    if final_run:
+        # Generate next sequence numbers from SSM and create data and control file names
+        monograph_data_file_name = "TODO: monos-data-file-name-from-sequence-number"
+        serial_data_file_name = "TODO: serials-data-file-name-from-sequence-number"
+        monograph_control_file_name = (
+            "TODO: monos-control-file-name-from-sequence-number"
+        )
+        serial_control_file_name = (
+            "TODO: serials-control-file-name-from-sequence-number"
+        )
 
-    # If not dry run:
-    # Send data and control files to SAP dropbox via SFTP
-    # Email summary files
-    # Update invoice statuses in Alma
+        # Generate data files to send to SAP
+
+        # Generate control files to send to SAP
+
+        # Generate summary files
+        logger.info("Final run, generating summary files")
+        monograph_summary = sap.generate_summary(
+            monograph_invoices, monograph_data_file_name, monograph_control_file_name
+        )
+        serial_summary = sap.generate_summary(
+            serial_invoices, serial_data_file_name, serial_control_file_name
+        )
+
+        if dry_run:
+            logger.info(f"Monographs summary:\n{monograph_summary}")
+            logger.info(f"Serials summary:\n{serial_summary}")
+        else:
+            # Send data and control files to SAP dropbox via SFTP
+
+            # Update sequence numbers in SSM
+
+            # Email summary files
+            response = sap.email_summary(monograph_summary, ctx.obj["today"])
+            logger.info(
+                "Monographs summary email sent with message ID: %s",
+                response["MessageId"],
+            )
+            response = sap.email_summary(serial_summary, ctx.obj["today"])
+            logger.info(
+                "Serials summary email sent with message ID: %s", response["MessageId"]
+            )
+
+            # Update invoice statuses in Alma
 
     run_type = "final" if final_run else "review"
     logger.info(
