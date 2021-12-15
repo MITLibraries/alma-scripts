@@ -146,21 +146,28 @@ def create_sandbox_sap_data(ctx):
 
 @cli.command()
 @click.option(
-    "--dry-run",
-    is_flag=True,
-    help="If dry-run flag is passed, files will not be emailed or sent to SAP, instead "
-    "their contents will be logged for review. Invoices will also not be marked as "
-    "paid in Alma. Can be used with the final-run flag to do a dry run of the entire "
-    "process, or without the final-run flag to only dry run the creation of review "
-    "reports.",
-)
-@click.option(
     "--final-run",
     is_flag=True,
-    help="Flag to indicate this is a final run and files should be submitted to SAP.",
+    help="Flag to indicate this is a final run and should include all steps of the "
+    "process. Default if this flag is not passed is to do a review run, which only "
+    "creates and sends summary and report files for review by stakeholders. Note: some "
+    "steps of a final run will not be completed unless the '--real-run' flag is also "
+    "passed, however that will write data to external systems and should thus be used "
+    "with caution. See '--real-run' option documentation for details.",
+)
+@click.option(
+    "--real-run",
+    "-r",
+    is_flag=True,
+    help="USE WITH CAUTION. If '--real-run' flag is passed, files will be emailed "
+    "to stakeholders and, if the '--final-run' flag is also passed, invoices will be "
+    "sent to SAP and marked as paid in Alma. If this flag is not passed, this command "
+    "defaults to a dry run, in which files will not be emailed or sent to SAP, instead "
+    "their contents will be logged for review, and invoices will also not be marked as "
+    "paid in Alma."
 )
 @click.pass_context
-def sap_invoices(ctx, dry_run, final_run):
+def sap_invoices(ctx, final_run, real_run):
     """Process invoices for payment via SAP.
 
     Retrieves "Waiting to be sent" invoices from Alma, extracts and formats data
@@ -172,8 +179,8 @@ def sap_invoices(ctx, dry_run, final_run):
     logger.info(
         f"Starting SAP invoices process with options:\n"
         f"    Date: {ctx.obj['today']}\n"
-        f"    Dry run: {dry_run}\n"
         f"    Final run: {final_run}\n"
+        f"    Real run: {real_run}\n"
     )
 
     # Retrieve and sort invoices from Alma. Log result or abort process if no invoices
@@ -196,9 +203,7 @@ def sap_invoices(ctx, dry_run, final_run):
     monograph_invoices, serial_invoices = sap.split_invoices_by_field_value(
         parsed_invoices, "type", "monograph", "serial"
     )
-    logger.info(
-        f"{len(monograph_invoices)} monograph invoices retrieved and parsed."
-    )
+    logger.info(f"{len(monograph_invoices)} monograph invoices retrieved and parsed.")
     logger.info(f"{len(serial_invoices)} serial invoices retrieved and parsed.")
 
     # Generate next sequence numbers from SSM and create data and control file names
@@ -221,29 +226,12 @@ def sap_invoices(ctx, dry_run, final_run):
     monograph_report = sap.generate_report(ctx.obj["today"], monograph_invoices)
     serial_report = sap.generate_report(ctx.obj["today"], serial_invoices)
 
-    # Log summaries and reports if dry run, otherwise send mono and serial emails with
-    # summary in body and report as attachment (email recipient, subject, and
-    # attachment file name differ for review vs. final run)
-    if dry_run:
-        logger.info(f"Monographs summary:\n{monograph_summary}")
-        logger.info(f"Monographs report:\n{monograph_report}")
-        logger.info(f"Serials summary:\n{serial_summary}")
-        logger.info(f"Serials report:\n{serial_report}")
-    else:
-        email = sap.generate_sap_report_email(
-            monograph_summary, monograph_report, "mono", ctx.obj["today"], final_run
-        )
-        response = email.send()
-        logger.info("Monographs email sent with message ID: %s", response["MessageId"])
-        email = sap.generate_sap_report_email(
-            serial_summary, serial_report, "serial", ctx.obj["today"], final_run
-        )
-        response = email.send()
-        logger.info("Serials email sent with message ID: %s", response["MessageId"])
-
     if final_run:
         # Split both monograph and serial invoices by payment method
-        monograph_invoices_sap, monograph_invoices_other = sap.split_invoices_by_field_value(
+        (
+            monograph_invoices_sap,
+            monograph_invoices_other,
+        ) = sap.split_invoices_by_field_value(
             monograph_invoices, "payment method", "ACCOUNTINGDEPARTMENT"
         )
         serial_invoices_sap, serial_invoices_other = sap.split_invoices_by_field_value(
@@ -254,9 +242,7 @@ def sap_invoices(ctx, dry_run, final_run):
         monograph_invoices_total = sap.calculate_invoices_total_amount(
             monograph_invoices_sap
         )
-        serial_invoices_total = sap.calculate_invoices_total_amount(
-            serial_invoices_sap
-        )
+        serial_invoices_total = sap.calculate_invoices_total_amount(serial_invoices_sap)
 
         # Generate data files to send to SAP
         logger.info("Final run, generating data files")
@@ -282,16 +268,31 @@ def sap_invoices(ctx, dry_run, final_run):
         )
         logger.info(f"Serials control file contents: {serial_control_file_contents}")
 
-        if dry_run:
-            # Log data and control file contents
-            pass
-        else:
+        if real_run:
             # Send data and control files to SAP dropbox via SFTP
 
-            # Update sequence numbers in SSM
+            # IF send was successful, update sequence numbers in SSM
 
-            # Update invoice statuses in Alma
+            # IF send was successful, update invoice statuses in Alma
             pass
+
+    # If real run, send email with reports as attachments, otherwise log them
+    if real_run:
+        email = sap.generate_sap_report_email(
+            monograph_summary, monograph_report, "mono", ctx.obj["today"], final_run
+        )
+        response = email.send()
+        logger.info("Monographs email sent with message ID: %s", response["MessageId"])
+        email = sap.generate_sap_report_email(
+            serial_summary, serial_report, "serial", ctx.obj["today"], final_run
+        )
+        response = email.send()
+        logger.info("Serials email sent with message ID: %s", response["MessageId"])
+    else:
+        logger.info(f"Monographs summary:\n{monograph_summary}")
+        logger.info(f"Monographs report:\n{monograph_report}")
+        logger.info(f"Serials summary:\n{serial_summary}")
+        logger.info(f"Serials report:\n{serial_report}")
 
     run_type = "final" if final_run else "review"
     logger.info(
