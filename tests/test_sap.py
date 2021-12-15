@@ -275,10 +275,34 @@ Payment Method:  ACCOUNTINGDEPARTMENT
     )
 
 
-def test_email_report_success(mocked_ses):
-    response = sap.email_report("Report contents", "mono", datetime(2021, 10, 1), False)
-    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
-    assert response["MessageId"]
+def test_generate_sap_report_email_final_run():
+    email = sap.generate_sap_report_email(
+        "Summary contents", "Report contents", "mono", datetime(2021, 10, 1), True
+    )
+    assert email["From"] == "from@example.com"
+    assert email["To"] == "final_1@example.com, final_2@example.com"
+    assert email["Subject"] == "Libraries invoice feed - monos - 20211001"
+    assert email["Reply-To"] == "replyto@example.com"
+    assert email.get_content_type() == "multipart/mixed"
+    assert email.get_body().get_content() == "Summary contents\n"
+    attachment = next(email.iter_attachments())
+    assert attachment.get_filename() == "cover_sheets_mono_20211001000000.txt"
+    assert attachment.get_content() == "Report contents\n"
+
+
+def test_generate_sap_report_email_review_run():
+    email = sap.generate_sap_report_email(
+        "Summary contents", "Report contents", "serial", datetime(2021, 10, 1), False
+    )
+    assert email["From"] == "from@example.com"
+    assert email["To"] == "review@example.com"
+    assert email["Subject"] == "REVIEW libraries invoice feed - serials - 20211001"
+    assert email["Reply-To"] == "replyto@example.com"
+    assert email.get_content_type() == "multipart/mixed"
+    assert email.get_body().get_content() == "Summary contents\n"
+    attachment = next(email.iter_attachments())
+    assert attachment.get_filename() == "review_serial_report_20211001000000.txt"
+    assert attachment.get_content() == "Report contents\n"
 
 
 def test_format_address_street_1_line():
@@ -389,12 +413,6 @@ Authorized signature __________________________________
 BAZ:\t12345\tFoo Bar Books\tFOOBAR
 """
     )
-
-
-def test_email_summary_success(mocked_ses):
-    response = sap.email_summary("Summary contents", datetime(2021, 10, 1))
-    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
-    assert response["MessageId"]
 
 
 def test_generate_sap_control(sap_data_file):
