@@ -497,3 +497,70 @@ def calculate_invoices_total_amount(invoices: List[dict]) -> float:
     for invoice in invoices:
         total_amount += float(invoice["total amount"])
     return total_amount
+
+
+def run(
+    invoices: List[dict],
+    invoices_type: Literal["monograph", "serial"],
+    date: datetime,
+    final_run: bool,
+    real_run: bool,
+):
+    data_file_name = "TODO: data-file-name-from-sequence-number"
+    control_file_name = "TODO: control-file-name-from-sequence-number"
+
+    logger.info(f"Generating {invoices_type}s summary")
+    summary = generate_summary(invoices, data_file_name, control_file_name)
+
+    logger.info(f"Generating {invoices_type}s report")
+    report = generate_report(date, invoices)
+
+    sap_invoices, other_payment_invoices = split_invoices_by_field_value(
+        invoices, "payment method", "ACCOUNTINGDEPARTMENT"
+    )
+
+    if final_run:
+        sap_invoices_total_amount = calculate_invoices_total_amount(sap_invoices)
+
+        logger.info("Final run, generating files for SAP")
+        data_file_contents = generate_sap_data(date, sap_invoices)
+        control_file_contents = generate_sap_control(
+            data_file_contents, sap_invoices_total_amount
+        )
+        logger.info(
+            f"{invoices_type.title()}s data file contents:\n{data_file_contents}"
+        )
+        logger.info(
+            f"{invoices_type.title()}s control file contents:\n{control_file_contents}"
+        )
+
+        if real_run:
+            # Send data and control files to SAP dropbox via SFTP
+
+            # IF send was successful, update sequence numbers in SSM
+
+            # IF send was successful, update invoice statuses in Alma
+            pass
+
+    if real_run:
+        email = generate_sap_report_email(
+            summary,
+            report,
+            "mono" if invoices_type == "monograph" else invoices_type,
+            date,
+            final_run,
+        )
+        response = email.send()
+        logger.info(
+            f"{invoices_type.title()}s email sent with message ID: "
+            f"{response['MessageId']}"
+        )
+    else:
+        logger.info(f"{invoices_type.title()}s summary:\n{summary}\n")
+        logger.info(f"{invoices_type.title()}s report:\n{report}\n")
+
+    return {
+        "total invoices": len(invoices),
+        "sap invoices": len(sap_invoices),
+        "other invoices": len(other_payment_invoices),
+    }
