@@ -208,29 +208,40 @@ def generate_report(today: datetime, invoices: List[dict]) -> str:
     return report
 
 
-def email_report(
-    report: str, report_type: Literal["mono", "serial"], date: datetime, final: bool
+def generate_sap_report_email(
+    summary: str,
+    report: str,
+    purchase_type: Literal["mono", "serial"],
+    date: datetime,
+    final: bool,
 ):
     report_email = Email()
     if final:
-        subject_string = f"Coversheets - {report_type}s - {date.strftime('%Y%m%d')}"
+        recipients = CONFIG.SAP_FINAL_RECIPIENT_EMAILS
+        subject_string = (
+            f"Libraries invoice feed - {purchase_type}s - {date.strftime('%Y%m%d')}"
+        )
         attachment_name = (
-            f"cover_sheets_{report_type}_{date.strftime('%Y%m%d%H%M%S')}.txt"
+            f"cover_sheets_{purchase_type}_{date.strftime('%Y%m%d%H%M%S')}.txt"
         )
     else:
-        subject_string = f"Review Report - {report_type}s - {date.strftime('%Y%m%d')}"
+        recipients = CONFIG.SAP_REVIEW_RECIPIENT_EMAILS
+        subject_string = (
+            f"REVIEW libraries invoice feed - {purchase_type}s - "
+            f"{date.strftime('%Y%m%d')}"
+        )
         attachment_name = (
-            f"review_{report_type}_report_{date.strftime('%Y%m%d%H%M%S')}.txt"
+            f"review_{purchase_type}_report_{date.strftime('%Y%m%d%H%M%S')}.txt"
         )
     report_email.populate(
         from_address=CONFIG.SES_SEND_FROM_EMAIL,
-        to_addresses=CONFIG.SAP_REPORT_RECIPIENT_EMAILS,
+        to_addresses=recipients,
         reply_to=CONFIG.SAP_REPLY_TO_EMAIL,
         subject=subject_string,
+        body=summary,
         attachments=[{"content": report, "filename": attachment_name}],
     )
-    response = report_email.send()
-    return response
+    return report_email
 
 
 def format_address_for_sap(address_lines: List):
@@ -367,20 +378,6 @@ def generate_summary(
     summary += "Authorized signature __________________________________\n\n\n"
     summary += f"{excluded_invoices}"
     return summary
-
-
-def email_summary(summary: str, date: datetime):
-    subject_string = f"Libraries invoice feed {date.strftime('%Y%m%d')}"
-    summary_email = Email()
-    summary_email.populate(
-        from_address=CONFIG.SES_SEND_FROM_EMAIL,
-        to_addresses=CONFIG.SAP_SUMMARY_RECIPIENT_EMAILS,
-        reply_to=CONFIG.SAP_REPLY_TO_EMAIL,
-        subject=subject_string,
-        body=summary,
-    )
-    response = summary_email.send()
-    return response
 
 
 def generate_sap_control(sap_data_file: str, invoice_total: float) -> str:

@@ -193,75 +193,61 @@ def sap_invoices(ctx, dry_run, final_run):
     )
     logger.info(f"{len(serial_invoices)} serial invoices retrieved and extracted.")
 
-    # Generate formatted reports for review
-    logger.info("Generating monographs report")
+    # Generate next sequence numbers from SSM and create data and control file names
+    monograph_data_file_name = "TODO: monos-data-file-name-from-sequence-number"
+    serial_data_file_name = "TODO: serials-data-file-name-from-sequence-number"
+    monograph_control_file_name = "TODO: monos-control-file-name-from-sequence-number"
+    serial_control_file_name = "TODO: serials-control-file-name-from-sequence-number"
+
+    # Generate summaries
+    logger.info("Generating summaries")
+    monograph_summary = sap.generate_summary(
+        monograph_invoices, monograph_data_file_name, monograph_control_file_name
+    )
+    serial_summary = sap.generate_summary(
+        serial_invoices, serial_data_file_name, serial_control_file_name
+    )
+
+    # Generate formatted reports
+    logger.info("Generating reports")
     monograph_report = sap.generate_report(ctx.obj["today"], monograph_invoices)
-    logger.info("Generating serials report")
     serial_report = sap.generate_report(ctx.obj["today"], serial_invoices)
 
-    # Log reports if dry run, otherwise send email with reports as attachments (email
-    # subject and attachment file name differ for review vs. final run)
+    # Log summaries and reports if dry run, otherwise send mono and serial emails with
+    # summary in body and report as attachment (email recipient, subject, and
+    # attachment file name differ for review vs. final run)
     if dry_run:
-        logger.info(f"Monograph report:\n{monograph_report}")
+        logger.info(f"Monographs summary:\n{monograph_summary}")
+        logger.info(f"Monographs report:\n{monograph_report}")
+        logger.info(f"Serials summary:\n{serial_summary}")
         logger.info(f"Serials report:\n{serial_report}")
     else:
-        response = sap.email_report(
-            monograph_report, "mono", ctx.obj["today"], final_run
+        email = sap.generate_sap_report_email(
+            monograph_summary, monograph_report, "mono", ctx.obj["today"], final_run
         )
-        logger.info(
-            "Monographs report email sent with message ID: %s", response["MessageId"]
+        response = email.send()
+        logger.info("Monographs email sent with message ID: %s", response["MessageId"])
+        email = sap.generate_sap_report_email(
+            serial_summary, serial_report, "serial", ctx.obj["today"], final_run
         )
-        response = sap.email_report(
-            serial_report, "serial", ctx.obj["today"], final_run
-        )
-        logger.info(
-            "Serials report email sent with message ID: %s", response["MessageId"]
-        )
+        response = email.send()
+        logger.info("Serials email sent with message ID: %s", response["MessageId"])
 
     if final_run:
-        # Generate next sequence numbers from SSM and create data and control file names
-        monograph_data_file_name = "TODO: monos-data-file-name-from-sequence-number"
-        serial_data_file_name = "TODO: serials-data-file-name-from-sequence-number"
-        monograph_control_file_name = (
-            "TODO: monos-control-file-name-from-sequence-number"
-        )
-        serial_control_file_name = (
-            "TODO: serials-control-file-name-from-sequence-number"
-        )
-
         # Generate data files to send to SAP
 
         # Generate control files to send to SAP
 
-        # Generate summary files
-        logger.info("Final run, generating summary files")
-        monograph_summary = sap.generate_summary(
-            monograph_invoices, monograph_data_file_name, monograph_control_file_name
-        )
-        serial_summary = sap.generate_summary(
-            serial_invoices, serial_data_file_name, serial_control_file_name
-        )
-
         if dry_run:
-            logger.info(f"Monographs summary:\n{monograph_summary}")
-            logger.info(f"Serials summary:\n{serial_summary}")
+            # Log data and control file contents
+            pass
         else:
             # Send data and control files to SAP dropbox via SFTP
 
             # Update sequence numbers in SSM
 
-            # Email summary files
-            response = sap.email_summary(monograph_summary, ctx.obj["today"])
-            logger.info(
-                "Monographs summary email sent with message ID: %s",
-                response["MessageId"],
-            )
-            response = sap.email_summary(serial_summary, ctx.obj["today"])
-            logger.info(
-                "Serials summary email sent with message ID: %s", response["MessageId"]
-            )
-
             # Update invoice statuses in Alma
+            pass
 
     run_type = "final" if final_run else "review"
     logger.info(
