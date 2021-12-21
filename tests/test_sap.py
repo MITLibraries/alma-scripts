@@ -5,6 +5,7 @@ from datetime import datetime
 import pytest
 
 from llama import sap
+from llama.ssm import SSM
 
 
 def test_retrieve_sorted_invoices(mocked_alma, mocked_alma_api_client):
@@ -425,3 +426,27 @@ def test_generate_sap_control(sap_data_file):
     assert sap_control[72:92] == "00000000000000136704"
     assert sap_control[92:112] == "00100100000000000000"
     assert len(sap_control.encode("utf-8")) == 113
+
+
+def test_generate_next_sap_sequence_number(mocked_ssm):
+    ssm = SSM()
+    assert (
+        ssm.get_parameter_value("/test/example/SAP_SEQUENCE")
+        == "1001,20210722000000,ser"
+    )
+    new_sap_sequence = sap.generate_next_sap_sequence_number()
+    assert new_sap_sequence == "1002"
+
+
+def test_update_sap_sequence(mocked_ssm):
+    ssm = SSM()
+    assert (
+        ssm.get_parameter_value("/test/example/SAP_SEQUENCE")
+        == "1001,20210722000000,ser"
+    )
+    response = sap.update_sap_sequence("1002", datetime(2021, 7, 23), "mono")
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
+    assert (
+        ssm.get_parameter_value("/test/example/SAP_SEQUENCE")
+        == "1002,20210723000000,mono"
+    )

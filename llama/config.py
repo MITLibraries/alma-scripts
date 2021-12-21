@@ -27,10 +27,10 @@ SSM_ENVS = ("prod", "stage")
 
 class Config:
     def __init__(self):
-        self.ENV = self.get_env()
+        self.ENV = self.get_required_env_variable("WORKSPACE")
         print(f"Loading llama config settings for env: {self.ENV}")
 
-        self.SSM_PATH = self.get_ssm_path(self.ENV)
+        self.SSM_PATH = self.get_required_env_variable("SSM_PATH")
         self.ssm_safety_check()
 
         self._set_attributes()
@@ -41,8 +41,8 @@ class Config:
             )
         if self.missing_values():
             print(
-                "LLAMA config is missing config values, set if needed: %s",
-                self.missing_values(),
+                "LLAMA config is missing config values, set if needed: "
+                f"{self.missing_values()}"
             )
 
     def _set_attributes(self):
@@ -61,26 +61,14 @@ class Config:
                 setattr(self, key, os.getenv(value))
 
     @staticmethod
-    def get_env():
+    def get_required_env_variable(variable_name: str) -> None:
         try:
-            return os.environ["WORKSPACE"]
+            return os.environ[variable_name]
         except KeyError as e:
             raise Exception(
-                "Env variable 'WORKSPACE' is required in all environments, please set "
-                "it and try again."
+                f"Env variable '{variable_name}' is required in all environments, "
+                "please set it and try again."
             ) from e
-
-    @staticmethod
-    def get_ssm_path(env):
-        try:
-            return os.environ["SSM_PATH"]
-        except KeyError as e:
-            if env in SSM_ENVS:
-                raise Exception(
-                    f"Env variable 'SSM_PATH' is required in the {env} "
-                    "environment, please set it and try again."
-                ) from e
-        return None
 
     def check_sentry(self):
         if self.SENTRY_DSN:
@@ -112,9 +100,8 @@ class Config:
         )
 
     def ssm_safety_check(self):
-        if self.SSM_PATH is not None:
-            if "prod" in self.SSM_PATH and self.ENV != "prod":
-                raise Exception(
-                    "Production SSM_PATH may ONLY be used in the production "
-                    "environment. Check your env variables and try again."
-                )
+        if "prod" in self.SSM_PATH and self.ENV != "prod":
+            raise Exception(
+                "Production SSM_PATH may ONLY be used in the production "
+                "environment. Check your env variables and try again."
+            )
