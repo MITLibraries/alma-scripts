@@ -159,7 +159,7 @@ def test_create_sandbox_sap_data(mocked_alma_sample_data, runner):
     assert result.exit_code == 0
 
 
-def test_sap_invoices_review_run(runner, mocked_alma, mocked_ses):
+def test_sap_invoices_review_run(runner, mocked_alma, mocked_ses, mocked_ssm):
     result = runner.invoke(cli, ["sap-invoices"])
     assert result.exit_code == 0
 
@@ -169,16 +169,16 @@ def test_sap_invoices_review_run_no_invoices(runner, mocked_alma_no_invoices):
     assert result.exit_code == 1
 
 
-def test_sap_invoices_review_run_real_run(runner, mocked_alma, mocked_ses):
+def test_sap_invoices_review_run_real_run(runner, mocked_alma, mocked_ses, mocked_ssm):
     result = runner.invoke(cli, ["sap-invoices", "--real-run"])
     assert result.exit_code == 0
 
 
-def test_sap_invoices_final_run(runner, mocked_alma):
+def test_sap_invoices_final_run(runner, mocked_alma, mocked_ssm):
     result = runner.invoke(cli, ["sap-invoices", "--final-run"])
     assert result.exit_code == 0
 
 
-def test_sap_invoices_final_run_real_run(runner, mocked_alma, mocked_ses):
+def test_sap_invoices_final_run_real_run(runner, mocked_alma, mocked_ses, mocked_ssm):
     result = runner.invoke(cli, ["sap-invoices", "--final-run", "--real-run"])
     assert result.exit_code == 0

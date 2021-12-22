@@ -35,7 +35,7 @@ def parse_invoice_records(
     retrieved_vendors = {}
     retrieved_funds = {}
     for count, invoice_record in enumerate(invoice_records):
-        logger.debug(
+        logger.info(
             f"Extracting data for invoice {invoice_record['id']}, "
             f"record {count} of {len(invoice_records)}"
         )
@@ -173,7 +173,7 @@ def populate_fund_data(
             try:
                 fund_record = retrieved_funds[fund_code]
             except KeyError:
-                logger.info(f"Retrieving data for fund {fund_code}")
+                logger.debug(f"Retrieving data for fund {fund_code}")
                 retrieved_funds[fund_code] = alma_client.get_fund_by_code(fund_code)
                 fund_record = retrieved_funds[fund_code]
             external_id = fund_record["fund"][0]["external_id"].strip()
@@ -499,15 +499,26 @@ def calculate_invoices_total_amount(invoices: List[dict]) -> float:
     return total_amount
 
 
+def generate_sap_file_names(sequence_number: str, date: datetime) -> (str, str):
+    date_string = date.strftime("%Y%m%d000000")
+    data_file_name = f"dlibsapg.{sequence_number}.{date_string}"
+    control_file_name = f"clibsapg.{sequence_number}.{date_string}"
+    return data_file_name, control_file_name
+
+
 def run(
     invoices: List[dict],
     invoices_type: Literal["monograph", "serial"],
+    sap_sequence_number: str,
     date: datetime,
     final_run: bool,
     real_run: bool,
 ):
-    data_file_name = "TODO: data-file-name-from-sequence-number"
-    control_file_name = "TODO: control-file-name-from-sequence-number"
+    logger.info(f"Starting file generation process for {invoices_type} run")
+    data_file_name, control_file_name = generate_sap_file_names(
+        sap_sequence_number, date
+    )
+    logger.info(f"Generated next SAP file names: {data_file_name}, {control_file_name}")
 
     logger.info(f"Generating {invoices_type}s summary")
     summary = generate_summary(invoices, data_file_name, control_file_name)
@@ -538,6 +549,12 @@ def run(
             # Send data and control files to SAP dropbox via SFTP
 
             # IF send was successful, update sequence numbers in SSM
+            logger.info("Real run, updating SAP sequence in Parameter Store")
+            update_sap_sequence(
+                sap_sequence_number,
+                date,
+                "mono" if invoices_type == "monograph" else "ser",
+            )
 
             # IF send was successful, update invoice statuses in Alma
             pass
