@@ -206,11 +206,23 @@ def sap_invoices(ctx, final_run, real_run):
     logger.info(f"{len(serial_invoices)} serial invoices retrieved and parsed.")
 
     # Do the SAP run for monograph invoices, then serial invoices
+    monograph_sequence_number = sap.generate_next_sap_sequence_number()
+    serial_sequence_number = str(int(monograph_sequence_number) + 1)
     monograph_result = sap.run(
-        monograph_invoices, "monograph", ctx.obj["today"], final_run, real_run
+        monograph_invoices,
+        "monograph",
+        monograph_sequence_number,
+        ctx.obj["today"],
+        final_run,
+        real_run,
     )
     serial_result = sap.run(
-        serial_invoices, "serial", ctx.obj["today"], final_run, real_run
+        serial_invoices,
+        "serial",
+        serial_sequence_number,
+        ctx.obj["today"],
+        final_run,
+        real_run,
     )
 
     # Log the final outcome

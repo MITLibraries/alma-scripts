@@ -450,3 +450,32 @@ def test_update_sap_sequence(mocked_ssm):
         ssm.get_parameter_value("/test/example/SAP_SEQUENCE")
         == "1002,20210723000000,mono"
     )
+
+
+def test_generate_sap_file_names(mocked_ssm):
+    data_file_name, control_file_name = sap.generate_sap_file_names(
+        "1002", datetime(2021, 12, 17)
+    )
+    assert data_file_name == "dlibsapg.1002.20211217000000"
+    assert control_file_name == "clibsapg.1002.20211217000000"
+
+
+def test_run_not_final_not_real():
+    # Confirm result values and logging output includes reports
+    raise
+
+
+def test_run_not_final_real():
+    # Confirm result values and logging output includes email send message
+    raise
+
+
+def test_run_final_not_real():
+    # Confirm result values and logging output includes sap file info
+    raise
+
+
+def test_run_final_real():
+    # Confirm result values, logging output includes SFTP and Alma responses, and
+    # confirm new SAP_SEQUENCE value in SSM
+    raise

@@ -332,6 +332,11 @@ def mocked_ssm(aws_credentials, sftp_server_private_key):
             Type="StringList",
         )
         ssm.put_parameter(
+            Name="/test/example/SAP_SEQUENCE",
+            Value="1001,20210722000000,ser",
+            Type="StringList",
+        )
+        ssm.put_parameter(
             Name="/test/example/SES_SEND_FROM_EMAIL",
             Value="from@example.com",
             Type="String",
