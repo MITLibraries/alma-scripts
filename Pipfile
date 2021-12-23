@@ -14,6 +14,7 @@ requests = "*"
 s3-concat = "*"
 sentry-sdk = "*"
 moto = {extras = ["server"], version = "*"}
+paramiko = "*"
 
 [dev-packages]
 bandit = "*"
@@ -28,6 +29,7 @@ pytest = "*"
 pytest-cov = "*"
 pytest-env = "*"
 requests-mock = "*"
+mock-ssh-server = "*"
 
 [requires]
 python_version = "3.8"

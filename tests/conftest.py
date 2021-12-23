@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 import boto3
+import mockssh
 import pytest
 import requests_mock
 from click.testing import CliRunner
@@ -145,7 +146,7 @@ def mocked_ses(aws_credentials):
 
 
 @pytest.fixture(scope="function")
-def mocked_ssm(aws_credentials):
+def mocked_ssm(aws_credentials, sftp_server_private_key):
     with mock_ssm():
         ssm = boto3.client("ssm", region_name="us-east-1")
         ssm.put_parameter(
@@ -217,6 +218,26 @@ def mocked_ssm(aws_credentials):
             Name="/test/example/SAP_SEQUENCE",
             Value="1001,20210722000000,ser",
             Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_DROPBOX_HOST",
+            Value="stage.host",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_DROPBOX_PORT",
+            Value="0000",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_DROPBOX_USER",
+            Value="stage-dropbox-user",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_DROPBOX_KEY",
+            Value=sftp_server_private_key,
+            Type="SecureString",
         )
         yield ssm
 
@@ -637,3 +658,18 @@ D\
  \
 \n"
     return sap_data
+
+
+@pytest.fixture
+def sftp_server():
+    users = {
+        "test-dropbox-user": "tests/fixtures/sample-ssh-key",
+    }
+    with mockssh.Server(users) as s:
+        yield s
+
+
+@pytest.fixture
+def sftp_server_private_key():
+    with open("tests/fixtures/sample-ssh-key", "r") as f:
+        yield f.read()
