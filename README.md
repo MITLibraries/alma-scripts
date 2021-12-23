@@ -33,6 +33,14 @@ Additional env variables may be required depending on the work being done. Check
 `EXPECTED_CONFIG_VALUES` in `config.py` for a list of all config variables that may be
 needed.
 
+If an multi-line value, such as a private key, is needed in the `.env` file, use single quotes
+```
+SAP_DROPBOX_KEY='-----BEGIN RSA PRIVATE KEY-----
+many
+lines
+-----END RSA PRIVATE KEY-----'
+```
+
 ### Using Moto for local development
 Certain SSM parameters are for the SAP invoices process, however we don't currently have a dev instance of SSM to work with. [Moto](https://github.com/spulec/moto) should be used in [Standalone Server Mode](https://github.com/spulec/moto#stand-alone-server-mode) during local development to mimic these required SSM parameters rather than using stage or prod SSM Parameter Store.
 
