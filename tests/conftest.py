@@ -272,8 +272,26 @@ def mocked_ses(aws_credentials):
         yield ses
 
 
+@pytest.fixture
+def mocked_sftp_server():
+    users = {
+        "test-dropbox-user": "tests/fixtures/sample-ssh-key",
+    }
+    with mockssh.Server(users) as s:
+        client = s.client("test-dropbox-user")
+        client.exec_command("mkdir dropbox")
+        yield s
+        client.exec_command("rm -r dropbox")
+
+
+@pytest.fixture
+def test_sftp_private_key():
+    with open("tests/fixtures/sample-ssh-key", "r") as f:
+        yield f.read()
+
+
 @pytest.fixture(scope="function")
-def mocked_ssm(aws_credentials, sftp_server_private_key):
+def mocked_ssm(aws_credentials, test_sftp_private_key):
     with mock_ssm():
         ssm = boto3.client("ssm", region_name="us-east-1")
         ssm.put_parameter(
@@ -317,44 +335,14 @@ def mocked_ssm(aws_credentials, sftp_server_private_key):
             Type="String",
         )
         ssm.put_parameter(
-            Name="/test/example/SAP_REPLY_TO_EMAIL",
-            Value="replyto@example.com",
-            Type="String",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SAP_FINAL_RECIPIENT_EMAILS",
-            Value="final_1@example.com,final_2@example.com",
-            Type="StringList",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SAP_REVIEW_RECIPIENT_EMAILS",
-            Value="review@example.com",
-            Type="StringList",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SAP_SEQUENCE",
-            Value="1001,20210722000000,ser",
-            Type="StringList",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SES_SEND_FROM_EMAIL",
-            Value="from@example.com",
-            Type="String",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SENTRY_DSN",
-            Value="sentry_123456",
-            Type="SecureString",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SAP_SEQUENCE",
-            Value="1001,20210722000000,ser",
-            Type="StringList",
-        )
-        ssm.put_parameter(
             Name="/test/example/SAP_DROPBOX_HOST",
             Value="stage.host",
             Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_DROPBOX_KEY",
+            Value=test_sftp_private_key,
+            Type="SecureString",
         )
         ssm.put_parameter(
             Name="/test/example/SAP_DROPBOX_PORT",
@@ -367,9 +355,34 @@ def mocked_ssm(aws_credentials, sftp_server_private_key):
             Type="String",
         )
         ssm.put_parameter(
-            Name="/test/example/SAP_DROPBOX_KEY",
-            Value=sftp_server_private_key,
+            Name="/test/example/SAP_FINAL_RECIPIENT_EMAILS",
+            Value="final_1@example.com,final_2@example.com",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_REPLY_TO_EMAIL",
+            Value="replyto@example.com",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_REVIEW_RECIPIENT_EMAILS",
+            Value="review@example.com",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_SEQUENCE",
+            Value="1001,20210722000000,ser",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SENTRY_DSN",
+            Value="sentry_123456",
             Type="SecureString",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SES_SEND_FROM_EMAIL",
+            Value="from@example.com",
+            Type="String",
         )
         yield ssm
 
@@ -790,18 +803,3 @@ D\
  \
 \n"
     return sap_data
-
-
-@pytest.fixture
-def sftp_server():
-    users = {
-        "test-dropbox-user": "tests/fixtures/sample-ssh-key",
-    }
-    with mockssh.Server(users) as s:
-        yield s
-
-
-@pytest.fixture
-def sftp_server_private_key():
-    with open("tests/fixtures/sample-ssh-key", "r") as f:
-        yield f.read()

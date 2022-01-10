@@ -1,9 +1,6 @@
-import os
 from io import StringIO
 
 import paramiko
-
-from llama import CONFIG
 
 
 class SFTP:
@@ -13,31 +10,32 @@ class SFTP:
         self.client = paramiko.SSHClient()
 
     def authenticate(
-        self,
-        host=CONFIG.SAP_DROPBOX_HOST,
-        port=CONFIG.SAP_DROPBOX_PORT,
-        username=CONFIG.SAP_DROPBOX_USER,
-        private_key=CONFIG.SAP_DROPBOX_KEY,
-    ):
+        self, host: str, port: str, username: str, private_key: str
+    ) -> None:
         """Authenticate the client to an SFTP host via SSH and a username and
         private key.
         """
-        client = self.client
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
+        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         pkey = paramiko.RSAKey.from_private_key(StringIO(private_key))
-        client.connect(
+        self.client.connect(
             hostname=host,
             port=port,
             username=username,
             look_for_keys=False,
             pkey=pkey,
         )
-        self.client = client
 
-    def send_file(self, file, destination_folder=""):
-        """Send a file to the specified destination on the FTP server."""
+    def send_file(
+        self, file_contents: str, file_path: str
+    ) -> paramiko.sftp_attr.SFTPAttributes:
+        """Send the string contents of a file to specified path on the SFTP server.
+
+        The file_path parameter should include the path and file name e.g.
+        "path/to/file.txt", if no path is included the file will be sent to the home
+        folder for the SFTP user. Note that any directories included in the path MUST
+        already exist on the server.
+
+        Returns: SFTPAttributes object containing attributes of sent file on the server
+        """
         sftp_session = self.client.open_sftp()
-        file_name = os.path.basename(file)
-        full_destination_path = os.path.join(destination_folder, file_name)
-        return sftp_session.put(file, full_destination_path)
+        return sftp_session.putfo(StringIO(file_contents), file_path)
