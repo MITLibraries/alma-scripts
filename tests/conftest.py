@@ -61,13 +61,29 @@ def mocked_alma(po_line_record_all_fields):
         )
         m.post("http://example.com/acq/invoices", json=invoices_json["invoice"][0])
         with open("tests/fixtures/invoice_paid.json") as f:
-            m.post("http://example.com/acq/invoices/558809630001021", json=json.load(f))
+            data = json.load(f)
+            m.post(
+                "http://example.com/acq/invoices/0000055555000000?op=paid",
+                complete_qs=True,
+                json=data,
+            )
+            m.post("http://example.com/acq/invoices/558809630001021", json=data)
+            m.post("http://example.com/acq/invoices/01", json=data)
+            m.post("http://example.com/acq/invoices/02", json=data)
         with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
             m.post(
                 "http://example.com/acq/invoices/00000055555000000", json=json.load(f)
             )
         with open("tests/fixtures/invoice_line.json") as f:
             m.post("http://example.com/acq/invoices/123456789/lines", json=json.load(f))
+        m.post(
+            "http://example.com/acq/invoices/03",
+            json={"payment": {"payment_status": {"desc": "string", "value": "WRONG"}}},
+        )
+        m.post(
+            "http://example.com/acq/invoices/0000055555000001",
+            json={"payment": {"payment_status": {"desc": "string", "value": "WRONG"}}},
+        )
 
         # PO Line endpoints
         m.get(
@@ -656,7 +672,7 @@ def invoices_for_sap_with_different_payment_method():
         },
         {
             "date": datetime(2021, 5, 12),
-            "id": "0000055555000000",
+            "id": "0000055555000001",
             "number": "12345",
             "type": "monograph",
             "payment method": "BAZ",

@@ -43,7 +43,7 @@ class SSM:
             Name=parameter_key, Value=new_value, Type=parameter_type, Overwrite=True
         )
         logger.info(
-            f"SSM parameter {parameter_key} was updated to '{new_value}' with type="
+            f"SSM parameter '{parameter_key}' was updated to '{new_value}' with type="
             f"{parameter_type}"
         )
         return response

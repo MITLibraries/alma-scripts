@@ -9,6 +9,7 @@ from typing import List, Literal, Optional, Tuple
 from llama import CONFIG
 from llama.alma import Alma_API_Client
 from llama.email import Email
+from llama.sftp import SFTP
 from llama.ssm import SSM
 
 logger = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ def parse_invoice_records(
     for count, invoice_record in enumerate(invoice_records):
         logger.info(
             f"Extracting data for invoice {invoice_record['id']}, "
-            f"record {count} of {len(invoice_records)}"
+            f"record {count + 1} of {len(invoice_records)}"
         )
         invoice_data = extract_invoice_data(invoice_record)
         vendor_code = invoice_record["vendor"]["value"]
@@ -377,7 +378,7 @@ def generate_sap_data(today: datetime, invoices: List[dict]) -> str:
         sap_data += " "  # payment block
         sap_data += "X"  # individual payee in document
         sap_data += f"{invoice['vendor']['name']: <35.35}"
-        sap_data += f"{invoice['vendor']['address']['city']: <35.35}"
+        sap_data += f"{invoice['vendor']['address']['city'] or ' ': <35.35}"
         sap_data += f"{payee_name_line_2: <35.35}"
         sap_data += po_box_indicator
         sap_data += f"{street_or_po_box_num: <35.35}"
@@ -506,10 +507,33 @@ def generate_sap_file_names(sequence_number: str, date: datetime) -> (str, str):
     return data_file_name, control_file_name
 
 
+def mark_invoices_paid(invoices: List[dict], date: datetime):
+    paid_invoice_count = 0
+    alma_client = Alma_API_Client(
+        CONFIG.get_alma_api_key("ALMA_API_ACQ_READ_WRITE_KEY")
+    )
+    alma_client.set_content_headers("application/json", "application/json")
+    for invoice in invoices:
+        invoice_id = invoice["id"]
+        logger.debug(f"Marking invoice '{invoice_id}' paid")
+        response = alma_client.mark_invoice_paid(
+            invoice_id, date, invoice["total amount"], invoice["currency"]
+        )
+        if response["payment"]["payment_status"]["value"] == "PAID":
+            logger.debug(f"Invoice '{invoice_id}' marked as paid in Alma")
+            paid_invoice_count += 1
+        else:
+            logger.error(
+                f"Something went wrong marking invoice '{invoice_id}' paid in Alma, it "
+                "should be investigated manually"
+            )
+    return paid_invoice_count
+
+
 def run(
     invoices: List[dict],
     invoices_type: Literal["monograph", "serial"],
-    sap_sequence_number: str,
+    sap_sequence_number: str,  # Just the sequence number, e.g. "0003"
     date: datetime,
     final_run: bool,
     real_run: bool,
@@ -547,8 +571,24 @@ def run(
 
         if real_run:
             # Send data and control files to SAP dropbox via SFTP
+            logger.info("Real run, sending files to SAP dropbox")
+            sftp = SFTP()
+            sftp.authenticate(
+                CONFIG.SAP_DROPBOX_HOST,
+                CONFIG.SAP_DROPBOX_PORT,
+                CONFIG.SAP_DROPBOX_USER,
+                CONFIG.SAP_DROPBOX_KEY,
+            )
+            sftp.send_file(data_file_contents, f"dropbox/{data_file_name}")
+            logger.info(
+                f"Sent data file '{data_file_name}' to SAP dropbox {CONFIG.ENV}"
+            )
+            sftp.send_file(control_file_contents, f"dropbox/{control_file_name}")
+            logger.info(
+                f"Sent control file '{control_file_name}' to SAP dropbox {CONFIG.ENV}"
+            )
 
-            # IF send was successful, update sequence numbers in SSM
+            # Update sequence numbers in SSM
             logger.info("Real run, updating SAP sequence in Parameter Store")
             update_sap_sequence(
                 sap_sequence_number,
@@ -556,8 +596,12 @@ def run(
                 "mono" if invoices_type == "monograph" else "ser",
             )
 
-            # IF send was successful, update invoice statuses in Alma
-            pass
+            # Update invoice statuses in Alma
+            logger.info("Real run, marking invoices PAID in Alma")
+            count = mark_invoices_paid(invoices, date)
+            logger.info(
+                f"{count} {invoices_type} invoices successfully marked as paid in Alma"
+            )
 
     if real_run:
         email = generate_sap_report_email(
