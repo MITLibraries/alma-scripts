@@ -1,7 +1,7 @@
 from llama.sftp import SFTP
 
 
-def test_sftp_authenticate(mocked_sftp_server, mocked_ssm, test_sftp_private_key):
+def test_sftp_authenticate(mocked_sftp_server, test_sftp_private_key):
     sftp = SFTP()
     assert sftp.client.get_host_keys().keys() == []
     sftp.authenticate(
@@ -13,7 +13,7 @@ def test_sftp_authenticate(mocked_sftp_server, mocked_ssm, test_sftp_private_key
     assert sftp.client.get_host_keys().keys()[0].startswith("[127.0.0.1]:") is True
 
 
-def test_sftp_send_file(mocked_sftp_server, mocked_ssm, test_sftp_private_key):
+def test_sftp_send_file(mocked_sftp_server, test_sftp_private_key):
     sftp = SFTP()
     sftp.authenticate(
         host=mocked_sftp_server.host,

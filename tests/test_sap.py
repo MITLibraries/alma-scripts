@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from llama import sap
+from llama import CONFIG, sap
 from llama.ssm import SSM
 
 
@@ -460,22 +460,98 @@ def test_generate_sap_file_names(mocked_ssm):
     assert control_file_name == "clibsapg.1002.20211217000000"
 
 
-def test_run_not_final_not_real():
-    # Confirm result values and logging output includes reports
-    raise
+def test_mark_invoices_paid_all_successful(invoices_for_sap, mocked_alma):
+    result = sap.mark_invoices_paid(invoices_for_sap, datetime(2022, 1, 7))
+    assert result == 3
 
 
-def test_run_not_final_real():
-    # Confirm result values and logging output includes email send message
-    raise
+def test_mark_invoices_paid_error(
+    caplog, invoices_for_sap_with_different_payment_method, mocked_alma
+):
+    result = sap.mark_invoices_paid(
+        invoices_for_sap_with_different_payment_method, datetime(2022, 1, 7)
+    )
+    assert result == 2
+    assert (
+        "Something went wrong marking invoice '0000055555000001' paid in Alma, it "
+        "should be investigated manually" in caplog.text
+    )
 
 
-def test_run_final_not_real():
-    # Confirm result values and logging output includes sap file info
-    raise
+def test_run_not_final_not_real(
+    caplog, invoices_for_sap_with_different_payment_method, mocked_alma
+):
+    result = sap.run(
+        invoices_for_sap_with_different_payment_method,
+        "monograph",
+        "0003",
+        datetime(2022, 1, 11),
+        final_run=False,
+        real_run=False,
+    )
+    assert result == {
+        "total invoices": 3,
+        "sap invoices": 2,
+        "other invoices": 1,
+    }
+    assert "Monographs report:" in caplog.text
 
 
-def test_run_final_real():
-    # Confirm result values, logging output includes SFTP and Alma responses, and
-    # confirm new SAP_SEQUENCE value in SSM
-    raise
+def test_run_not_final_real(caplog, invoices_for_sap, mocked_alma, mocked_ses):
+    result = sap.run(
+        invoices_for_sap,
+        "monograph",
+        "0003",
+        datetime(2022, 1, 11),
+        final_run=False,
+        real_run=True,
+    )
+    assert result == {
+        "total invoices": 3,
+        "sap invoices": 3,
+        "other invoices": 0,
+    }
+    assert "Monographs email sent with message ID:" in caplog.text
+
+
+def test_run_final_not_real(caplog, invoices_for_sap, mocked_alma):
+    sap.run(
+        invoices_for_sap,
+        "monograph",
+        "0003",
+        datetime(2022, 1, 11),
+        final_run=True,
+        real_run=False,
+    )
+    assert "Monographs control file contents:" in caplog.text
+
+
+def test_run_final_real(
+    caplog,
+    invoices_for_sap,
+    mocked_alma,
+    mocked_ses,
+    mocked_sftp_server,
+    mocked_ssm,
+    test_sftp_private_key,
+):
+    CONFIG.SAP_DROPBOX_HOST = mocked_sftp_server.host
+    CONFIG.SAP_DROPBOX_PORT = mocked_sftp_server.port
+    CONFIG.SAP_DROPBOX_KEY = test_sftp_private_key
+    sap.run(
+        invoices_for_sap,
+        "monograph",
+        "0003",
+        datetime(2022, 1, 11),
+        final_run=True,
+        real_run=True,
+    )
+    assert (
+        "Sent control file 'clibsapg.0003.20220111000000' to SAP dropbox test"
+        in caplog.text
+    )
+    assert (
+        "SSM parameter '/test/example/SAP_SEQUENCE' was updated to "
+        "'0003,20220111000000,mono' with type=StringList" in caplog.text
+    )
+    assert "3 monograph invoices successfully marked as paid in Alma" in caplog.text
