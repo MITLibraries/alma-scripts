@@ -1,4 +1,5 @@
 import datetime
+import json
 
 from llama import CONFIG
 from llama.alma import Alma_API_Client
@@ -26,6 +27,29 @@ def test_alma_set_content_headers():
     assert client.headers["Content-Type"] == "application/json"
 
 
+def test_alma_create_invoice(mocked_alma, mocked_alma_api_client):
+    with open("tests/fixtures/invoices.json") as f:
+        invoice_data = json.load(f)["invoice"][0]
+    invoice = mocked_alma_api_client.create_invoice(invoice_data)
+    assert invoice["id"] == "01"
+
+
+def test_alma_create_invoice_line(mocked_alma, mocked_alma_api_client):
+    with open("tests/fixtures/invoice_line.json") as f:
+        invoice_line_data = json.load(f)
+    invoice_line = mocked_alma_api_client.create_invoice_line(
+        "123456789", invoice_line_data
+    )
+    assert invoice_line["number"] == "1"
+
+
+def test_alma_create_vendor(mocked_alma, mocked_alma_api_client):
+    with open("tests/fixtures/vendor.json") as f:
+        vendor_data = json.load(f)
+    vendor = mocked_alma_api_client.create_vendor(vendor_data)
+    assert vendor["code"] == "BKHS"
+
+
 def test_alma_get_brief_po_lines(mocked_alma, mocked_alma_api_client):
     po_line_stubs = mocked_alma_api_client.get_brief_po_lines()
     assert next(po_line_stubs) == {"created_date": "2021-05-13Z", "number": "POL-123"}
@@ -47,6 +71,11 @@ def test_alma_get_vendor_details(mocked_alma, mocked_alma_api_client):
     vendor = mocked_alma_api_client.get_vendor_details("BKHS")
     assert vendor["code"] == "BKHS"
     assert vendor["name"] == "The Bookhouse, Inc."
+
+
+def test_alma_get_vendor_invoices(mocked_alma, mocked_alma_api_client):
+    invoices = mocked_alma_api_client.get_vendor_invoices("BKHS")
+    assert len(list(invoices)) == 3
 
 
 def test_alma_get_po_line_full_record(mocked_alma, mocked_alma_api_client):
@@ -84,3 +113,8 @@ def test_alma_get_paged(mocked_alma, mocked_alma_api_client):
         limit=10,
     )
     assert len(list(records)) == 15
+
+
+def test_alma_process_invoice(mocked_alma, mocked_alma_api_client):
+    processed_invoice = mocked_alma_api_client.process_invoice("00000055555000000")
+    assert processed_invoice["invoice_workflow_status"]["value"] == "Waiting to be Sent"

@@ -8,6 +8,7 @@ import pytest
 import requests_mock
 from click.testing import CliRunner
 from moto import mock_s3, mock_ses, mock_ssm
+from requests import HTTPError, Response
 
 from llama.alma import Alma_API_Client
 from llama.s3 import S3
@@ -30,6 +31,7 @@ def bucket_env():
 @pytest.fixture()
 def mocked_alma(po_line_record_all_fields):
     with requests_mock.Mocker() as m:
+        # Fund endpoints
         with open("tests/fixtures/funds.json") as f:
             funds = json.load(f)
             m.get(
@@ -48,6 +50,8 @@ def mocked_alma(po_line_record_all_fields):
                 "http://example.com/acq/funds?q=fund_code~JKL",
                 json={"fund": [funds["fund"][3]]},
             )
+
+        # Invoice endpoints
         with open("tests/fixtures/invoices.json") as f:
             invoices_json = json.load(f)
         m.get("http://example.com/acq/invoices", json=invoices_json)
@@ -55,6 +59,17 @@ def mocked_alma(po_line_record_all_fields):
             "http://example.com/acq/invoices/558809630001021",
             json=invoices_json["invoice"][0],
         )
+        m.post("http://example.com/acq/invoices", json=invoices_json["invoice"][0])
+        with open("tests/fixtures/invoice_paid.json") as f:
+            m.post("http://example.com/acq/invoices/558809630001021", json=json.load(f))
+        with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
+            m.post(
+                "http://example.com/acq/invoices/00000055555000000", json=json.load(f)
+            )
+        with open("tests/fixtures/invoice_line.json") as f:
+            m.post("http://example.com/acq/invoices/123456789/lines", json=json.load(f))
+
+        # PO Line endpoints
         m.get(
             "http://example.com/acq/po-lines?status=ACTIVE",
             json={
@@ -67,12 +82,19 @@ def mocked_alma(po_line_record_all_fields):
         )
         m.get("http://example.com/acq/po-lines/POL-123", json=po_line_record_all_fields)
         m.get("http://example.com/acq/po-lines/POL-456", json=po_line_record_wrong_date)
+
+        # Vendor endpoints
+        with open("tests/fixtures/vendor.json") as f:
+            vendor_data = json.load(f)
+        m.post("http://example.com/acq/vendors", json=vendor_data)
         with open("tests/fixtures/vendor_aaa.json") as f:
             m.get("http://example.com/acq/vendors/AAA", json=json.load(f))
-        with open("tests/fixtures/vendor.json") as f:
-            m.get("http://example.com/acq/vendors/BKHS", json=json.load(f))
+        m.get("http://example.com/acq/vendors/BKHS", json=vendor_data)
+        m.get("http://example.com/acq/vendors/BKHS/invoices", json=invoices_json)
         with open("tests/fixtures/vendor_vend-s.json") as f:
             m.get("http://example.com/acq/vendors/VEND-S", json=json.load(f))
+
+        # General endpoints
         m.get(
             "http://example.com/paged?limit=10&offset=0",
             complete_qs=True,
@@ -89,8 +111,104 @@ def mocked_alma(po_line_record_all_fields):
                 "fake_records": [{"record_number": i} for i in range(10, 15)],
             },
         )
-        with open("tests/fixtures/invoice_paid.json") as f:
-            m.post("http://example.com/acq/invoices/558809630001021", text=f.read())
+
+        yield m
+
+
+@pytest.fixture()
+def mocked_alma_sample_data():
+    with requests_mock.Mocker() as m:
+        # Get vendor
+        response1 = Response()
+        response1._content = b'{"errorList": {"error": [{"errorCode":"402880"}]}}'
+        m.get(
+            "http://example.com/acq/vendors/TestSAPVendor1",
+            exc=HTTPError(response=response1),
+        )
+        m.get(
+            "http://example.com/acq/vendors/TestSAPVendor2-S",
+            json={"code": "TestSAPVendor2-S"},
+        )
+        response2 = Response()
+        response2._content = (
+            b'{"errorList": {"error": [{"errorCode":"a-different-error"}]}}'
+        )
+        m.get(
+            "http://example.com/acq/vendors/not-a-vendor",
+            exc=HTTPError(response=response2),
+        )
+
+        # Get vendor invoices
+        m.get(
+            "http://example.com/acq/vendors/TestSAPVendor1/invoices",
+            json={
+                "total_record_count": 2,
+                "invoice": [
+                    {"id": "alma_id_0001", "number": "TestSAPInvoiceV1-1"},
+                    {"id": "alma_id_0002", "number": "TestSAPInvoiceV1-2"},
+                ],
+            },
+        )
+        m.get(
+            "http://example.com/acq/vendors/TestSAPVendor2-S/invoices",
+            json={"total_record_count": 0, "invoice": []},
+        )
+        m.get(
+            "http://example.com/acq/vendors/TestSAPVendor3/invoices",
+            json={
+                "total_record_count": 1,
+                "invoice": [{"id": "alma_id_0003", "number": "HasNoDash"}],
+            },
+        )
+
+        # Create vendor
+        m.post("http://example.com/acq/vendors", json={"code": "TestSAPVendor1"})
+
+        # Create invoice
+        m.post(
+            "http://example.com/acq/invoices",
+            [{"json": {"id": "alma_id_0001"}}, {"json": {"id": "alma_id_0002"}}],
+        )
+
+        # Create invoice lines
+        m.post(
+            "http://example.com/acq/invoices/alma_id_0001/lines",
+            json={"id": "alma_id_0001"},
+        )
+        m.post(
+            "http://example.com/acq/invoices/alma_id_0002/lines",
+            json={"id": "alma_id_0002"},
+        )
+        response3 = Response()
+        response3._content = b"Error message"
+        m.post(
+            "http://example.com/acq/invoices/error_id/lines",
+            exc=HTTPError(response=response3),
+        )
+
+        # Process invoices
+        m.post(
+            "http://example.com/acq/invoices/alma_id_0001?op=process_invoice",
+            json={"id": "alma_id_0001"},
+        )
+        m.post(
+            "http://example.com/acq/invoices/alma_id_0002?op=process_invoice",
+            json={"id": "alma_id_0002"},
+        )
+        m.post(
+            "http://example.com/acq/invoices/alma_id_0003?op=process_invoice",
+            json={"id": "alma_id_0003"},
+        )
+        m.post(
+            "http://example.com/acq/invoices/alma_id_0004?op=process_invoice",
+            json={"id": "alma_id_0004"},
+        )
+        response4 = Response()
+        response4._content = b"Error message"
+        m.post(
+            "http://example.com/acq/invoices/error_id?op=process_invoice",
+            exc=HTTPError(response=response4),
+        )
         yield m
 
 
@@ -98,6 +216,15 @@ def mocked_alma(po_line_record_all_fields):
 def mocked_alma_no_invoices():
     with requests_mock.Mocker() as m:
         m.get("http://example.com/acq/invoices", json={"total_record_count": 0})
+        yield m
+
+
+@pytest.fixture()
+def mocked_alma_with_errors():
+    with requests_mock.Mocker() as m:
+        response = Response()
+        response._content = b"Error message"
+        m.post("http://example.com/acq/invoices", exc=HTTPError(response=response))
         yield m
 
 
