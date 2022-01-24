@@ -59,3 +59,29 @@ To use:
      ssm.update_parameter_value("/dev/SAP_SEQUENCE", "1001,20210722000000,ser", "StringList")
       ```
 
+### Creating sample SAP data
+Running the SAP Invoices process during local development or on staging requires that
+there be sample invoices ready to be paid in the Alma sandbox. To simplify this, there
+is a CLI command that will create four sample invoices in the sandbox. To do this:
+  1. Make sure the following variables are set in your `.env`:
+     ```
+     WORKSPACE=dev
+     SSM_PATH=/dev/ (you don't need any SSM parameters created locally for this command,
+        but config still requires a path in env)
+     ALMA_API_URL=<the Alma API base URL>
+     ALMA_API_ACQ_READ_WRITE_KEY=<the SANDBOX Alma Acq read/write key>
+     ```
+  2. Run `pipenv run llama create-sandbox-sap-data`. You should get a final log message
+     saying there are four invoices ready for manual approval in Alma.
+  3. Go to the Alma sandbox UI > Acquisitions module > Review (Invoice) > Unassigned
+     tab. There should be four invoices listed whose numbers start with TestSAPInvoice.
+  4. For each of those invoices, click on it and then click "Save and Continue". They
+     will now show up in the Waiting For Approval Invoices queue.
+  5. From that queue, using the three dots to the right of each invoice, choose "Edit"
+     and then click "Approve" in the upper right corner.
+  6. Once the invoices have been approved, they are ready to be paid and will be
+     retrieved and processed using the llama sap-invoices CLI command.
+
+Note that sample invoices will remain in the Alma sandbox in the "Waiting to be Sent"
+status until a "real", "final" sap-invoices process has been run, at which point they
+will be marked as paid and new sample invoices will need to be created.

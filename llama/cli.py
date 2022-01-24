@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 
 import click
@@ -7,6 +8,7 @@ from llama import CONFIG, credit_card_slips, sap
 from llama.alma import Alma_API_Client
 from llama.email import Email
 from llama.s3 import S3
+from llama.sample_data import load_sample_data
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +114,33 @@ def concat_timdex_export(ctx, export_type, source_bucket, destination_bucket, da
     click.echo(
         f"Concatenated file {output_filename} succesfully created and moved to bucket "
         f"{destination_bucket}."
+    )
+
+
+@cli.command()
+@click.pass_context
+def create_sandbox_sap_data(ctx):
+    """Create sample data in the Alma sandbox instance.
+
+    In order to run successfully, the sandbox Acquisitions read/write API key must be
+    set in config (in .env if running locally, or in SSM if on stage). This command
+    will not run in the production environment, and should never be run with production
+    config values.
+    """
+    if CONFIG.ENV == "prod":
+        logger.info(
+            "This command may not be run in the production environment, aborting"
+        )
+        raise click.Abort()
+    alma_key = CONFIG.get_alma_api_key("ALMA_API_ACQ_READ_WRITE_KEY")
+    alma_client = Alma_API_Client(alma_key)
+    alma_client.set_content_headers("application/json", "application/json")
+    with open("sample-data/sample-sap-invoice-data.json") as f:
+        contents = json.load(f)
+    invoices_created = load_sample_data(alma_client, contents)
+    logger.info(
+        f"{invoices_created} sample invoices created and ready for manual approval "
+        "in the Alma sandbox UI"
     )
 
 

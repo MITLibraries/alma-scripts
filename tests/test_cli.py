@@ -154,6 +154,11 @@ def test_concat_timdex_export_bucket_error(mocked_s3, runner):
     assert "One or more supplied buckets does not exist" in result.output
 
 
+def test_create_sandbox_sap_data(mocked_alma_sample_data, runner):
+    result = runner.invoke(cli, ["create-sandbox-sap-data"])
+    assert result.exit_code == 0
+
+
 def test_sap_invoices_review_run(runner, mocked_alma, mocked_ses):
     result = runner.invoke(cli, ["sap-invoices"])
     assert result.exit_code == 0
