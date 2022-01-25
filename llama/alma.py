@@ -21,6 +21,29 @@ class Alma_API_Client:
         self.headers["Accept"] = accept
         self.headers["Content-Type"] = content_type
 
+    def create_invoice(self, invoice_json):
+        endpoint = f"{self.base_url}acq/invoices"
+        r = requests.post(endpoint, headers=self.headers, data=json.dumps(invoice_json))
+        r.raise_for_status()
+        time.sleep(0.1)
+        return r.json()
+
+    def create_invoice_line(self, invoice_id, invoice_line_json):
+        endpoint = f"{self.base_url}acq/invoices/{invoice_id}/lines"
+        r = requests.post(
+            endpoint, headers=self.headers, data=json.dumps(invoice_line_json)
+        )
+        r.raise_for_status()
+        time.sleep(0.1)
+        return r.json()
+
+    def create_vendor(self, vendor_json):
+        endpoint = f"{self.base_url}acq/vendors"
+        r = requests.post(endpoint, headers=self.headers, data=json.dumps(vendor_json))
+        r.raise_for_status()
+        time.sleep(0.1)
+        return r.json()
+
     def get_paged(
         self,
         endpoint,
@@ -123,6 +146,10 @@ class Alma_API_Client:
         time.sleep(0.1)
         return r.json()
 
+    def get_vendor_invoices(self, vendor_code):
+        endpoint = f"acq/vendors/{vendor_code}/invoices"
+        return self.get_paged(endpoint, "invoice")
+
     def mark_invoice_paid(
         self,
         invoice_id: str,
@@ -153,4 +180,13 @@ class Alma_API_Client:
         # UE9TVCAvYWxtYXdzL3YxL2FjcS9pbnZvaWNlcy97aW52b2ljZV9pZH0=/ and https://
         # developers.exlibrisgroup.com/blog/Creating-an-invoice-using-APIs/ for more
         # info.
+        return r.json()
+
+    def process_invoice(self, invoice_id):
+        """Move an invoice to in process using the invoice process endpoint."""
+        endpoint = f"{self.base_url}acq/invoices/{invoice_id}"
+        params = {"op": "process_invoice"}
+        r = requests.post(endpoint, headers=self.headers, params=params, data="{}")
+        r.raise_for_status()
+        time.sleep(0.1)
         return r.json()

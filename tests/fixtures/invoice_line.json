@@ -1,0 +1,34 @@
+{"type": {
+    "id": "5678910",
+    "value": "REGULAR"
+    },
+    "number": "1",
+    "price": 100.0,
+    "price_note": "",
+    "total_price": 100,
+    "quantity": 1,
+    "vat_note": "Approximately 0.00 included in VAT/GST adjustment line.",
+    "check_subscription_date_overlap": true,
+    "fully_invoiced": false,
+    "additional_info": "",
+    "release_remaining_encumbrance": false,
+    "note": "",
+    "invoice_line_vat": {
+        "vat_code": {
+            "value": "",
+            "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+    },
+    "fund_distribution": [
+        {
+            "fund_code": {
+                "value": "FOO FUND",
+                "desc": "this is the foo fund"
+            },
+            "percent": null,
+            "amount": 100
+        }
+    ]
+}

@@ -1,0 +1,512 @@
+{
+  "mono_vendor": {
+    "abbreviation": "V1",
+    "vendor_data": {
+      "code": "TestSAPVendor1",
+      "name": "Test SAP Vendor 1",
+      "status": {
+        "value": "ACTIVE",
+        "desc": "Active"
+      },
+      "liable_for_vat": false,
+      "language": {
+        "value": "en",
+        "desc": "English"
+      },
+      "material_supplier": true,
+      "access_provider": false,
+      "licensor": false,
+      "governmental": false,
+      "library": [
+        {
+          "code": {
+            "value": "01MIT_INST",
+            "desc": "Massachusetts Institute of Technology"
+          },
+          "include_sub_units": true
+        }
+      ],
+      "currency": [
+        {
+          "value": "USD",
+          "desc": "US Dollar"
+        }
+      ],
+      "account": [
+        {
+          "code": "TestSAPVendor1",
+          "description": "Default Account - TestSAPVendor1",
+          "status": {
+            "value": "ACTIVE",
+            "desc": "Active"
+          },
+          "library": [
+            {
+              "code": {
+                "value": "01MIT_INST",
+                "desc": "Massachusetts Institute of Technology"
+              },
+              "include_sub_units": true
+            }
+          ],
+          "payment_method": [
+            {
+              "value": "ACCOUNTINGDEPARTMENT",
+              "desc": "Accounting Department"
+            },
+            {
+              "value": "CREDITCARD",
+              "desc": "Credit card"
+            }
+          ]
+        }
+      ],
+      "contact_info": {
+        "address": [
+          {
+            "line1": "123 Sesame Street",
+            "line2": "C/O Big Bird",
+            "city": "Anytown",
+            "postal_code": "12345",
+            "country": {
+              "value": "USA"
+            },
+            "address_type": [
+              {
+                "value": "payment",
+                "desc": "Payment"
+              }
+            ],
+            "preferred": true
+          }
+        ]
+      }
+    },
+    "invoices": [
+      {
+        "description": "Monograph invoice paid via SAP",
+        "post_json": {
+          "vendor": {
+            "value": "TestSAPVendor1",
+            "desc": "Test SAP Vendor 1"
+          },
+          "owner": {
+            "value": "01MIT_INST",
+            "desc": "Massachusetts Institute of Technology"
+          },
+          "invoice_date": "2022-01-12Z",
+          "total_amount": 100,
+          "currency": {
+            "value": "USD",
+            "desc": "US Dollar"
+          },
+          "total_invoice_lines_amount": 100,
+          "vendor_contact_person": {},
+          "payment_method": {
+            "value": "ACCOUNTINGDEPARTMENT",
+            "desc": "Accounting Department"
+          },
+          "reference_number": "",
+          "additional_charges": {
+            "use_pro_rata": false,
+            "shipment": 0,
+            "overhead": 0,
+            "insurance": 0,
+            "discount": 0
+          },
+          "invoice_vat": {
+            "report_tax": false,
+            "vat_per_invoice_line": false,
+            "vat_code": {
+              "value": "",
+              "desc": null
+            },
+            "percentage": 0,
+            "vat_amount": 0,
+            "type": {
+              "value": "INCLUSIVE",
+              "desc": "Inclusive"
+            },
+            "expended_from_fund": false
+          },
+          "explicit_ratio": [],
+          "payment": {
+            "prepaid": false,
+            "internal_copy": false,
+            "payment_status": {
+              "value": "NOT_PAID",
+              "desc": "Not Paid"
+            },
+            "voucher_date": "2022-01-12Z",
+            "voucher_number": "",
+            "voucher_amount": "0",
+            "voucher_currency": {
+              "value": "USD",
+              "desc": "US Dollar"
+            }
+          }
+        },
+        "invoice_lines": [
+          {
+            "type": {
+              "value": "REGULAR",
+              "desc": "Regular"
+            },
+            "number": "1",
+            "price": 100,
+            "total_price": 100,
+            "quantity": 1,
+            "fund_distribution": [
+              {
+                "fund_code": {
+                  "value": "C-IRC-HCAT",
+                  "desc": "Onsite Cataloging"
+                },
+                "amount": 100
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "Description": "Monograph invoice not paid via SAP",
+        "post_json": {
+          "vendor": {
+            "value": "TestSAPVendor1",
+            "desc": "Test SAP Vendor 1"
+          },
+          "owner": {
+            "value": "01MIT_INST",
+            "desc": "Massachusetts Institute of Technology"
+          },
+          "invoice_date": "2022-01-12Z",
+          "total_amount": 100,
+          "currency": {
+            "value": "USD",
+            "desc": "US Dollar"
+          },
+          "total_invoice_lines_amount": 100,
+          "vendor_contact_person": {},
+          "payment_method": {
+            "value": "CREDITCARD",
+            "desc": "Credit card"
+          },
+          "reference_number": "",
+          "additional_charges": {
+            "use_pro_rata": false,
+            "shipment": 0,
+            "overhead": 0,
+            "insurance": 0,
+            "discount": 0
+          },
+          "invoice_vat": {
+            "report_tax": false,
+            "vat_per_invoice_line": false,
+            "vat_code": {
+              "value": "",
+              "desc": null
+            },
+            "percentage": 0,
+            "vat_amount": 0,
+            "type": {
+              "value": "INCLUSIVE",
+              "desc": "Inclusive"
+            },
+            "expended_from_fund": false
+          },
+          "explicit_ratio": [],
+          "payment": {
+            "prepaid": false,
+            "internal_copy": false,
+            "payment_status": {
+              "value": "NOT_PAID",
+              "desc": "Not Paid"
+            },
+            "voucher_date": "2022-01-12Z",
+            "voucher_number": "",
+            "voucher_amount": "0",
+            "voucher_currency": {
+              "value": "USD",
+              "desc": "US Dollar"
+            }
+          }
+        },
+        "invoice_lines": [
+          {
+            "type": {
+              "value": "REGULAR",
+              "desc": "Regular"
+            },
+            "number": "1",
+            "price": 100,
+            "total_price": 100,
+            "quantity": 1,
+            "fund_distribution": [
+              {
+                "fund_code": {
+                  "value": "C-IRC-HCAT",
+                  "desc": "Onsite Cataloging"
+                },
+                "amount": 100
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "serial_vendor": {
+    "abbreviation": "V2",
+    "vendor_data": {
+      "code": "TestSAPVendor2-S",
+      "name": "Test SAP Vendor 2 Serials",
+      "status": {
+        "value": "ACTIVE",
+        "desc": "Active"
+      },
+      "liable_for_vat": false,
+      "language": {
+        "value": "en",
+        "desc": "English"
+      },
+      "material_supplier": true,
+      "access_provider": false,
+      "licensor": false,
+      "governmental": false,
+      "library": [
+        {
+          "code": {
+            "value": "01MIT_INST",
+            "desc": "Massachusetts Institute of Technology"
+          },
+          "include_sub_units": true
+        }
+      ],
+      "currency": [
+        {
+          "value": "USD",
+          "desc": "US Dollar"
+        }
+      ],
+      "account": [
+        {
+          "code": "TestSAPVendor2-S",
+          "description": "Default Account - TestSAPVendor2-S",
+          "status": {
+            "value": "ACTIVE",
+            "desc": "Active"
+          },
+          "library": [
+            {
+              "code": {
+                "value": "01MIT_INST",
+                "desc": "Massachusetts Institute of Technology"
+              },
+              "include_sub_units": true
+            }
+          ],
+          "payment_method": [
+            {
+              "value": "ACCOUNTINGDEPARTMENT",
+              "desc": "Accounting Department"
+            },
+            {
+              "value": "SPECIALPAYMENT",
+              "desc": "Special payment"
+            }
+          ]
+        }
+      ],
+      "contact_info": {
+        "address": [
+          {
+            "line1": "PO Box 1234",
+            "postal_code": "56789",
+            "country": {
+              "value": "USA"
+            },
+            "address_type": [
+              {
+                "value": "order",
+                "desc": "Order"
+              }
+            ],
+            "preferred": true
+          }
+        ]
+      }
+    },
+    "invoices": [
+      {
+        "description": "Serials invoice not paid via SAP",
+        "post_json": {
+          "vendor": {
+            "value": "TestSAPVendor2-S",
+            "desc": "Test SAP Vendor 2 Serials"
+          },
+          "owner": {
+            "value": "01MIT_INST",
+            "desc": "Massachusetts Institute of Technology"
+          },
+          "invoice_date": "2022-01-12Z",
+          "total_amount": 100,
+          "currency": {
+            "value": "USD",
+            "desc": "US Dollar"
+          },
+          "total_invoice_lines_amount": 100,
+          "vendor_contact_person": {},
+          "payment_method": {
+            "value": "CREDITCARD",
+            "desc": "Credit card"
+          },
+          "reference_number": "",
+          "additional_charges": {
+            "use_pro_rata": false,
+            "shipment": 0,
+            "overhead": 0,
+            "insurance": 0,
+            "discount": 0
+          },
+          "invoice_vat": {
+            "report_tax": false,
+            "vat_per_invoice_line": false,
+            "vat_code": {
+              "value": "",
+              "desc": null
+            },
+            "percentage": 0,
+            "vat_amount": 0,
+            "type": {
+              "value": "INCLUSIVE",
+              "desc": "Inclusive"
+            },
+            "expended_from_fund": false
+          },
+          "explicit_ratio": [],
+          "payment": {
+            "prepaid": false,
+            "internal_copy": false,
+            "payment_status": {
+              "value": "NOT_PAID",
+              "desc": "Not Paid"
+            },
+            "voucher_date": "2022-01-12Z",
+            "voucher_number": "",
+            "voucher_amount": "0",
+            "voucher_currency": {
+              "value": "USD",
+              "desc": "US Dollar"
+            }
+          }
+        },
+        "invoice_lines": [
+          {
+            "type": {
+              "value": "REGULAR",
+              "desc": "Regular"
+            },
+            "number": "1",
+            "price": 100,
+            "total_price": 100,
+            "quantity": 1,
+            "fund_distribution": [
+              {
+                "fund_code": {
+                  "value": "C-IRC-HCAT",
+                  "desc": "Onsite Cataloging"
+                },
+                "amount": 100
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "description": "Serials invoice paid via SAP",
+        "post_json": {
+          "vendor": {
+            "value": "TestSAPVendor2-S",
+            "desc": "Test SAP Vendor 2 Serials"
+          },
+          "owner": {
+            "value": "01MIT_INST",
+            "desc": "Massachusetts Institute of Technology"
+          },
+          "invoice_date": "2022-01-12Z",
+          "total_amount": 100,
+          "currency": {
+            "value": "USD",
+            "desc": "US Dollar"
+          },
+          "total_invoice_lines_amount": 100,
+          "vendor_contact_person": {},
+          "payment_method": {
+            "value": "ACCOUNTINGDEPARTMENT",
+            "desc": "Accounting Department"
+          },
+          "reference_number": "",
+          "additional_charges": {
+            "use_pro_rata": false,
+            "shipment": 0,
+            "overhead": 0,
+            "insurance": 0,
+            "discount": 0
+          },
+          "invoice_vat": {
+            "report_tax": false,
+            "vat_per_invoice_line": false,
+            "vat_code": {
+              "value": "",
+              "desc": null
+            },
+            "percentage": 0,
+            "vat_amount": 0,
+            "type": {
+              "value": "INCLUSIVE",
+              "desc": "Inclusive"
+            },
+            "expended_from_fund": false
+          },
+          "explicit_ratio": [],
+          "payment": {
+            "prepaid": false,
+            "internal_copy": false,
+            "payment_status": {
+              "value": "NOT_PAID",
+              "desc": "Not Paid"
+            },
+            "voucher_date": "2022-01-12Z",
+            "voucher_number": "",
+            "voucher_amount": "0",
+            "voucher_currency": {
+              "value": "USD",
+              "desc": "US Dollar"
+            }
+          }
+        },
+        "invoice_lines": [
+          {
+            "type": {
+              "value": "REGULAR",
+              "desc": "Regular"
+            },
+            "number": "1",
+            "price": 100,
+            "total_price": 100,
+            "quantity": 1,
+            "fund_distribution": [
+              {
+                "fund_code": {
+                  "value": "C-IRC-HCAT",
+                  "desc": "Onsite Cataloging"
+                },
+                "amount": 100
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
