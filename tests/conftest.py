@@ -126,6 +126,7 @@ def po_line_record_all_fields():
             {"fund_code": {"value": "ABC"}, "amount": {"sum": "24.0"}}
         ],
         "note": [{"note_text": "CC-abc"}],
+        "location": [{"quantity": 1}, {"quantity": 1}],
     }
     return po_line_record_all
 
