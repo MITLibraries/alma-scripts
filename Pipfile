@@ -9,12 +9,12 @@ click = "*"
 cx-oracle = "*"
 defusedxml = "*"
 lxml = "*"
+moto = {extras = ["server"], version = "*"}
+paramiko = "*"
 python-dateutil = "*"
 requests = "*"
 s3-concat = "*"
 sentry-sdk = "*"
-moto = {extras = ["server"], version = "*"}
-paramiko = "*"
 
 [dev-packages]
 bandit = "*"
@@ -23,13 +23,12 @@ coveralls = "*"
 freezegun = "*"
 isort = "*"
 flake8 = "*"
-moto = {extras = ["s3"], version = "*"}
+mock-ssh-server = "*"
 pylama = "*"
 pytest = "*"
 pytest-cov = "*"
 pytest-env = "*"
 requests-mock = "*"
-mock-ssh-server = "*"
 
 [requires]
 python_version = "3.8"
