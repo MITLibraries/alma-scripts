@@ -4,11 +4,12 @@ import collections
 import json
 import logging
 from datetime import datetime
-from typing import List, Literal, Tuple
+from typing import List, Literal, Optional, Tuple
 
 from llama import CONFIG
 from llama.alma import Alma_API_Client
 from llama.email import Email
+from llama.sftp import SFTP
 from llama.ssm import SSM
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,35 @@ def retrieve_sorted_invoices(alma_client):
     """
     data = list(alma_client.get_invoices_by_status("Waiting to be Sent"))
     return sorted(data, key=lambda i: (i["vendor"].get("value", 0), i.get("number", 0)))
+
+
+def parse_invoice_records(
+    alma_client: Alma_API_Client, invoice_records: List[dict]
+) -> List[dict]:
+    """Parse a list of invoice records from Alma and return extracted SAP data."""
+    parsed_invoices = []
+    retrieved_vendors = {}
+    retrieved_funds = {}
+    for count, invoice_record in enumerate(invoice_records):
+        logger.info(
+            f"Extracting data for invoice {invoice_record['id']}, "
+            f"record {count + 1} of {len(invoice_records)}"
+        )
+        invoice_data = extract_invoice_data(invoice_record)
+        vendor_code = invoice_record["vendor"]["value"]
+        try:
+            invoice_data["vendor"] = retrieved_vendors[vendor_code]
+        except KeyError:
+            logger.debug(f"Retrieving data for vendor {vendor_code}")
+            retrieved_vendors[vendor_code] = populate_vendor_data(
+                alma_client, vendor_code
+            )
+            invoice_data["vendor"] = retrieved_vendors[vendor_code]
+        invoice_data["funds"], retrieved_funds = populate_fund_data(
+            alma_client, invoice_record, retrieved_funds
+        )
+        parsed_invoices.append(invoice_data)
+    return parsed_invoices
 
 
 def extract_invoice_data(invoice_record: dict) -> dict:
@@ -144,7 +174,7 @@ def populate_fund_data(
             try:
                 fund_record = retrieved_funds[fund_code]
             except KeyError:
-                logger.info(f"Retrieving data for fund {fund_code}")
+                logger.debug(f"Retrieving data for fund {fund_code}")
                 retrieved_funds[fund_code] = alma_client.get_fund_by_code(fund_code)
                 fund_record = retrieved_funds[fund_code]
             external_id = fund_record["fund"][0]["external_id"].strip()
@@ -161,6 +191,31 @@ def populate_fund_data(
             invoice_lines_total += amount
     fund_data = collections.OrderedDict(sorted(fund_data.items()))
     return fund_data, retrieved_funds
+
+
+def split_invoices_by_field_value(
+    invoices: List[dict],
+    field: str,
+    first_value: str,
+    second_value: Optional[str] = None,
+) -> List[dict]:
+    """Split a list of parsed invoices into two based on an invoice field's value.
+
+    Returns two lists, one of invoice dicts with the first value in the provided
+    field, and another of invoice dicts with the second value in the provided field. If
+    no second value is provided, the second list returned includes all invoices with
+    anything other than the first value in the field.
+    """
+    invoices_with_first_value = []
+    invoices_with_second_value = []
+    for invoice in invoices:
+        if invoice[field] == first_value:
+            invoices_with_first_value.append(invoice)
+        elif second_value is not None and invoice[field] == second_value:
+            invoices_with_second_value.append(invoice)
+        elif second_value is None:
+            invoices_with_second_value.append(invoice)
+    return invoices_with_first_value, invoices_with_second_value
 
 
 def generate_report(today: datetime, invoices: List[dict]) -> str:
@@ -323,7 +378,7 @@ def generate_sap_data(today: datetime, invoices: List[dict]) -> str:
         sap_data += " "  # payment block
         sap_data += "X"  # individual payee in document
         sap_data += f"{invoice['vendor']['name']: <35.35}"
-        sap_data += f"{invoice['vendor']['address']['city']: <35.35}"
+        sap_data += f"{invoice['vendor']['address']['city'] or ' ': <35.35}"
         sap_data += f"{payee_name_line_2: <35.35}"
         sap_data += po_box_indicator
         sap_data += f"{street_or_po_box_num: <35.35}"
@@ -436,3 +491,137 @@ def update_sap_sequence(
         CONFIG.SSM_PATH + "SAP_SEQUENCE", new_sap_sequence, "StringList"
     )
     return response
+
+
+def calculate_invoices_total_amount(invoices: List[dict]) -> float:
+    total_amount = 0
+    for invoice in invoices:
+        total_amount += float(invoice["total amount"])
+    return total_amount
+
+
+def generate_sap_file_names(sequence_number: str, date: datetime) -> (str, str):
+    date_string = date.strftime("%Y%m%d000000")
+    data_file_name = f"dlibsapg.{sequence_number}.{date_string}"
+    control_file_name = f"clibsapg.{sequence_number}.{date_string}"
+    return data_file_name, control_file_name
+
+
+def mark_invoices_paid(invoices: List[dict], date: datetime):
+    paid_invoice_count = 0
+    alma_client = Alma_API_Client(
+        CONFIG.get_alma_api_key("ALMA_API_ACQ_READ_WRITE_KEY")
+    )
+    alma_client.set_content_headers("application/json", "application/json")
+    for invoice in invoices:
+        invoice_id = invoice["id"]
+        logger.debug(f"Marking invoice '{invoice_id}' paid")
+        response = alma_client.mark_invoice_paid(
+            invoice_id, date, invoice["total amount"], invoice["currency"]
+        )
+        if response["payment"]["payment_status"]["value"] == "PAID":
+            logger.debug(f"Invoice '{invoice_id}' marked as paid in Alma")
+            paid_invoice_count += 1
+        else:
+            logger.error(
+                f"Something went wrong marking invoice '{invoice_id}' paid in Alma, it "
+                "should be investigated manually"
+            )
+    return paid_invoice_count
+
+
+def run(
+    invoices: List[dict],
+    invoices_type: Literal["monograph", "serial"],
+    sap_sequence_number: str,  # Just the sequence number, e.g. "0003"
+    date: datetime,
+    final_run: bool,
+    real_run: bool,
+):
+    logger.info(f"Starting file generation process for {invoices_type} run")
+    data_file_name, control_file_name = generate_sap_file_names(
+        sap_sequence_number, date
+    )
+    logger.info(f"Generated next SAP file names: {data_file_name}, {control_file_name}")
+
+    logger.info(f"Generating {invoices_type}s summary")
+    summary = generate_summary(invoices, data_file_name, control_file_name)
+
+    logger.info(f"Generating {invoices_type}s report")
+    report = generate_report(date, invoices)
+
+    sap_invoices, other_payment_invoices = split_invoices_by_field_value(
+        invoices, "payment method", "ACCOUNTINGDEPARTMENT"
+    )
+
+    if final_run:
+        sap_invoices_total_amount = calculate_invoices_total_amount(sap_invoices)
+
+        logger.info("Final run, generating files for SAP")
+        data_file_contents = generate_sap_data(date, sap_invoices)
+        control_file_contents = generate_sap_control(
+            data_file_contents, sap_invoices_total_amount
+        )
+        logger.info(
+            f"{invoices_type.title()}s data file contents:\n{data_file_contents}"
+        )
+        logger.info(
+            f"{invoices_type.title()}s control file contents:\n{control_file_contents}"
+        )
+
+        if real_run:
+            # Send data and control files to SAP dropbox via SFTP
+            logger.info("Real run, sending files to SAP dropbox")
+            sftp = SFTP()
+            sftp.authenticate(
+                CONFIG.SAP_DROPBOX_HOST,
+                CONFIG.SAP_DROPBOX_PORT,
+                CONFIG.SAP_DROPBOX_USER,
+                CONFIG.SAP_DROPBOX_KEY,
+            )
+            sftp.send_file(data_file_contents, f"dropbox/{data_file_name}")
+            logger.info(
+                f"Sent data file '{data_file_name}' to SAP dropbox {CONFIG.ENV}"
+            )
+            sftp.send_file(control_file_contents, f"dropbox/{control_file_name}")
+            logger.info(
+                f"Sent control file '{control_file_name}' to SAP dropbox {CONFIG.ENV}"
+            )
+
+            # Update sequence numbers in SSM
+            logger.info("Real run, updating SAP sequence in Parameter Store")
+            update_sap_sequence(
+                sap_sequence_number,
+                date,
+                "mono" if invoices_type == "monograph" else "ser",
+            )
+
+            # Update invoice statuses in Alma
+            logger.info("Real run, marking invoices PAID in Alma")
+            count = mark_invoices_paid(invoices, date)
+            logger.info(
+                f"{count} {invoices_type} invoices successfully marked as paid in Alma"
+            )
+
+    if real_run:
+        email = generate_sap_report_email(
+            summary,
+            report,
+            "mono" if invoices_type == "monograph" else invoices_type,
+            date,
+            final_run,
+        )
+        response = email.send()
+        logger.info(
+            f"{invoices_type.title()}s email sent with message ID: "
+            f"{response['MessageId']}"
+        )
+    else:
+        logger.info(f"{invoices_type.title()}s summary:\n{summary}\n")
+        logger.info(f"{invoices_type.title()}s report:\n{report}\n")
+
+    return {
+        "total invoices": len(invoices),
+        "sap invoices": len(sap_invoices),
+        "other invoices": len(other_payment_invoices),
+    }

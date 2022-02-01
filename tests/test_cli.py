@@ -2,6 +2,7 @@ import boto3
 from freezegun import freeze_time
 from moto import mock_ses
 
+from llama import CONFIG
 from llama.cli import cli
 
 
@@ -159,7 +160,7 @@ def test_create_sandbox_sap_data(mocked_alma_sample_data, runner):
     assert result.exit_code == 0
 
 
-def test_sap_invoices_review_run(runner, mocked_alma, mocked_ses):
+def test_sap_invoices_review_run(runner, mocked_alma, mocked_ses, mocked_ssm):
     result = runner.invoke(cli, ["sap-invoices"])
     assert result.exit_code == 0
 
@@ -169,16 +170,26 @@ def test_sap_invoices_review_run_no_invoices(runner, mocked_alma_no_invoices):
     assert result.exit_code == 1
 
 
-def test_sap_invoices_review_run_dry_run(runner, mocked_alma):
-    result = runner.invoke(cli, ["sap-invoices", "--dry-run"])
+def test_sap_invoices_review_run_real_run(runner, mocked_alma, mocked_ses, mocked_ssm):
+    result = runner.invoke(cli, ["sap-invoices", "--real-run"])
     assert result.exit_code == 0
 
 
-def test_sap_invoices_final_run(runner, mocked_alma, mocked_ses):
+def test_sap_invoices_final_run(runner, mocked_alma, mocked_ssm):
     result = runner.invoke(cli, ["sap-invoices", "--final-run"])
     assert result.exit_code == 0
 
 
-def test_sap_invoices_final_run_dry_run(runner, mocked_alma):
-    result = runner.invoke(cli, ["sap-invoices", "--final-run", "--dry-run"])
+def test_sap_invoices_final_run_real_run(
+    runner,
+    mocked_alma,
+    mocked_ses,
+    mocked_sftp_server,
+    mocked_ssm,
+    test_sftp_private_key,
+):
+    CONFIG.SAP_DROPBOX_HOST = mocked_sftp_server.host
+    CONFIG.SAP_DROPBOX_PORT = mocked_sftp_server.port
+    CONFIG.SAP_DROPBOX_KEY = test_sftp_private_key
+    result = runner.invoke(cli, ["sap-invoices", "--final-run", "--real-run"])
     assert result.exit_code == 0

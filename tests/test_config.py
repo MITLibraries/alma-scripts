@@ -81,8 +81,8 @@ def test_prod_stage_config_missing_values_raises_error(mocked_ssm, monkeypatch):
     )
 
 
-def test_load_other_env_config_success(monkeypatch, sftp_server_private_key):
-    monkeypatch.setenv("SAP_DROPBOX_KEY", sftp_server_private_key)
+def test_load_other_env_config_success(monkeypatch, test_sftp_private_key):
+    monkeypatch.setenv("SAP_DROPBOX_KEY", test_sftp_private_key)
     config = Config()
     assert config.ENV == "test"
     assert config.SSM_PATH == "/test/example/"

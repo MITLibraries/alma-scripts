@@ -61,13 +61,29 @@ def mocked_alma(po_line_record_all_fields):
         )
         m.post("http://example.com/acq/invoices", json=invoices_json["invoice"][0])
         with open("tests/fixtures/invoice_paid.json") as f:
-            m.post("http://example.com/acq/invoices/558809630001021", json=json.load(f))
+            data = json.load(f)
+            m.post(
+                "http://example.com/acq/invoices/0000055555000000?op=paid",
+                complete_qs=True,
+                json=data,
+            )
+            m.post("http://example.com/acq/invoices/558809630001021", json=data)
+            m.post("http://example.com/acq/invoices/01", json=data)
+            m.post("http://example.com/acq/invoices/02", json=data)
         with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
             m.post(
                 "http://example.com/acq/invoices/00000055555000000", json=json.load(f)
             )
         with open("tests/fixtures/invoice_line.json") as f:
             m.post("http://example.com/acq/invoices/123456789/lines", json=json.load(f))
+        m.post(
+            "http://example.com/acq/invoices/03",
+            json={"payment": {"payment_status": {"desc": "string", "value": "WRONG"}}},
+        )
+        m.post(
+            "http://example.com/acq/invoices/0000055555000001",
+            json={"payment": {"payment_status": {"desc": "string", "value": "WRONG"}}},
+        )
 
         # PO Line endpoints
         m.get(
@@ -272,8 +288,26 @@ def mocked_ses(aws_credentials):
         yield ses
 
 
+@pytest.fixture
+def mocked_sftp_server():
+    users = {
+        "test-dropbox-user": "tests/fixtures/sample-ssh-key",
+    }
+    with mockssh.Server(users) as s:
+        client = s.client("test-dropbox-user")
+        client.exec_command("mkdir dropbox")
+        yield s
+        client.exec_command("rm -r dropbox")
+
+
+@pytest.fixture
+def test_sftp_private_key():
+    with open("tests/fixtures/sample-ssh-key", "r") as f:
+        yield f.read()
+
+
 @pytest.fixture(scope="function")
-def mocked_ssm(aws_credentials, sftp_server_private_key):
+def mocked_ssm(aws_credentials, test_sftp_private_key):
     with mock_ssm():
         ssm = boto3.client("ssm", region_name="us-east-1")
         ssm.put_parameter(
@@ -317,39 +351,14 @@ def mocked_ssm(aws_credentials, sftp_server_private_key):
             Type="String",
         )
         ssm.put_parameter(
-            Name="/test/example/SAP_REPLY_TO_EMAIL",
-            Value="replyto@example.com",
-            Type="String",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SAP_FINAL_RECIPIENT_EMAILS",
-            Value="final_1@example.com,final_2@example.com",
-            Type="StringList",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SAP_REVIEW_RECIPIENT_EMAILS",
-            Value="review@example.com",
-            Type="StringList",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SES_SEND_FROM_EMAIL",
-            Value="from@example.com",
-            Type="String",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SENTRY_DSN",
-            Value="sentry_123456",
-            Type="SecureString",
-        )
-        ssm.put_parameter(
-            Name="/test/example/SAP_SEQUENCE",
-            Value="1001,20210722000000,ser",
-            Type="StringList",
-        )
-        ssm.put_parameter(
             Name="/test/example/SAP_DROPBOX_HOST",
             Value="stage.host",
             Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_DROPBOX_KEY",
+            Value=test_sftp_private_key,
+            Type="SecureString",
         )
         ssm.put_parameter(
             Name="/test/example/SAP_DROPBOX_PORT",
@@ -362,9 +371,34 @@ def mocked_ssm(aws_credentials, sftp_server_private_key):
             Type="String",
         )
         ssm.put_parameter(
-            Name="/test/example/SAP_DROPBOX_KEY",
-            Value=sftp_server_private_key,
+            Name="/test/example/SAP_FINAL_RECIPIENT_EMAILS",
+            Value="final_1@example.com,final_2@example.com",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_REPLY_TO_EMAIL",
+            Value="replyto@example.com",
+            Type="String",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_REVIEW_RECIPIENT_EMAILS",
+            Value="review@example.com",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SAP_SEQUENCE",
+            Value="1001,20210722000000,ser",
+            Type="StringList",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SENTRY_DSN",
+            Value="sentry_123456",
             Type="SecureString",
+        )
+        ssm.put_parameter(
+            Name="/test/example/SES_SEND_FROM_EMAIL",
+            Value="from@example.com",
+            Type="String",
         )
         yield ssm
 
@@ -638,7 +672,7 @@ def invoices_for_sap_with_different_payment_method():
         },
         {
             "date": datetime(2021, 5, 12),
-            "id": "0000055555000000",
+            "id": "0000055555000001",
             "number": "12345",
             "type": "monograph",
             "payment method": "BAZ",
@@ -785,18 +819,3 @@ D\
  \
 \n"
     return sap_data
-
-
-@pytest.fixture
-def sftp_server():
-    users = {
-        "test-dropbox-user": "tests/fixtures/sample-ssh-key",
-    }
-    with mockssh.Server(users) as s:
-        yield s
-
-
-@pytest.fixture
-def sftp_server_private_key():
-    with open("tests/fixtures/sample-ssh-key", "r") as f:
-        yield f.read()

@@ -146,21 +146,27 @@ def create_sandbox_sap_data(ctx):
 
 @cli.command()
 @click.option(
-    "--dry-run",
-    is_flag=True,
-    help="If dry-run flag is passed, files will not be emailed or sent to SAP, instead "
-    "their contents will be logged for review. Invoices will also not be marked as "
-    "paid in Alma. Can be used with the final-run flag to do a dry run of the entire "
-    "process, or without the final-run flag to only dry run the creation of review "
-    "reports.",
-)
-@click.option(
     "--final-run",
     is_flag=True,
-    help="Flag to indicate this is a final run and files should be submitted to SAP.",
+    help="Flag to indicate this is a final run and should include all steps of the "
+    "process. Default if this flag is not passed is to do a review run, which only "
+    "creates and sends summary and report files for review by stakeholders. Note: some "
+    "steps of a final run will not be completed unless the '--real-run' flag is also "
+    "passed, however that will write data to external systems and should thus be used "
+    "with caution. See '--real-run' option documentation for details.",
+)
+@click.option(
+    "--real-run",
+    is_flag=True,
+    help="USE WITH CAUTION. If '--real-run' flag is passed, files will be emailed "
+    "to stakeholders and, if the '--final-run' flag is also passed, invoices will be "
+    "sent to SAP and marked as paid in Alma. If this flag is not passed, this command "
+    "defaults to a dry run, in which files will not be emailed or sent to SAP, instead "
+    "their contents will be logged for review, and invoices will also not be marked as "
+    "paid in Alma.",
 )
 @click.pass_context
-def sap_invoices(ctx, dry_run, final_run):
+def sap_invoices(ctx, final_run, real_run):
     """Process invoices for payment via SAP.
 
     Retrieves "Waiting to be sent" invoices from Alma, extracts and formats data
@@ -172,12 +178,12 @@ def sap_invoices(ctx, dry_run, final_run):
     logger.info(
         f"Starting SAP invoices process with options:\n"
         f"    Date: {ctx.obj['today']}\n"
-        f"    Dry run: {dry_run}\n"
         f"    Final run: {final_run}\n"
+        f"    Real run: {real_run}"
     )
 
-    # Retrieve and sort invoices from Alma. Log result or abort process if no invoices
-    # retrieved.
+    # Retrieve and sort invoices from Alma, log result or abort process if no invoices
+    # retrieved
     alma_client = Alma_API_Client(CONFIG.get_alma_api_key("ALMA_API_ACQ_READ_KEY"))
     alma_client.set_content_headers("application/json", "application/json")
     invoice_records = sap.retrieve_sorted_invoices(alma_client)
@@ -189,99 +195,46 @@ def sap_invoices(ctx, dry_run, final_run):
         )
         raise click.Abort()
 
-    # For each invoice retrieved, parse and extract invoice data and save to either
-    # monograph or serial invoice list depending on purchase type. Log result.
-    monograph_invoices = []
-    serial_invoices = []
-    retrieved_vendors = {}
-    retrieved_funds = {}
-    for count, invoice_record in enumerate(invoice_records):
-        logger.info(
-            f"Extracting data for invoice #{invoice_record['id']}, "
-            f"record {count} of {len(invoice_records)}"
-        )
-        invoice_data = sap.extract_invoice_data(invoice_record)
-        vendor_code = invoice_record["vendor"]["value"]
-        try:
-            invoice_data["vendor"] = retrieved_vendors[vendor_code]
-        except KeyError:
-            logger.info(f"Retrieving data for vendor {vendor_code}")
-            retrieved_vendors[vendor_code] = sap.populate_vendor_data(
-                alma_client, vendor_code
-            )
-            invoice_data["vendor"] = retrieved_vendors[vendor_code]
-        invoice_data["funds"], retrieved_funds = sap.populate_fund_data(
-            alma_client, invoice_record, retrieved_funds
-        )
-        if invoice_data["type"] == "monograph":
-            monograph_invoices.append(invoice_data)
-        else:
-            serial_invoices.append(invoice_data)
+    # Parse retrieved invoices and extract data needed for SAP
+    parsed_invoices = sap.parse_invoice_records(alma_client, invoice_records)
+
+    # Split invoices into monographs and serials
+    monograph_invoices, serial_invoices = sap.split_invoices_by_field_value(
+        parsed_invoices, "type", "monograph", "serial"
+    )
+    logger.info(f"{len(monograph_invoices)} monograph invoices retrieved and parsed.")
+    logger.info(f"{len(serial_invoices)} serial invoices retrieved and parsed.")
+
+    # Do the SAP run for monograph invoices, then serial invoices
+    monograph_sequence_number = sap.generate_next_sap_sequence_number()
+    serial_sequence_number = str(int(monograph_sequence_number) + 1)
+    monograph_result = sap.run(
+        monograph_invoices,
+        "monograph",
+        monograph_sequence_number,
+        ctx.obj["today"],
+        final_run,
+        real_run,
+    )
+    serial_result = sap.run(
+        serial_invoices,
+        "serial",
+        serial_sequence_number,
+        ctx.obj["today"],
+        final_run,
+        real_run,
+    )
+
+    # Log the final outcome
     logger.info(
-        f"{len(monograph_invoices)} monograph invoices retrieved and extracted."
-    )
-    logger.info(f"{len(serial_invoices)} serial invoices retrieved and extracted.")
-
-    # Generate next sequence numbers from SSM and create data and control file names
-    monograph_data_file_name = "TODO: monos-data-file-name-from-sequence-number"
-    serial_data_file_name = "TODO: serials-data-file-name-from-sequence-number"
-    monograph_control_file_name = "TODO: monos-control-file-name-from-sequence-number"
-    serial_control_file_name = "TODO: serials-control-file-name-from-sequence-number"
-
-    # Generate summaries
-    logger.info("Generating summaries")
-    monograph_summary = sap.generate_summary(
-        monograph_invoices, monograph_data_file_name, monograph_control_file_name
-    )
-    serial_summary = sap.generate_summary(
-        serial_invoices, serial_data_file_name, serial_control_file_name
-    )
-
-    # Generate formatted reports
-    logger.info("Generating reports")
-    monograph_report = sap.generate_report(ctx.obj["today"], monograph_invoices)
-    serial_report = sap.generate_report(ctx.obj["today"], serial_invoices)
-
-    # Log summaries and reports if dry run, otherwise send mono and serial emails with
-    # summary in body and report as attachment (email recipient, subject, and
-    # attachment file name differ for review vs. final run)
-    if dry_run:
-        logger.info(f"Monographs summary:\n{monograph_summary}")
-        logger.info(f"Monographs report:\n{monograph_report}")
-        logger.info(f"Serials summary:\n{serial_summary}")
-        logger.info(f"Serials report:\n{serial_report}")
-    else:
-        email = sap.generate_sap_report_email(
-            monograph_summary, monograph_report, "mono", ctx.obj["today"], final_run
-        )
-        response = email.send()
-        logger.info("Monographs email sent with message ID: %s", response["MessageId"])
-        email = sap.generate_sap_report_email(
-            serial_summary, serial_report, "serial", ctx.obj["today"], final_run
-        )
-        response = email.send()
-        logger.info("Serials email sent with message ID: %s", response["MessageId"])
-
-    if final_run:
-        # Generate data files to send to SAP
-
-        # Generate control files to send to SAP
-
-        if dry_run:
-            # Log data and control file contents
-            pass
-        else:
-            # Send data and control files to SAP dropbox via SFTP
-
-            # Update sequence numbers in SSM
-
-            # Update invoice statuses in Alma
-            pass
-
-    run_type = "final" if final_run else "review"
-    logger.info(
-        f"SAP invoice process completed for a {run_type} run:\n"
-        f"    {len(monograph_invoices)} monograph invoices retrieved and processed\n"
-        f"    {len(serial_invoices)} serial invoices retrieved and processed\n"
-        f"    {len(invoice_records)} total invoices retrieved and processed\n"
+        f"SAP invoice process completed for a {'final' if final_run else 'review'} "
+        f"run\n"
+        f"  {monograph_result['total invoices']} monograph invoices retrieved and "
+        "processed:\n"
+        f"    {monograph_result['sap invoices']} SAP monograph invoices\n"
+        f"    {monograph_result['other invoices']} other payment monograph invoices\n"
+        f"  {serial_result['total invoices']} serial invoices retrieved and "
+        "processed\n"
+        f"    {serial_result['sap invoices']} SAP serial invoices\n"
+        f"    {serial_result['other invoices']} other payment serial invoices\n"
     )
