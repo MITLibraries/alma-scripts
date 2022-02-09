@@ -23,6 +23,7 @@ class SFTP:
             username=username,
             look_for_keys=False,
             pkey=pkey,
+            disabled_algorithms={"keys": ["rsa-sha2-256", "rsa-sha2-512"]},
         )
 
     def send_file(

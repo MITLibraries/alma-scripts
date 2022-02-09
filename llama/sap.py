@@ -587,6 +587,7 @@ def run(
             logger.info(
                 f"Sent control file '{control_file_name}' to SAP dropbox {CONFIG.ENV}"
             )
+            sftp.client.close()
 
             # Update sequence numbers in SSM
             logger.info("Real run, updating SAP sequence in Parameter Store")
