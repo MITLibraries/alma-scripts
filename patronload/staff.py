@@ -11,7 +11,8 @@ from dateutil.relativedelta import relativedelta
 import cx_Oracle
 
 sys.path.append("..")
-import llama.config as config
+from llama import CONFIG
+
 
 
 def xstr(s):
@@ -59,12 +60,13 @@ staff_rejects = open("rejects_staff_script.txt", "w")
 
 # Start Oracle data import #
 dsn = cx_Oracle.makedsn(
-    config.DATA_WAREHOUSE_HOST, config.DATA_WAREHOUSE_PORT, config.DATA_WAREHOUSE_SID
+    CONFIG.DATA_WAREHOUSE_HOST, CONFIG.DATA_WAREHOUSE_PORT, CONFIG.DATA_WAREHOUSE_SID
 )
 
+cx_Oracle.init_oracle_client()
 connection = cx_Oracle.connect(
-    config.DATA_WAREHOUSE_USER,
-    config.DATA_WAREHOUSE_PASSWORD,
+    CONFIG.DATA_WAREHOUSE_USER,
+    CONFIG.DATA_WAREHOUSE_PASSWORD,
     dsn,
 )
 cursor = connection.cursor()

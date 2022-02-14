@@ -2,6 +2,7 @@ import boto3
 from freezegun import freeze_time
 from moto import mock_ses
 
+from llama import CONFIG
 from llama.cli import cli
 
 
@@ -24,7 +25,6 @@ def test_cc_slips_date_provided(mocked_alma, mocked_ssm, runner):
         ],
     )
     assert result.exit_code == 0
-    assert result.output.startswith("Email sent! Message ID:")
 
 
 @mock_ses
@@ -45,7 +45,6 @@ def test_cc_slips_no_date_provided(mocked_alma, mocked_ssm, runner):
         ],
     )
     assert result.exit_code == 0
-    assert result.output.startswith("Email sent! Message ID:")
 
 
 @mock_ses
@@ -67,7 +66,6 @@ def test_cc_slips_no_records_for_date_provided(mocked_alma, mocked_ssm, runner):
         ],
     )
     assert result.exit_code == 0
-    assert result.output.startswith("Email sent! Message ID:")
 
 
 def test_concat_timdex_export_all_options_provided_success(mocked_s3, runner, s3):
@@ -155,3 +153,43 @@ def test_concat_timdex_export_bucket_error(mocked_s3, runner):
     )
     assert result.exit_code == 1
     assert "One or more supplied buckets does not exist" in result.output
+
+
+def test_create_sandbox_sap_data(mocked_alma_sample_data, runner):
+    result = runner.invoke(cli, ["create-sandbox-sap-data"])
+    assert result.exit_code == 0
+
+
+def test_sap_invoices_review_run(runner, mocked_alma, mocked_ses, mocked_ssm):
+    result = runner.invoke(cli, ["sap-invoices"])
+    assert result.exit_code == 0
+
+
+def test_sap_invoices_review_run_no_invoices(runner, mocked_alma_no_invoices):
+    result = runner.invoke(cli, ["sap-invoices"])
+    assert result.exit_code == 1
+
+
+def test_sap_invoices_review_run_real_run(runner, mocked_alma, mocked_ses, mocked_ssm):
+    result = runner.invoke(cli, ["sap-invoices", "--real-run"])
+    assert result.exit_code == 0
+
+
+def test_sap_invoices_final_run(runner, mocked_alma, mocked_ssm):
+    result = runner.invoke(cli, ["sap-invoices", "--final-run"])
+    assert result.exit_code == 0
+
+
+def test_sap_invoices_final_run_real_run(
+    runner,
+    mocked_alma,
+    mocked_ses,
+    mocked_sftp_server,
+    mocked_ssm,
+    test_sftp_private_key,
+):
+    CONFIG.SAP_DROPBOX_HOST = mocked_sftp_server.host
+    CONFIG.SAP_DROPBOX_PORT = mocked_sftp_server.port
+    CONFIG.SAP_DROPBOX_KEY = test_sftp_private_key
+    result = runner.invoke(cli, ["sap-invoices", "--final-run", "--real-run"])
+    assert result.exit_code == 0

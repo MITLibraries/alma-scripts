@@ -268,7 +268,6 @@
         "line4": "string",
         "line5": "string",
         "city": "string",
-        "state_province": "string",
         "postal_code": "string",
         "country": {
           "value": "VUT"
