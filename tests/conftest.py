@@ -508,8 +508,8 @@ def invoices_for_sap():
             "funds": {
                 "123456-0000001": {
                     "amount": 150,
-                    "G/L account": "123456",
-                    "cost object": "0000001",
+                    "cost object": "123456",
+                    "G/L account": "0000001",
                 },
             },
         },
@@ -537,23 +537,23 @@ def invoices_for_sap():
             "funds": {
                 "123456-0000001": {
                     "amount": 608,
-                    "G/L account": "123456",
-                    "cost object": "0000001",
+                    "cost object": "123456",
+                    "G/L account": "0000001",
                 },
                 "123456-0000002": {
                     "amount": 148.50,
-                    "G/L account": "123456",
-                    "cost object": "0000002",
+                    "cost object": "123456",
+                    "G/L account": "0000002",
                 },
                 "1123456-0000003": {
                     "amount": 235.54,
-                    "G/L account": "123456",
-                    "cost object": "0000003",
+                    "cost object": "123456",
+                    "G/L account": "0000003",
                 },
                 "123456-0000004": {
                     "amount": 75,
-                    "G/L account": "123456",
-                    "cost object": "0000004",
+                    "cost object": "123456",
+                    "G/L account": "0000004",
                 },
             },
         },
@@ -581,8 +581,8 @@ def invoices_for_sap():
             "funds": {
                 "123456-0000001": {
                     "amount": 150,
-                    "G/L account": "123456",
-                    "cost object": "0000001",
+                    "cost object": "123456",
+                    "G/L account": "0000001",
                 },
             },
         },
@@ -621,8 +621,8 @@ def invoices_for_sap_with_different_payment_method():
             "funds": {
                 "123456-0000001": {
                     "amount": 150,
-                    "G/L account": "123456",
-                    "cost object": "0000001",
+                    "cost object": "123456",
+                    "G/L account": "0000001",
                 },
             },
         },
@@ -650,23 +650,23 @@ def invoices_for_sap_with_different_payment_method():
             "funds": {
                 "123456-0000001": {
                     "amount": 608,
-                    "G/L account": "123456",
-                    "cost object": "0000001",
+                    "cost object": "123456",
+                    "G/L account": "0000001",
                 },
                 "123456-0000002": {
                     "amount": 148.50,
-                    "G/L account": "123456",
-                    "cost object": "0000002",
+                    "cost object": "123456",
+                    "G/L account": "0000002",
                 },
                 "1123456-0000003": {
                     "amount": 235.54,
-                    "G/L account": "123456",
-                    "cost object": "0000003",
+                    "cost object": "123456",
+                    "G/L account": "0000003",
                 },
                 "123456-0000004": {
                     "amount": 75,
-                    "G/L account": "123456",
-                    "cost object": "0000004",
+                    "cost object": "123456",
+                    "G/L account": "0000004",
                 },
             },
         },
@@ -694,8 +694,8 @@ def invoices_for_sap_with_different_payment_method():
             "funds": {
                 "123456-0000001": {
                     "amount": 150,
-                    "G/L account": "123456",
-                    "cost object": "0000001",
+                    "cost object": "123456",
+                    "G/L account": "0000001",
                 },
             },
         },
@@ -735,8 +735,8 @@ US \
                                    \
 \n\
 D\
-123456    \
-0000001     \
+0000001   \
+123456      \
           150.00\
  \
 \n\
@@ -765,26 +765,26 @@ US \
                                    \
 \n\
 C\
-123456    \
-0000001     \
+0000001   \
+123456      \
           608.00\
  \
 \n\
 C\
-123456    \
-0000002     \
+0000002   \
+123456      \
           148.50\
  \
 \n\
 C\
-123456    \
-0000003     \
+0000003   \
+123456      \
           235.54\
  \
 \n\
 D\
-123456    \
-0000004     \
+0000004   \
+123456      \
            75.00\
  \
 \n\
@@ -813,8 +813,8 @@ US \
                                    \
 \n\
 D\
-123456    \
-0000001     \
+0000001   \
+123456      \
           150.00\
  \
 \n"
