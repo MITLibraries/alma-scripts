@@ -185,8 +185,8 @@ def populate_fund_data(
             except KeyError:
                 fund_data[external_id] = {
                     "amount": amount,
-                    "G/L account": external_id.split("-")[0],
-                    "cost object": external_id.split("-")[1],
+                    "cost object": external_id.split("-")[0],
+                    "G/L account": external_id.split("-")[1],
                 }
             invoice_lines_total += amount
     fund_data = collections.OrderedDict(sorted(fund_data.items()))
@@ -247,8 +247,8 @@ def generate_report(today: datetime, invoices: List[dict]) -> str:
         for fund in invoice["funds"]:
             report += f"{invoice['number'] + invoice['date'].strftime('%y%m%d'):<23}"
             report += (
-                f"{invoice['funds'][fund]['G/L account']} "
-                f"{invoice['funds'][fund]['cost object']}     "
+                f"{invoice['funds'][fund]['cost object']} "
+                f"{invoice['funds'][fund]['G/L account']}     "
             )
             report += f"{invoice['funds'][fund]['amount']:<18,.2f}"
             report += f"{invoice['date'].strftime('%m/%d/%Y')}\n"

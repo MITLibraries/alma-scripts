@@ -172,18 +172,18 @@ def test_populate_fund_data_success(mocked_alma, mocked_alma_api_client):
     fund_data_ordereddict = collections.OrderedDict()
     fund_data_ordereddict["1234567-000001"] = {
         "amount": 3687.32,
-        "G/L account": "1234567",
-        "cost object": "000001",
+        "cost object": "1234567",
+        "G/L account": "000001",
     }
     fund_data_ordereddict["1234567-000002"] = {
         "amount": 299,
-        "G/L account": "1234567",
-        "cost object": "000002",
+        "cost object": "1234567",
+        "G/L account": "000002",
     }
     fund_data_ordereddict["1234567-000003"] = {
         "amount": 69.75,
-        "G/L account": "1234567",
-        "cost object": "000003",
+        "cost object": "1234567",
+        "G/L account": "000003",
     }
 
     assert fund_data == fund_data_ordereddict
@@ -219,18 +219,18 @@ def test_generate_report_success():
             "funds": {
                 "1234567-000001": {
                     "amount": 3687.32,
-                    "G/L account": "1234567",
-                    "cost object": "000001",
+                    "cost object": "1234567",
+                    "G/L account": "000001",
                 },
                 "1234567-000002": {
                     "amount": 299,
-                    "G/L account": "1234567",
-                    "cost object": "000002",
+                    "cost object": "1234567",
+                    "G/L account": "000002",
                 },
                 "1234567-000003": {
                     "amount": 69.75,
-                    "G/L account": "1234567",
-                    "cost object": "000003",
+                    "cost object": "1234567",
+                    "G/L account": "000003",
                 },
             },
         }
