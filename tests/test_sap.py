@@ -382,6 +382,12 @@ def test_generate_sap_data_success(invoices_for_sap, sap_data_file):
     assert report == sap_data_file
 
 
+def test_calculate_invoices_total_amount():
+    invoices = [dict(zip(["total amount"], [0.1])) for x in range(100)]
+    total_amount = sap.calculate_invoices_total_amount(invoices)
+    assert total_amount == 10
+
+
 def test_generate_summary(invoices_for_sap_with_different_payment_method):
     dfile = "dlibsapg.1001.202110518000000"
     cfile = "clibsapg.1001.202110518000000"

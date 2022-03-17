@@ -4,6 +4,7 @@ import collections
 import json
 import logging
 from datetime import datetime
+from math import fsum
 from typing import List, Literal, Optional, Tuple
 
 from llama import CONFIG
@@ -495,8 +496,7 @@ def update_sap_sequence(
 
 def calculate_invoices_total_amount(invoices: List[dict]) -> float:
     total_amount = 0
-    for invoice in invoices:
-        total_amount += float(invoice["total amount"])
+    total_amount = fsum([invoice["total amount"] for invoice in invoices])
     return total_amount
 
 
