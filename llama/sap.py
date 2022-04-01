@@ -303,47 +303,23 @@ def generate_sap_report_email(
 
 def format_address_for_sap(address_lines: List):
     """Assign payee address information to SAP data file fields"""
-    street_or_po_box_num = " "
-    po_box_indicator = " "
-    po_index = -1
-    # Determine if this is a P.O. Box address or a street address
-    for i, line in enumerate(address_lines):
-        normalized_line = line.lower().replace(".", "").replace(" ", "")
-        if "pobox" in normalized_line:
-            po_box_indicator = "X"
-            street_or_po_box_num = normalized_line.replace("pobox", "")
-            po_index = i
-    # If the PO box was found in the first element in the address lines list, then
-    # make the payee_name_line_2 blank
-    if po_index == 0:
-        payee_name_line_2 = " "
 
-    # If the PO box was found in the second address lines element, then
-    # assign the first address lines element to the payee_name_line_2
-    elif po_index == 1:
-        payee_name_line_2 = address_lines[0]
+    payee_name_line_2 = address_lines[0]
 
-    # we didn't find "pobox" so this must be a street address
-    # SAP doesn't support multiple address lines, so we assign the first address
-    # line to the payee_name_line_2 field.
-    else:
-        payee_name_line_2 = address_lines[0]
+    # if there is a second address line element we
+    # assign it to the street_or_po_box_num field
+    try:
+        street_or_po_box_num = address_lines[1]
+    except IndexError:
+        street_or_po_box_num = " "
 
-        # if there is a second address line element we
-        # assign it to the street_or_po_box_num field
-        try:
-            street_or_po_box_num = address_lines[1]
-        except IndexError:
-            street_or_po_box_num = " "
-
-    # regardless of whether it was a PO box or street address
     # if there is a third address lines list element we assign it to payee_name_line_3
     try:
         payee_name_line_3 = address_lines[2]
     except IndexError:
         payee_name_line_3 = " "
 
-    return po_box_indicator, payee_name_line_2, street_or_po_box_num, payee_name_line_3
+    return payee_name_line_2, street_or_po_box_num, payee_name_line_3
 
 
 def generate_sap_data(today: datetime, invoices: List[dict]) -> str:
@@ -355,7 +331,6 @@ def generate_sap_data(today: datetime, invoices: List[dict]) -> str:
     sap_data = ""
     for invoice in invoices:
         (
-            po_box_indicator,
             payee_name_line_2,
             street_or_po_box_num,
             payee_name_line_3,
@@ -381,7 +356,9 @@ def generate_sap_data(today: datetime, invoices: List[dict]) -> str:
         sap_data += f"{invoice['vendor']['name']: <35.35}"
         sap_data += f"{invoice['vendor']['address']['city'] or ' ': <35.35}"
         sap_data += f"{payee_name_line_2: <35.35}"
-        sap_data += po_box_indicator
+        # We treat all addresses as street addresses.
+        # PO Box indicator should always be blank.
+        sap_data += " "  # PO Box indicator
         sap_data += f"{street_or_po_box_num: <35.35}"
         sap_data += f"{invoice['vendor']['address']['postal code'] or ' ': <10.10}"
         sap_data += f"{invoice['vendor']['address']['state or province'] or ' ': <3.3}"
