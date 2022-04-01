@@ -309,12 +309,10 @@ def test_generate_sap_report_email_review_run():
 def test_format_address_street_1_line():
     address_lines = ["123 salad Street"]
     (
-        po_box_indicator,
         payee_name_line_2,
         street_or_po_box_num,
         payee_name_line_3,
     ) = sap.format_address_for_sap(address_lines)
-    assert po_box_indicator == " "
     assert payee_name_line_2 == address_lines[0]
     assert street_or_po_box_num == " "
     assert payee_name_line_3 == " "
@@ -323,12 +321,10 @@ def test_format_address_street_1_line():
 def test_format_address_street_2_lines():
     address_lines = ["123 salad Street", "Second Floor"]
     (
-        po_box_indicator,
         payee_name_line_2,
         street_or_po_box_num,
         payee_name_line_3,
     ) = sap.format_address_for_sap(address_lines)
-    assert po_box_indicator == " "
     assert payee_name_line_2 == address_lines[0]
     assert street_or_po_box_num == address_lines[1]
     assert payee_name_line_3 == " "
@@ -337,12 +333,10 @@ def test_format_address_street_2_lines():
 def test_format_address_street_3_lines():
     address_lines = ["123 salad Street", "Second Floor", "c/o salad guy"]
     (
-        po_box_indicator,
         payee_name_line_2,
         street_or_po_box_num,
         payee_name_line_3,
     ) = sap.format_address_for_sap(address_lines)
-    assert po_box_indicator == " "
     assert payee_name_line_2 == address_lines[0]
     assert street_or_po_box_num == address_lines[1]
     assert payee_name_line_3 == address_lines[2]
@@ -351,28 +345,24 @@ def test_format_address_street_3_lines():
 def test_format_address_po_box_1_line():
     address_lines = ["P.O. Box 123456"]
     (
-        po_box_indicator,
         payee_name_line_2,
         street_or_po_box_num,
         payee_name_line_3,
     ) = sap.format_address_for_sap(address_lines)
-    assert po_box_indicator == "X"
-    assert payee_name_line_2 == " "
-    assert street_or_po_box_num == "123456"
+    assert payee_name_line_2 == address_lines[0]
+    assert street_or_po_box_num == " "
     assert payee_name_line_3 == " "
 
 
 def test_format_address_po_box_2_lines():
     address_lines = ["c/o salad guy", "P.O. Box 123456"]
     (
-        po_box_indicator,
         payee_name_line_2,
         street_or_po_box_num,
         payee_name_line_3,
     ) = sap.format_address_for_sap(address_lines)
-    assert po_box_indicator == "X"
     assert payee_name_line_2 == address_lines[0]
-    assert street_or_po_box_num == "123456"
+    assert street_or_po_box_num == address_lines[1]
     assert payee_name_line_3 == " "
 
 

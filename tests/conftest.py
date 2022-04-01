@@ -755,9 +755,9 @@ X000\
 X\
 some library solutions from salad  \
 Atlanta                            \
+P.O. Box 123456                    \
+ \
                                    \
-X\
-123456                             \
 30384-7991\
 GA \
 US \
