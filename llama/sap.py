@@ -7,6 +7,8 @@ from datetime import datetime
 from math import fsum
 from typing import List, Literal, Optional, Tuple
 
+import flatdict
+
 from llama import CONFIG
 from llama.alma import Alma_API_Client
 from llama.email import Email
@@ -54,8 +56,26 @@ def parse_invoice_records(
         invoice_data["funds"], retrieved_funds = populate_fund_data(
             alma_client, invoice_record, retrieved_funds
         )
+        invoice_data = check_for_multibyte(invoice_data)
         parsed_invoices.append(invoice_data)
     return parsed_invoices
+
+
+def check_for_multibyte(invoice):
+    multibyte_characters = []
+
+    for nested_key, value in flatdict.FlatterDict(invoice).items():
+        if isinstance(value, str):
+            for char in value:
+                if len(char.encode("utf-8")) > 1:
+                    multibyte_characters.append(
+                        {"field": nested_key, "character": char}
+                    )
+
+    if multibyte_characters:
+        invoice["contains_multibyte"] = multibyte_characters
+
+    return invoice
 
 
 def extract_invoice_data(invoice_record: dict) -> dict:
@@ -395,6 +415,15 @@ def generate_summary(
 
     for invoice in invoices:
         if invoice["payment method"] == "ACCOUNTINGDEPARTMENT":
+            if "contains_multibyte" in invoice:
+                for warning in invoice["contains_multibyte"]:
+                    summary += (
+                        f'Warning! Invoice: {invoice["id"]}\n'
+                        f'Invoice field: {warning["field"]}\n'
+                        f"Contains multibyte "
+                        f'character: {warning["character"]}\n'
+                    )
+                summary += "Please fix the above before continuing\n\n"
             summary += f"{invoice['vendor']['name']: <39.39}"
             summary += (
                 f"{invoice['number'] + invoice['date'].strftime('%y%m%d'): <20.20}"
@@ -477,7 +506,7 @@ def calculate_invoices_total_amount(invoices: List[dict]) -> float:
     return total_amount
 
 
-def generate_sap_file_names(sequence_number: str, date: datetime) -> (str, str):
+def generate_sap_file_names(sequence_number: str, date: datetime) -> Tuple[str, str]:
     date_string = date.strftime("%Y%m%d000000")
     data_file_name = f"dlibsapg.{sequence_number}.{date_string}"
     control_file_name = f"clibsapg.{sequence_number}.{date_string}"

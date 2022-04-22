@@ -396,6 +396,11 @@ Control file: clibsapg.1001.202110518000000
 
 
 
+Warning! Invoice: 0000055555000000
+Invoice field: vendor:address:lines:0
+Contains multibyte character: ‑
+Please fix the above before continuing
+
 Danger Inc.                            456789210512        150.00
 some library solutions from salad      444555210511        1067.04
 
@@ -551,3 +556,23 @@ def test_run_final_real(
         "'0003,20220111000000,mono' with type=StringList" in caplog.text
     )
     assert "3 monograph invoices successfully marked as paid in Alma" in caplog.text
+
+
+def test_check_for_multibyte():
+    invoice_with_multibyte = {
+        "id": {
+            "level 2": [
+                "this is a multibyte character ‑",
+                "this is not a multibyte character -",
+            ]
+        }
+    }
+    invoice_without_multibyte = {
+        "id": {"level 2": ["this is not a multibyte character -"]}
+    }
+    has_multibyte = sap.check_for_multibyte(invoice_with_multibyte)
+    no_multibyte = sap.check_for_multibyte(invoice_without_multibyte)
+    assert "contains_multibyte" in has_multibyte
+    assert "contains_multibyte" not in no_multibyte
+    assert has_multibyte["contains_multibyte"][0]["field"] == "id:level 2:0"
+    assert has_multibyte["contains_multibyte"][0]["character"] == "‑"

@@ -597,6 +597,9 @@ def invoices_for_sap_with_different_payment_method():
     get filtered out when generating summary reports"""
     invoices = [
         {
+            "contains_multibyte": [
+                {"field": "vendor:address:lines:0", "character": "‑"}
+            ],
             "date": datetime(2021, 5, 12),
             "id": "0000055555000000",
             "number": "456789",

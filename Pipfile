@@ -15,10 +15,11 @@ python-dateutil = "*"
 requests = "*"
 s3-concat = "*"
 sentry-sdk = "*"
+flatdict = "*"
 
 [dev-packages]
 bandit = "*"
-black = "==21.7b0"
+black = "*"
 coveralls = "*"
 freezegun = "*"
 isort = "*"
