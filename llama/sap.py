@@ -461,12 +461,14 @@ def generate_sap_control(sap_data_file: str, invoice_total: float) -> str:
     # we don't send credits to SAP so this will always be 20 0's
     sap_control_file += "0" * 20
 
-    # 53-72 debit total (in cents)
-    sap_control_file += f"{int(invoice_total * 100):020}"
+    # 53-72 debit total - convert invoice total to string
+    # remove decimal to convert dollars to cents
+    # and 0-pad to 20 characters
+    sap_control_file += f"{str(invoice_total).replace('.', ''):0>20}"
 
     # 73-92 control 3 summarizing the data file
     # we just repeat the invoice total here
-    sap_control_file += f"{int(invoice_total * 100):020}"
+    sap_control_file += f"{str(invoice_total).replace('.', ''):0>20}"
 
     # 93-112 control 4 summarizing the data file
     # Accounts payable told us to use this string
