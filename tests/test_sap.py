@@ -418,13 +418,13 @@ BAZ:\t12345\tFoo Bar Books\tFOOBAR
 
 
 def test_generate_sap_control(sap_data_file):
-    invoice_total = 1367.04
+    invoice_total = 1367.40
     sap_control = sap.generate_sap_control(sap_data_file, invoice_total)
     assert sap_control[0:16] == "0000000000001182"
     assert sap_control[16:32] == "0000000000000009"
     assert sap_control[32:52] == "00000000000000000000"
-    assert sap_control[52:72] == "00000000000000136704"
-    assert sap_control[72:92] == "00000000000000136704"
+    assert sap_control[52:72] == "00000000000000136740"
+    assert sap_control[72:92] == "00000000000000136740"
     assert sap_control[92:112] == "00100100000000000000"
     assert len(sap_control.encode("utf-8")) == 113
 
