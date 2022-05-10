@@ -464,11 +464,11 @@ def generate_sap_control(sap_data_file: str, invoice_total: float) -> str:
     # 53-72 debit total - convert invoice total to string
     # remove decimal to convert dollars to cents
     # and 0-pad to 20 characters
-    sap_control_file += f"{str(invoice_total).replace('.', ''):0>20}"
+    sap_control_file += f"{'{:.2f}'.format(invoice_total).replace('.', ''):0>20}"
 
     # 73-92 control 3 summarizing the data file
     # we just repeat the invoice total here
-    sap_control_file += f"{str(invoice_total).replace('.', ''):0>20}"
+    sap_control_file += f"{'{:.2f}'.format(invoice_total).replace('.', ''):0>20}"
 
     # 93-112 control 4 summarizing the data file
     # Accounts payable told us to use this string
