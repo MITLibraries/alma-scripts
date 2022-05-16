@@ -196,7 +196,9 @@ def sap_invoices(ctx, final_run, real_run):
         raise click.Abort()
 
     # Parse retrieved invoices and extract data needed for SAP
-    parsed_invoices = sap.parse_invoice_records(alma_client, invoice_records)
+    problem_invoices, parsed_invoices = sap.parse_invoice_records(
+        alma_client, invoice_records
+    )
 
     # Split invoices into monographs and serials
     monograph_invoices, serial_invoices = sap.split_invoices_by_field_value(
@@ -209,6 +211,7 @@ def sap_invoices(ctx, final_run, real_run):
     monograph_sequence_number = sap.generate_next_sap_sequence_number()
     serial_sequence_number = str(int(monograph_sequence_number) + 1)
     monograph_result = sap.run(
+        problem_invoices,
         monograph_invoices,
         "monograph",
         monograph_sequence_number,
@@ -217,6 +220,7 @@ def sap_invoices(ctx, final_run, real_run):
         real_run,
     )
     serial_result = sap.run(
+        problem_invoices,
         serial_invoices,
         "serial",
         serial_sequence_number,

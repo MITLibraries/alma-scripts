@@ -162,6 +162,21 @@ def test_country_code_from_address_country_not_present():
     assert "US" == code
 
 
+def test_parse_invoice_records(mocked_alma, mocked_alma_api_client):
+    invoices = sap.retrieve_sorted_invoices(mocked_alma_api_client)
+    problem_invoices, parsed_invoices = sap.parse_invoice_records(
+        mocked_alma_api_client, invoices
+    )
+    assert parsed_invoices
+    assert len(problem_invoices["fund_errors"]) == 1
+    assert problem_invoices["fund_errors"][0]["problem_fund"] == "over-encumbered"
+    assert len(problem_invoices["multibyte_errors"]) == 1
+    assert (
+        problem_invoices["multibyte_errors"][0]["multibyte_locations"][0]["field"]
+        == "vendor:address:lines:0"
+    )
+
+
 def test_populate_fund_data_success(mocked_alma, mocked_alma_api_client):
     with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
         invoice_record = json.load(f)
@@ -188,6 +203,14 @@ def test_populate_fund_data_success(mocked_alma, mocked_alma_api_client):
 
     assert fund_data == fund_data_ordereddict
     assert list(retrieved_funds) == ["JKL", "ABC", "DEF", "GHI"]
+
+
+def test_populate_fund_data_fund_error(mocked_alma, mocked_alma_api_client):
+    with open("tests/fixtures/invoice_with_over_encumbrance.json") as f:
+        invoice_record = json.load(f)
+        retrieved_funds = {}
+    with pytest.raises(sap.FundError, match="over-encumbered"):
+        sap.populate_fund_data(mocked_alma_api_client, invoice_record, retrieved_funds)
 
 
 def test_generate_report_success():
@@ -378,11 +401,13 @@ def test_calculate_invoices_total_amount():
     assert total_amount == 10
 
 
-def test_generate_summary(invoices_for_sap_with_different_payment_method):
+def test_generate_summary(
+    problem_invoices, invoices_for_sap_with_different_payment_method
+):
     dfile = "dlibsapg.1001.202110518000000"
     cfile = "clibsapg.1001.202110518000000"
     summary = sap.generate_summary(
-        invoices_for_sap_with_different_payment_method, dfile, cfile
+        problem_invoices, invoices_for_sap_with_different_payment_method, dfile, cfile
     )
     assert (
         summary
@@ -396,9 +421,22 @@ Control file: clibsapg.1001.202110518000000
 
 
 
-Warning! Invoice: 0000055555000000
+Warning! Invoice: 9991
+There was a problem retrieving data
+for fund: over-encumbred
+
+Warning! Invoice: 9992
+There was a problem retrieving data
+for fund: over-encumbred
+
+Warning! Invoice: 9993
 Invoice field: vendor:address:lines:0
 Contains multibyte character: ‑
+
+Warning! Invoice: 9993
+Invoice field: vendor:city
+Contains multibyte character: ƒ
+
 Please fix the above before continuing
 
 Danger Inc.                            456789210512        150.00
@@ -480,9 +518,13 @@ def test_mark_invoices_paid_error(
 
 
 def test_run_not_final_not_real(
-    caplog, invoices_for_sap_with_different_payment_method, mocked_alma
+    caplog,
+    invoices_for_sap_with_different_payment_method,
+    mocked_alma,
+    problem_invoices,
 ):
     result = sap.run(
+        problem_invoices,
         invoices_for_sap_with_different_payment_method,
         "monograph",
         "0003",
@@ -498,8 +540,11 @@ def test_run_not_final_not_real(
     assert "Monographs report:" in caplog.text
 
 
-def test_run_not_final_real(caplog, invoices_for_sap, mocked_alma, mocked_ses):
+def test_run_not_final_real(
+    caplog, invoices_for_sap, mocked_alma, mocked_ses, problem_invoices
+):
     result = sap.run(
+        problem_invoices,
         invoices_for_sap,
         "monograph",
         "0003",
@@ -515,8 +560,9 @@ def test_run_not_final_real(caplog, invoices_for_sap, mocked_alma, mocked_ses):
     assert "Monographs email sent with message ID:" in caplog.text
 
 
-def test_run_final_not_real(caplog, invoices_for_sap, mocked_alma):
+def test_run_final_not_real(caplog, invoices_for_sap, mocked_alma, problem_invoices):
     sap.run(
+        problem_invoices,
         invoices_for_sap,
         "monograph",
         "0003",
@@ -535,11 +581,13 @@ def test_run_final_real(
     mocked_sftp_server,
     mocked_ssm,
     test_sftp_private_key,
+    problem_invoices,
 ):
     CONFIG.SAP_DROPBOX_HOST = mocked_sftp_server.host
     CONFIG.SAP_DROPBOX_PORT = mocked_sftp_server.port
     CONFIG.SAP_DROPBOX_KEY = test_sftp_private_key
     sap.run(
+        problem_invoices,
         invoices_for_sap,
         "monograph",
         "0003",
@@ -563,6 +611,7 @@ def test_check_for_multibyte():
         "id": {
             "level 2": [
                 "this is a multibyte character ‑",
+                "this is also ‑ a multibyte character",
                 "this is not a multibyte character -",
             ]
         }
@@ -572,7 +621,7 @@ def test_check_for_multibyte():
     }
     has_multibyte = sap.check_for_multibyte(invoice_with_multibyte)
     no_multibyte = sap.check_for_multibyte(invoice_without_multibyte)
-    assert "contains_multibyte" in has_multibyte
-    assert "contains_multibyte" not in no_multibyte
-    assert has_multibyte["contains_multibyte"][0]["field"] == "id:level 2:0"
-    assert has_multibyte["contains_multibyte"][0]["character"] == "‑"
+    assert len(no_multibyte) == 0
+    assert has_multibyte[0]["field"] == "id:level 2:0"
+    assert has_multibyte[0]["character"] == "‑"
+    assert has_multibyte[1]["field"] == "id:level 2:1"

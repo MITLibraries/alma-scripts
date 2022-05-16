@@ -36,19 +36,23 @@ def mocked_alma(po_line_record_all_fields):
             funds = json.load(f)
             m.get(
                 "http://example.com/acq/funds?q=fund_code~ABC",
-                json={"fund": [funds["fund"][0]]},
+                json={"fund": [funds["fund"][0]], "total_record_count": 1},
             )
             m.get(
                 "http://example.com/acq/funds?q=fund_code~DEF",
-                json={"fund": [funds["fund"][1]]},
+                json={"fund": [funds["fund"][1]], "total_record_count": 1},
             )
             m.get(
                 "http://example.com/acq/funds?q=fund_code~GHI",
-                json={"fund": [funds["fund"][2]]},
+                json={"fund": [funds["fund"][2]], "total_record_count": 1},
             )
             m.get(
                 "http://example.com/acq/funds?q=fund_code~JKL",
-                json={"fund": [funds["fund"][3]]},
+                json={"fund": [funds["fund"][3]], "total_record_count": 1},
+            )
+            m.get(
+                "http://example.com/acq/funds?q=fund_code~over-encumbered",
+                json={"total_record_count": 0},
             )
 
         # Invoice endpoints
@@ -109,6 +113,8 @@ def mocked_alma(po_line_record_all_fields):
         m.get("http://example.com/acq/vendors/BKHS/invoices", json=invoices_json)
         with open("tests/fixtures/vendor_vend-s.json") as f:
             m.get("http://example.com/acq/vendors/VEND-S", json=json.load(f))
+        with open("tests/fixtures/vendor_multibyte-address.json") as f:
+            m.get("http://example.com/acq/vendors/multibyte-address", json=json.load(f))
 
         # General endpoints
         m.get(
@@ -591,15 +597,103 @@ def invoices_for_sap():
 
 
 @pytest.fixture()
+def problem_invoices():
+    problem_invoices = {
+        "fund_errors": [
+            {
+                "problem_fund": "over-encumbred",
+                "date": datetime(2021, 5, 12),
+                "id": "9991",
+                "number": "456789",
+                "type": "monograph",
+                "payment method": "ACCOUNTINGDEPARTMENT",
+                "total amount": 150,
+                "currency": "USD",
+                "vendor": {
+                    "name": "Danger Inc.",
+                    "code": "FOOBAR-M",
+                    "address": {
+                        "lines": [
+                            "123 salad Street",
+                            "Second Floor",
+                        ],
+                        "city": "San Francisco",
+                        "state or province": "CA",
+                        "postal code": "94109",
+                        "country": "US",
+                    },
+                },
+            },
+            {
+                "problem_fund": "over-encumbred",
+                "date": datetime(2021, 5, 11),
+                "id": "9992",
+                "number": "444555",
+                "type": "monograph",
+                "payment method": "ACCOUNTINGDEPARTMENT",
+                "total amount": 1067.04,
+                "currency": "USD",
+                "vendor": {
+                    "name": "some library solutions from salad",
+                    "code": "YBPE-M",
+                    "address": {
+                        "lines": [
+                            "P.O. Box 123456",
+                        ],
+                        "city": "Atlanta",
+                        "state or province": "GA",
+                        "postal code": "30384-7991",
+                        "country": "US",
+                    },
+                },
+            },
+        ],
+        "multibyte_errors": [
+            {
+                "multibyte_locations": [
+                    {"field": "vendor:address:lines:0", "character": "‑"},
+                    {"field": "vendor:city", "character": "ƒ"},
+                ],
+                "date": datetime(2021, 5, 12),
+                "id": "9993",
+                "number": "456789",
+                "type": "monograph",
+                "payment method": "ACCOUNTINGDEPARTMENT",
+                "total amount": 150,
+                "currency": "USD",
+                "vendor": {
+                    "name": "one address line",
+                    "code": "FOOBAR-M",
+                    "address": {
+                        "lines": [
+                            "12‑3 some street",
+                        ],
+                        "city": "San ƒrancisco",
+                        "state or province": "CA",
+                        "postal code": "94109",
+                        "country": "US",
+                    },
+                },
+                "funds": {
+                    "123456-0000001": {
+                        "amount": 150,
+                        "cost object": "123456",
+                        "G/L account": "0000001",
+                    }
+                },
+            }
+        ],
+    }
+    return problem_invoices
+
+
+@pytest.fixture()
 def invoices_for_sap_with_different_payment_method():
     """a list of invoices which includes an invoice with
     a payment method other than ACCOUNTINGDEPARTMENT which should
     get filtered out when generating summary reports"""
     invoices = [
         {
-            "contains_multibyte": [
-                {"field": "vendor:address:lines:0", "character": "‑"}
-            ],
             "date": datetime(2021, 5, 12),
             "id": "0000055555000000",
             "number": "456789",
