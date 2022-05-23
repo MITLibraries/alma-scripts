@@ -22,7 +22,21 @@ with open("config/countries.json") as f:
 
 
 class FundError(Exception):
-    pass
+    """Exception raised for errors when retrieving a fund by code.
+
+    Attributes:
+        fund_codes: list of fund codes in an invoice that cause the error
+        message: explanation of the error
+    """
+
+    def __init__(
+        self,
+        fund_codes,
+        message=("Fund could not be retrieved by " "code, may be overexpended"),
+    ):
+        self.fund_codes = fund_codes
+        self.message = message
+        super().__init__(self.message)
 
 
 def retrieve_sorted_invoices(alma_client):
@@ -40,7 +54,7 @@ def parse_invoice_records(
 ) -> List[dict]:
     """Parse a list of invoice records from Alma and return extracted SAP data."""
     parsed_invoices = []
-    problem_invoices = {"fund_errors": [], "multibyte_errors": []}
+    problem_invoices = []
     retrieved_vendors = {}
     retrieved_funds = {}
     for count, invoice_record in enumerate(invoice_records):
@@ -63,19 +77,24 @@ def parse_invoice_records(
                 alma_client, invoice_record, retrieved_funds
             )
         except FundError as err:
-            invoice_data["problem_fund"] = err.args[0]
-            problem_invoices["fund_errors"].append(invoice_data)
+            invoice_data["fund_errors"] = err.fund_codes
+            problem_invoices.append(invoice_data)
             continue
-        multibyte_locations = check_for_multibyte(invoice_data)
-        if multibyte_locations:
-            invoice_data["multibyte_locations"] = multibyte_locations
-            problem_invoices["multibyte_errors"].append(invoice_data)
+        multibyte_errors = check_for_multibyte(invoice_data)
+        if multibyte_errors:
+            invoice_data["multibyte_errors"] = multibyte_errors
+            problem_invoices.append(invoice_data)
         else:
             parsed_invoices.append(invoice_data)
     return problem_invoices, parsed_invoices
 
 
-def check_for_multibyte(invoice):
+def check_for_multibyte(invoice) -> list:
+    """checks for the existance of characters which require more than
+    one byte to be represented in UTF-8
+
+    WHY?: SAP system does not support multibyte characters
+    """
     multibyte_characters = []
 
     for nested_key, value in flatdict.FlatterDict(invoice).items():
@@ -197,6 +216,7 @@ def populate_fund_data(
     same fund record every time the fund appears in an invoice.
     """
     fund_data = {}
+    fund_code_errors = []
     for invoice_line in invoice_record["invoice_lines"]["invoice_line"]:
         for fund_distribution in invoice_line["fund_distribution"]:
             fund_code = fund_distribution["fund_code"]["value"]
@@ -207,8 +227,11 @@ def populate_fund_data(
                 logger.debug(f"Retrieving data for fund {fund_code}")
                 retrieved_funds[fund_code] = alma_client.get_fund_by_code(fund_code)
                 fund_record = retrieved_funds[fund_code]
+                # If alma does not return fund information add the fund code to the
+                # list of fund code errors and move on to the next fund code
                 if fund_record["total_record_count"] == 0:
-                    raise FundError(fund_code)
+                    fund_code_errors.append(fund_code)
+                    continue
             external_id = fund_record["fund"][0]["external_id"].strip()
             try:
                 # Combine amounts for funds that have the same external ID (AKA the
@@ -220,6 +243,8 @@ def populate_fund_data(
                     "cost object": external_id.split("-")[0],
                     "G/L account": external_id.split("-")[1],
                 }
+    if fund_code_errors:
+        raise FundError(fund_code_errors)
     fund_data = collections.OrderedDict(sorted(fund_data.items()))
     return fund_data, retrieved_funds
 
@@ -413,8 +438,32 @@ def generate_sap_data(today: datetime, invoices: List[dict]) -> str:
     return sap_data
 
 
+def generate_summary_warning(problem_invoices: list) -> str:
+    """Generates a warning messages about invoice problems that need
+    to be resolved before a final-run can take place
+    """
+    warning = ""
+    for invoice in problem_invoices:
+        warning += f'Warning! Invoice: {invoice["id"]}\n'
+        if "fund_errors" in invoice:
+            for fund_code in invoice["fund_errors"]:
+                warning += (
+                    f"There was a problem retrieving data\n"
+                    f"for fund: {fund_code}\n\n"
+                )
+        if "multibyte_errors" in invoice:
+            for multibyte in invoice["multibyte_errors"]:
+                warning += (
+                    f'Invoice field: {multibyte["field"]}\n'
+                    f"Contains multibyte "
+                    f'character: {multibyte["character"]}\n\n'
+                )
+    warning += "Please fix the above before starting a final-run\n\n"
+    return warning
+
+
 def generate_summary(
-    problem_invoices: dict,
+    problem_invoices: list,
     invoices: List[dict],
     data_file_name: str,
     control_file_name: str,
@@ -426,23 +475,7 @@ def generate_summary(
     summary += f"Data file: {data_file_name}\n\n"
     summary += f"Control file: {control_file_name}\n\n\n\n"
     if problem_invoices:
-        if "fund_errors" in problem_invoices:
-            for invoice in problem_invoices["fund_errors"]:
-                summary += (
-                    f'Warning! Invoice: {invoice["id"]}\n'
-                    f"There was a problem retrieving data\n"
-                    f'for fund: {invoice["problem_fund"]}\n\n'
-                )
-        if "multibyte_errors" in problem_invoices:
-            for invoice in problem_invoices["multibyte_errors"]:
-                for multibyte_location in invoice["multibyte_locations"]:
-                    summary += (
-                        f'Warning! Invoice: {invoice["id"]}\n'
-                        f'Invoice field: {multibyte_location["field"]}\n'
-                        f"Contains multibyte "
-                        f'character: {multibyte_location["character"]}\n\n'
-                    )
-        summary += "Please fix the above before continuing\n\n"
+        summary += generate_summary_warning(problem_invoices)
     for invoice in invoices:
         if invoice["payment method"] == "ACCOUNTINGDEPARTMENT":
             summary += f"{invoice['vendor']['name']: <39.39}"

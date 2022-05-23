@@ -54,6 +54,10 @@ def mocked_alma(po_line_record_all_fields):
                 "http://example.com/acq/funds?q=fund_code~over-encumbered",
                 json={"total_record_count": 0},
             )
+            m.get(
+                "http://example.com/acq/funds?q=fund_code~also-over-encumbered",
+                json={"total_record_count": 0},
+            )
 
         # Invoice endpoints
         with open("tests/fixtures/invoices.json") as f:
@@ -598,92 +602,60 @@ def invoices_for_sap():
 
 @pytest.fixture()
 def problem_invoices():
-    problem_invoices = {
-        "fund_errors": [
-            {
-                "problem_fund": "over-encumbred",
-                "date": datetime(2021, 5, 12),
-                "id": "9991",
-                "number": "456789",
-                "type": "monograph",
-                "payment method": "ACCOUNTINGDEPARTMENT",
-                "total amount": 150,
-                "currency": "USD",
-                "vendor": {
-                    "name": "Danger Inc.",
-                    "code": "FOOBAR-M",
-                    "address": {
-                        "lines": [
-                            "123 salad Street",
-                            "Second Floor",
-                        ],
-                        "city": "San Francisco",
-                        "state or province": "CA",
-                        "postal code": "94109",
-                        "country": "US",
-                    },
+    problem_invoices = [
+        {
+            "fund_errors": ["over-encumbred", "JKL"],
+            "multibyte_errors": [
+                {"field": "vendor:address:lines:0", "character": "‑"},
+                {"field": "vendor:city", "character": "ƒ"},
+            ],
+            "date": datetime(2021, 5, 12),
+            "id": "9991",
+            "number": "456789",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 150,
+            "currency": "USD",
+            "vendor": {
+                "name": "Danger Inc.",
+                "code": "FOOBAR-M",
+                "address": {
+                    "lines": [
+                        "12‑3 salad Street",
+                        "Second Floor",
+                    ],
+                    "city": "San ƒrancisco",
+                    "state or province": "CA",
+                    "postal code": "94109",
+                    "country": "US",
                 },
             },
-            {
-                "problem_fund": "over-encumbred",
-                "date": datetime(2021, 5, 11),
-                "id": "9992",
-                "number": "444555",
-                "type": "monograph",
-                "payment method": "ACCOUNTINGDEPARTMENT",
-                "total amount": 1067.04,
-                "currency": "USD",
-                "vendor": {
-                    "name": "some library solutions from salad",
-                    "code": "YBPE-M",
-                    "address": {
-                        "lines": [
-                            "P.O. Box 123456",
-                        ],
-                        "city": "Atlanta",
-                        "state or province": "GA",
-                        "postal code": "30384-7991",
-                        "country": "US",
-                    },
+        },
+        {
+            "fund_errors": ["also-over-encumbered"],
+            "multibyte_errors": [{"field": "vendor:address:lines:0", "character": "‑"}],
+            "date": datetime(2021, 5, 11),
+            "id": "9992",
+            "number": "444555",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 1067.04,
+            "currency": "USD",
+            "vendor": {
+                "name": "some library solutions from salad",
+                "code": "YBPE-M",
+                "address": {
+                    "lines": [
+                        "P.O. Box 123456",
+                    ],
+                    "city": "Atlanta",
+                    "state or province": "GA",
+                    "postal code": "30384‑7991",
+                    "country": "US",
                 },
             },
-        ],
-        "multibyte_errors": [
-            {
-                "multibyte_locations": [
-                    {"field": "vendor:address:lines:0", "character": "‑"},
-                    {"field": "vendor:city", "character": "ƒ"},
-                ],
-                "date": datetime(2021, 5, 12),
-                "id": "9993",
-                "number": "456789",
-                "type": "monograph",
-                "payment method": "ACCOUNTINGDEPARTMENT",
-                "total amount": 150,
-                "currency": "USD",
-                "vendor": {
-                    "name": "one address line",
-                    "code": "FOOBAR-M",
-                    "address": {
-                        "lines": [
-                            "12‑3 some street",
-                        ],
-                        "city": "San ƒrancisco",
-                        "state or province": "CA",
-                        "postal code": "94109",
-                        "country": "US",
-                    },
-                },
-                "funds": {
-                    "123456-0000001": {
-                        "amount": 150,
-                        "cost object": "123456",
-                        "G/L account": "0000001",
-                    }
-                },
-            }
-        ],
-    }
+        },
+    ]
     return problem_invoices
 
 

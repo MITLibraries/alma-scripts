@@ -18,6 +18,15 @@ def test_retrieve_sorted_invoices(mocked_alma, mocked_alma_api_client):
     assert invoices[2]["number"] == "0501130657"
 
 
+def test_parse_invoice_records(mocked_alma, mocked_alma_api_client):
+    invoices = sap.retrieve_sorted_invoices(mocked_alma_api_client)
+    problem_invoices, parsed_invoices = sap.parse_invoice_records(
+        mocked_alma_api_client, invoices
+    )
+    assert parsed_invoices
+    assert problem_invoices
+
+
 def test_extract_invoice_data_all_present():
     with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
         invoice_record = json.load(f)
@@ -162,21 +171,6 @@ def test_country_code_from_address_country_not_present():
     assert "US" == code
 
 
-def test_parse_invoice_records(mocked_alma, mocked_alma_api_client):
-    invoices = sap.retrieve_sorted_invoices(mocked_alma_api_client)
-    problem_invoices, parsed_invoices = sap.parse_invoice_records(
-        mocked_alma_api_client, invoices
-    )
-    assert parsed_invoices
-    assert len(problem_invoices["fund_errors"]) == 1
-    assert problem_invoices["fund_errors"][0]["problem_fund"] == "over-encumbered"
-    assert len(problem_invoices["multibyte_errors"]) == 1
-    assert (
-        problem_invoices["multibyte_errors"][0]["multibyte_locations"][0]["field"]
-        == "vendor:address:lines:0"
-    )
-
-
 def test_populate_fund_data_success(mocked_alma, mocked_alma_api_client):
     with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
         invoice_record = json.load(f)
@@ -209,8 +203,9 @@ def test_populate_fund_data_fund_error(mocked_alma, mocked_alma_api_client):
     with open("tests/fixtures/invoice_with_over_encumbrance.json") as f:
         invoice_record = json.load(f)
         retrieved_funds = {}
-    with pytest.raises(sap.FundError, match="over-encumbered"):
+    with pytest.raises(sap.FundError) as err:
         sap.populate_fund_data(mocked_alma_api_client, invoice_record, retrieved_funds)
+    assert err.value.fund_codes == ["also-over-encumbered", "over-encumbered"]
 
 
 def test_generate_report_success():
@@ -401,11 +396,40 @@ def test_calculate_invoices_total_amount():
     assert total_amount == 10
 
 
-def test_generate_summary(
-    problem_invoices, invoices_for_sap_with_different_payment_method
-):
+def test_generate_summary_warning(problem_invoices):
+    warning_message = sap.generate_summary_warning(problem_invoices)
+    assert (
+        warning_message
+        == """Warning! Invoice: 9991
+There was a problem retrieving data
+for fund: over-encumbred
+
+There was a problem retrieving data
+for fund: JKL
+
+Invoice field: vendor:address:lines:0
+Contains multibyte character: ‑
+
+Invoice field: vendor:city
+Contains multibyte character: ƒ
+
+Warning! Invoice: 9992
+There was a problem retrieving data
+for fund: also-over-encumbered
+
+Invoice field: vendor:address:lines:0
+Contains multibyte character: ‑
+
+Please fix the above before starting a final-run
+
+"""
+    )
+
+
+def test_generate_summary(invoices_for_sap_with_different_payment_method):
     dfile = "dlibsapg.1001.202110518000000"
     cfile = "clibsapg.1001.202110518000000"
+    problem_invoices = []
     summary = sap.generate_summary(
         problem_invoices, invoices_for_sap_with_different_payment_method, dfile, cfile
     )
@@ -420,24 +444,6 @@ Data file: dlibsapg.1001.202110518000000
 Control file: clibsapg.1001.202110518000000
 
 
-
-Warning! Invoice: 9991
-There was a problem retrieving data
-for fund: over-encumbred
-
-Warning! Invoice: 9992
-There was a problem retrieving data
-for fund: over-encumbred
-
-Warning! Invoice: 9993
-Invoice field: vendor:address:lines:0
-Contains multibyte character: ‑
-
-Warning! Invoice: 9993
-Invoice field: vendor:city
-Contains multibyte character: ƒ
-
-Please fix the above before continuing
 
 Danger Inc.                            456789210512        150.00
 some library solutions from salad      444555210511        1067.04

@@ -199,6 +199,7 @@ def sap_invoices(ctx, final_run, real_run):
     problem_invoices, parsed_invoices = sap.parse_invoice_records(
         alma_client, invoice_records
     )
+    logger.info(f"{len(problem_invoices)} problem invoices found.")
 
     # Split invoices into monographs and serials
     monograph_invoices, serial_invoices = sap.split_invoices_by_field_value(

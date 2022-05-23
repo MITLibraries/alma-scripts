@@ -106,7 +106,59 @@
         "value": "REGULAR",
         "desc": "Regular"
       },
-      "number": "15",
+      "number": "1",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "PK0015",
+      "price": 100.0,
+      "price_note": "",
+      "total_price": 100.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-12-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "Vol.85, No.1-4; 01.Jan.2022 - 31.Dec.2022\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "also-over-encumbered",
+          "desc": "also over encumbered"
+        },
+        "percent": 100.0,
+        "amount": 100
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050015000000"
+    },{
+      "id": "00000050015000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "2",
       "status": {
         "value": "READY",
         "desc": "Ready"
@@ -153,7 +205,7 @@
       }],
       "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050015000000"
     }],
-    "total_record_count": 1
+    "total_record_count": 2
   },
   "link": "http://example.com/acq/invoices/00000055555000000"
 }
