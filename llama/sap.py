@@ -78,11 +78,11 @@ def parse_invoice_records(
             )
         except FundError as err:
             invoice_data["fund_errors"] = err.fund_codes
-            problem_invoices.append(invoice_data)
-            continue
-        multibyte_errors = check_for_multibyte(invoice_data)
-        if multibyte_errors:
-            invoice_data["multibyte_errors"] = multibyte_errors
+        finally:
+            multibyte_errors = check_for_multibyte(invoice_data)
+            if multibyte_errors:
+                invoice_data["multibyte_errors"] = multibyte_errors
+        if ("multibyte_errors" in invoice_data) or ("fund_errors" in invoice_data):
             problem_invoices.append(invoice_data)
         else:
             parsed_invoices.append(invoice_data)
@@ -225,13 +225,13 @@ def populate_fund_data(
                 fund_record = retrieved_funds[fund_code]
             except KeyError:
                 logger.debug(f"Retrieving data for fund {fund_code}")
-                retrieved_funds[fund_code] = alma_client.get_fund_by_code(fund_code)
-                fund_record = retrieved_funds[fund_code]
+                fund_record = alma_client.get_fund_by_code(fund_code)
                 # If alma does not return fund information add the fund code to the
                 # list of fund code errors and move on to the next fund code
                 if fund_record["total_record_count"] == 0:
                     fund_code_errors.append(fund_code)
                     continue
+                retrieved_funds[fund_code] = fund_record
             external_id = fund_record["fund"][0]["external_id"].strip()
             try:
                 # Combine amounts for funds that have the same external ID (AKA the

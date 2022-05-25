@@ -23,8 +23,38 @@ def test_parse_invoice_records(mocked_alma, mocked_alma_api_client):
     problem_invoices, parsed_invoices = sap.parse_invoice_records(
         mocked_alma_api_client, invoices
     )
-    assert parsed_invoices
-    assert problem_invoices
+    assert len(parsed_invoices) == 3
+    assert len(problem_invoices) == 2
+    assert problem_invoices[0]["fund_errors"][0] == "over-encumbered"
+    assert problem_invoices[1]["fund_errors"][0] == "over-encumbered"
+    assert problem_invoices[1]["multibyte_errors"][0] == {
+        "character": "‑",
+        "field": "vendor:address:lines:0",
+    }
+
+
+def test_contains_multibyte():
+    invoice_with_multibyte = {
+        "id": {
+            "level 2": [
+                "this is a multibyte character ‑",
+                "this is also ‑ a multibyte character",
+                "this is not a multibyte character -",
+            ]
+        }
+    }
+    has_multibyte = sap.check_for_multibyte(invoice_with_multibyte)
+    assert has_multibyte[0]["field"] == "id:level 2:0"
+    assert has_multibyte[0]["character"] == "‑"
+    assert has_multibyte[1]["field"] == "id:level 2:1"
+
+
+def test_does_not_contain_multibyte():
+    invoice_without_multibyte = {
+        "id": {"level 2": ["this is not a multibyte character -"]}
+    }
+    no_multibyte = sap.check_for_multibyte(invoice_without_multibyte)
+    assert len(no_multibyte) == 0
 
 
 def test_extract_invoice_data_all_present():
@@ -402,10 +432,10 @@ def test_generate_summary_warning(problem_invoices):
         warning_message
         == """Warning! Invoice: 9991
 There was a problem retrieving data
-for fund: over-encumbred
+for fund: over-encumbered
 
 There was a problem retrieving data
-for fund: JKL
+for fund: also-over-encumbered
 
 Invoice field: vendor:address:lines:0
 Contains multibyte character: ‑
@@ -610,24 +640,3 @@ def test_run_final_real(
         "'0003,20220111000000,mono' with type=StringList" in caplog.text
     )
     assert "3 monograph invoices successfully marked as paid in Alma" in caplog.text
-
-
-def test_check_for_multibyte():
-    invoice_with_multibyte = {
-        "id": {
-            "level 2": [
-                "this is a multibyte character ‑",
-                "this is also ‑ a multibyte character",
-                "this is not a multibyte character -",
-            ]
-        }
-    }
-    invoice_without_multibyte = {
-        "id": {"level 2": ["this is not a multibyte character -"]}
-    }
-    has_multibyte = sap.check_for_multibyte(invoice_with_multibyte)
-    no_multibyte = sap.check_for_multibyte(invoice_without_multibyte)
-    assert len(no_multibyte) == 0
-    assert has_multibyte[0]["field"] == "id:level 2:0"
-    assert has_multibyte[0]["character"] == "‑"
-    assert has_multibyte[1]["field"] == "id:level 2:1"

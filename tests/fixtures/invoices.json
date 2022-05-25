@@ -587,6 +587,13 @@
                 },
                 "percent": 100,
                 "amount": -40.99
+              },
+              {
+                "fund_code": {
+                  "value": "over-encumbered"
+                },
+                "percent": 100,
+                "amount": -40.99
               }
             ]
           }

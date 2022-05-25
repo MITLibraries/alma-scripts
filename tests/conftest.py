@@ -604,7 +604,7 @@ def invoices_for_sap():
 def problem_invoices():
     problem_invoices = [
         {
-            "fund_errors": ["over-encumbred", "JKL"],
+            "fund_errors": ["over-encumbered", "also-over-encumbered"],
             "multibyte_errors": [
                 {"field": "vendor:address:lines:0", "character": "‑"},
                 {"field": "vendor:city", "character": "ƒ"},
