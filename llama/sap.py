@@ -78,10 +78,9 @@ def parse_invoice_records(
             )
         except FundError as err:
             invoice_data["fund_errors"] = err.fund_codes
-        finally:
-            multibyte_errors = check_for_multibyte(invoice_data)
-            if multibyte_errors:
-                invoice_data["multibyte_errors"] = multibyte_errors
+        multibyte_errors = check_for_multibyte(invoice_data)
+        if multibyte_errors:
+            invoice_data["multibyte_errors"] = multibyte_errors
         if ("multibyte_errors" in invoice_data) or ("fund_errors" in invoice_data):
             problem_invoices.append(invoice_data)
         else:
