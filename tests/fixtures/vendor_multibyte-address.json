@@ -1,0 +1,22 @@
+{
+  "code": "multibyte-address",
+  "name": "Vendor four",
+  "contact_info": {
+    "address": [
+      {
+        "preferred": true,
+        "line1": "PO Box 12‑34",
+        "city": "Tomorrowland",
+        "postal_code": "09876",
+        "country": {
+          "value": "USA"
+        },
+        "address_type": [
+          {
+            "value": "billing"
+          }
+        ]
+      }
+    ]
+  }
+}

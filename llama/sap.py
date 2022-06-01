@@ -21,6 +21,24 @@ with open("config/countries.json") as f:
     COUNTRIES = json.load(f)
 
 
+class FundError(Exception):
+    """Exception raised for errors when retrieving a fund by code.
+
+    Attributes:
+        fund_codes: list of fund codes in an invoice that cause the error
+        message: explanation of the error
+    """
+
+    def __init__(
+        self,
+        fund_codes,
+        message=("Fund could not be retrieved by " "code, may be overexpended"),
+    ):
+        self.fund_codes = fund_codes
+        self.message = message
+        super().__init__(self.message)
+
+
 def retrieve_sorted_invoices(alma_client):
     """Retrieve sorted invoices from Alma.
 
@@ -36,6 +54,7 @@ def parse_invoice_records(
 ) -> List[dict]:
     """Parse a list of invoice records from Alma and return extracted SAP data."""
     parsed_invoices = []
+    problem_invoices = []
     retrieved_vendors = {}
     retrieved_funds = {}
     for count, invoice_record in enumerate(invoice_records):
@@ -53,15 +72,28 @@ def parse_invoice_records(
                 alma_client, vendor_code
             )
             invoice_data["vendor"] = retrieved_vendors[vendor_code]
-        invoice_data["funds"], retrieved_funds = populate_fund_data(
-            alma_client, invoice_record, retrieved_funds
-        )
-        invoice_data = check_for_multibyte(invoice_data)
-        parsed_invoices.append(invoice_data)
-    return parsed_invoices
+        try:
+            invoice_data["funds"], retrieved_funds = populate_fund_data(
+                alma_client, invoice_record, retrieved_funds
+            )
+        except FundError as err:
+            invoice_data["fund_errors"] = err.fund_codes
+        multibyte_errors = check_for_multibyte(invoice_data)
+        if multibyte_errors:
+            invoice_data["multibyte_errors"] = multibyte_errors
+        if ("multibyte_errors" in invoice_data) or ("fund_errors" in invoice_data):
+            problem_invoices.append(invoice_data)
+        else:
+            parsed_invoices.append(invoice_data)
+    return problem_invoices, parsed_invoices
 
 
-def check_for_multibyte(invoice):
+def check_for_multibyte(invoice) -> list:
+    """checks for the existance of characters which require more than
+    one byte to be represented in UTF-8
+
+    WHY?: SAP system does not support multibyte characters
+    """
     multibyte_characters = []
 
     for nested_key, value in flatdict.FlatterDict(invoice).items():
@@ -71,11 +103,7 @@ def check_for_multibyte(invoice):
                     multibyte_characters.append(
                         {"field": nested_key, "character": char}
                     )
-
-    if multibyte_characters:
-        invoice["contains_multibyte"] = multibyte_characters
-
-    return invoice
+    return multibyte_characters
 
 
 def extract_invoice_data(invoice_record: dict) -> dict:
@@ -187,7 +215,7 @@ def populate_fund_data(
     same fund record every time the fund appears in an invoice.
     """
     fund_data = {}
-    invoice_lines_total = 0
+    fund_code_errors = []
     for invoice_line in invoice_record["invoice_lines"]["invoice_line"]:
         for fund_distribution in invoice_line["fund_distribution"]:
             fund_code = fund_distribution["fund_code"]["value"]
@@ -196,8 +224,13 @@ def populate_fund_data(
                 fund_record = retrieved_funds[fund_code]
             except KeyError:
                 logger.debug(f"Retrieving data for fund {fund_code}")
-                retrieved_funds[fund_code] = alma_client.get_fund_by_code(fund_code)
-                fund_record = retrieved_funds[fund_code]
+                fund_record = alma_client.get_fund_by_code(fund_code)
+                # If alma does not return fund information add the fund code to the
+                # list of fund code errors and move on to the next fund code
+                if fund_record["total_record_count"] == 0:
+                    fund_code_errors.append(fund_code)
+                    continue
+                retrieved_funds[fund_code] = fund_record
             external_id = fund_record["fund"][0]["external_id"].strip()
             try:
                 # Combine amounts for funds that have the same external ID (AKA the
@@ -209,7 +242,8 @@ def populate_fund_data(
                     "cost object": external_id.split("-")[0],
                     "G/L account": external_id.split("-")[1],
                 }
-            invoice_lines_total += amount
+    if fund_code_errors:
+        raise FundError(fund_code_errors)
     fund_data = collections.OrderedDict(sorted(fund_data.items()))
     return fund_data, retrieved_funds
 
@@ -403,8 +437,35 @@ def generate_sap_data(today: datetime, invoices: List[dict]) -> str:
     return sap_data
 
 
+def generate_summary_warning(problem_invoices: list) -> str:
+    """Generates a warning messages about invoice problems that need
+    to be resolved before a final-run can take place
+    """
+    warning = ""
+    for invoice in problem_invoices:
+        warning += f'Warning! Invoice: {invoice["id"]}\n'
+        if "fund_errors" in invoice:
+            for fund_code in invoice["fund_errors"]:
+                warning += (
+                    f"There was a problem retrieving data\n"
+                    f"for fund: {fund_code}\n\n"
+                )
+        if "multibyte_errors" in invoice:
+            for multibyte in invoice["multibyte_errors"]:
+                warning += (
+                    f'Invoice field: {multibyte["field"]}\n'
+                    f"Contains multibyte "
+                    f'character: {multibyte["character"]}\n\n'
+                )
+    warning += "Please fix the above before starting a final-run\n\n"
+    return warning
+
+
 def generate_summary(
-    invoices: List[dict], data_file_name: str, control_file_name: str
+    problem_invoices: list,
+    invoices: List[dict],
+    data_file_name: str,
+    control_file_name: str,
 ) -> str:
     excluded_invoices = ""
     invoice_count = 0
@@ -412,18 +473,10 @@ def generate_summary(
     summary = "--- MIT Libraries--- Alma to SAP Invoice Feed\n\n\n\n"
     summary += f"Data file: {data_file_name}\n\n"
     summary += f"Control file: {control_file_name}\n\n\n\n"
-
+    if problem_invoices:
+        summary += generate_summary_warning(problem_invoices)
     for invoice in invoices:
         if invoice["payment method"] == "ACCOUNTINGDEPARTMENT":
-            if "contains_multibyte" in invoice:
-                for warning in invoice["contains_multibyte"]:
-                    summary += (
-                        f'Warning! Invoice: {invoice["id"]}\n'
-                        f'Invoice field: {warning["field"]}\n'
-                        f"Contains multibyte "
-                        f'character: {warning["character"]}\n'
-                    )
-                summary += "Please fix the above before continuing\n\n"
             summary += f"{invoice['vendor']['name']: <39.39}"
             summary += (
                 f"{invoice['number'] + invoice['date'].strftime('%y%m%d'): <20.20}"
@@ -539,6 +592,7 @@ def mark_invoices_paid(invoices: List[dict], date: datetime):
 
 
 def run(
+    problem_invoices: dict,
     invoices: List[dict],
     invoices_type: Literal["monograph", "serial"],
     sap_sequence_number: str,  # Just the sequence number, e.g. "0003"
@@ -553,7 +607,9 @@ def run(
     logger.info(f"Generated next SAP file names: {data_file_name}, {control_file_name}")
 
     logger.info(f"Generating {invoices_type}s summary")
-    summary = generate_summary(invoices, data_file_name, control_file_name)
+    summary = generate_summary(
+        problem_invoices, invoices, data_file_name, control_file_name
+    )
 
     logger.info(f"Generating {invoices_type}s report")
     report = generate_report(date, invoices)

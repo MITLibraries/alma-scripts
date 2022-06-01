@@ -75,7 +75,7 @@ def test_alma_get_vendor_details(mocked_alma, mocked_alma_api_client):
 
 def test_alma_get_vendor_invoices(mocked_alma, mocked_alma_api_client):
     invoices = mocked_alma_api_client.get_vendor_invoices("BKHS")
-    assert len(list(invoices)) == 3
+    assert len(list(invoices)) == 5
 
 
 def test_alma_get_po_line_full_record(mocked_alma, mocked_alma_api_client):

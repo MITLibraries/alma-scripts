@@ -18,6 +18,45 @@ def test_retrieve_sorted_invoices(mocked_alma, mocked_alma_api_client):
     assert invoices[2]["number"] == "0501130657"
 
 
+def test_parse_invoice_records(mocked_alma, mocked_alma_api_client):
+    invoices = sap.retrieve_sorted_invoices(mocked_alma_api_client)
+    problem_invoices, parsed_invoices = sap.parse_invoice_records(
+        mocked_alma_api_client, invoices
+    )
+    assert len(parsed_invoices) == 3
+    assert len(problem_invoices) == 2
+    assert problem_invoices[0]["fund_errors"][0] == "over-encumbered"
+    assert problem_invoices[1]["fund_errors"][0] == "over-encumbered"
+    assert problem_invoices[1]["multibyte_errors"][0] == {
+        "character": "‑",
+        "field": "vendor:address:lines:0",
+    }
+
+
+def test_contains_multibyte():
+    invoice_with_multibyte = {
+        "id": {
+            "level 2": [
+                "this is a multibyte character ‑",
+                "this is also ‑ a multibyte character",
+                "this is not a multibyte character -",
+            ]
+        }
+    }
+    has_multibyte = sap.check_for_multibyte(invoice_with_multibyte)
+    assert has_multibyte[0]["field"] == "id:level 2:0"
+    assert has_multibyte[0]["character"] == "‑"
+    assert has_multibyte[1]["field"] == "id:level 2:1"
+
+
+def test_does_not_contain_multibyte():
+    invoice_without_multibyte = {
+        "id": {"level 2": ["this is not a multibyte character -"]}
+    }
+    no_multibyte = sap.check_for_multibyte(invoice_without_multibyte)
+    assert len(no_multibyte) == 0
+
+
 def test_extract_invoice_data_all_present():
     with open("tests/fixtures/invoice_waiting_to_be_sent.json") as f:
         invoice_record = json.load(f)
@@ -188,6 +227,15 @@ def test_populate_fund_data_success(mocked_alma, mocked_alma_api_client):
 
     assert fund_data == fund_data_ordereddict
     assert list(retrieved_funds) == ["JKL", "ABC", "DEF", "GHI"]
+
+
+def test_populate_fund_data_fund_error(mocked_alma, mocked_alma_api_client):
+    with open("tests/fixtures/invoice_with_over_encumbrance.json") as f:
+        invoice_record = json.load(f)
+        retrieved_funds = {}
+    with pytest.raises(sap.FundError) as err:
+        sap.populate_fund_data(mocked_alma_api_client, invoice_record, retrieved_funds)
+    assert err.value.fund_codes == ["also-over-encumbered", "over-encumbered"]
 
 
 def test_generate_report_success():
@@ -378,11 +426,42 @@ def test_calculate_invoices_total_amount():
     assert total_amount == 10
 
 
+def test_generate_summary_warning(problem_invoices):
+    warning_message = sap.generate_summary_warning(problem_invoices)
+    assert (
+        warning_message
+        == """Warning! Invoice: 9991
+There was a problem retrieving data
+for fund: over-encumbered
+
+There was a problem retrieving data
+for fund: also-over-encumbered
+
+Invoice field: vendor:address:lines:0
+Contains multibyte character: ‑
+
+Invoice field: vendor:city
+Contains multibyte character: ƒ
+
+Warning! Invoice: 9992
+There was a problem retrieving data
+for fund: also-over-encumbered
+
+Invoice field: vendor:address:lines:0
+Contains multibyte character: ‑
+
+Please fix the above before starting a final-run
+
+"""
+    )
+
+
 def test_generate_summary(invoices_for_sap_with_different_payment_method):
     dfile = "dlibsapg.1001.202110518000000"
     cfile = "clibsapg.1001.202110518000000"
+    problem_invoices = []
     summary = sap.generate_summary(
-        invoices_for_sap_with_different_payment_method, dfile, cfile
+        problem_invoices, invoices_for_sap_with_different_payment_method, dfile, cfile
     )
     assert (
         summary
@@ -395,11 +474,6 @@ Data file: dlibsapg.1001.202110518000000
 Control file: clibsapg.1001.202110518000000
 
 
-
-Warning! Invoice: 0000055555000000
-Invoice field: vendor:address:lines:0
-Contains multibyte character: ‑
-Please fix the above before continuing
 
 Danger Inc.                            456789210512        150.00
 some library solutions from salad      444555210511        1067.04
@@ -480,9 +554,13 @@ def test_mark_invoices_paid_error(
 
 
 def test_run_not_final_not_real(
-    caplog, invoices_for_sap_with_different_payment_method, mocked_alma
+    caplog,
+    invoices_for_sap_with_different_payment_method,
+    mocked_alma,
+    problem_invoices,
 ):
     result = sap.run(
+        problem_invoices,
         invoices_for_sap_with_different_payment_method,
         "monograph",
         "0003",
@@ -498,8 +576,11 @@ def test_run_not_final_not_real(
     assert "Monographs report:" in caplog.text
 
 
-def test_run_not_final_real(caplog, invoices_for_sap, mocked_alma, mocked_ses):
+def test_run_not_final_real(
+    caplog, invoices_for_sap, mocked_alma, mocked_ses, problem_invoices
+):
     result = sap.run(
+        problem_invoices,
         invoices_for_sap,
         "monograph",
         "0003",
@@ -515,8 +596,9 @@ def test_run_not_final_real(caplog, invoices_for_sap, mocked_alma, mocked_ses):
     assert "Monographs email sent with message ID:" in caplog.text
 
 
-def test_run_final_not_real(caplog, invoices_for_sap, mocked_alma):
+def test_run_final_not_real(caplog, invoices_for_sap, mocked_alma, problem_invoices):
     sap.run(
+        problem_invoices,
         invoices_for_sap,
         "monograph",
         "0003",
@@ -535,11 +617,13 @@ def test_run_final_real(
     mocked_sftp_server,
     mocked_ssm,
     test_sftp_private_key,
+    problem_invoices,
 ):
     CONFIG.SAP_DROPBOX_HOST = mocked_sftp_server.host
     CONFIG.SAP_DROPBOX_PORT = mocked_sftp_server.port
     CONFIG.SAP_DROPBOX_KEY = test_sftp_private_key
     sap.run(
+        problem_invoices,
         invoices_for_sap,
         "monograph",
         "0003",
@@ -556,23 +640,3 @@ def test_run_final_real(
         "'0003,20220111000000,mono' with type=StringList" in caplog.text
     )
     assert "3 monograph invoices successfully marked as paid in Alma" in caplog.text
-
-
-def test_check_for_multibyte():
-    invoice_with_multibyte = {
-        "id": {
-            "level 2": [
-                "this is a multibyte character ‑",
-                "this is not a multibyte character -",
-            ]
-        }
-    }
-    invoice_without_multibyte = {
-        "id": {"level 2": ["this is not a multibyte character -"]}
-    }
-    has_multibyte = sap.check_for_multibyte(invoice_with_multibyte)
-    no_multibyte = sap.check_for_multibyte(invoice_without_multibyte)
-    assert "contains_multibyte" in has_multibyte
-    assert "contains_multibyte" not in no_multibyte
-    assert has_multibyte["contains_multibyte"][0]["field"] == "id:level 2:0"
-    assert has_multibyte["contains_multibyte"][0]["character"] == "‑"
