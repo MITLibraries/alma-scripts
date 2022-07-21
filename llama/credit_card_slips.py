@@ -17,6 +17,8 @@ def create_po_line_dict(alma_api_client, po_line_record):
     total_price = get_total_price(po_line_record, price)
     po_line_dict["total_price"] = f"${total_price}"
 
+    po_line_dict["quantity"] = get_quantity_from_locations(po_line_record)
+
     po_line_created_date = get_po_line_created_date(po_line_record)
     po_line_dict["po_date"] = po_line_created_date
     po_line_dict[
@@ -75,8 +77,8 @@ def get_cardholder_from_notes(po_line_record):
 
 def get_credit_card_full_po_lines_from_date(alma_api_client, date):
     """Get a list of full PO line records for credit card purchases (acquisition_methood =
-    EXCHANGE) from the specified date."""
-    brief_po_lines = alma_api_client.get_brief_po_lines("EXCHANGE")
+    "PURCHASE_NOLETTER" from the specified date."""
+    brief_po_lines = alma_api_client.get_brief_po_lines("PURCHASE_NOLETTER")
     credit_card_full_po_lines = []
     for brief_po_line in (
         p
@@ -106,6 +108,20 @@ def get_po_title(po_line_record):
     title = po_line_record.get("resource_metadata", {}).get("title")
     title = "Unknown title" if title is None else title
     return title
+
+
+def get_quantity_from_locations(po_line_record):
+    """Get the total quantity of items associated with a PO line by adding up the
+    quantities from each location in the PO line. This is a imperfect method as
+    it may generate a total quantity than differs from what is visible in the
+    UI if some if the items are not associated with a location. Regardless, this is
+    the best available method given that the quantity listed in the UI is not
+    available in the API response. Stakeholders requested this with full knowledge
+    of the imperfections."""
+    quantity = 0
+    for location in po_line_record.get("location", [{}]):
+        quantity += location.get("quantity", 0)
+    return str(quantity)
 
 
 def get_total_price(po_line_record, unit_price):
