@@ -44,11 +44,13 @@
       <tr>
         <td>PO Line #:</td>
         <td>TITLE:</td>
+        <td>QUANTITY</td>
         <td>PRICE</td>
       </tr>
       <tr>
         <td class="poline"></td>
         <td class="item_title"></td>
+        <td class="quantity"></td>
         <td class="price"></td>
       </tr>
       <tr>
