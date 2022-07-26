@@ -50,10 +50,15 @@ def test_alma_create_vendor(mocked_alma, mocked_alma_api_client):
     assert vendor["code"] == "BKHS"
 
 
-def test_alma_get_brief_po_lines(mocked_alma, mocked_alma_api_client):
+def test_alma_get_brief_po_lines_no_acq_method(mocked_alma, mocked_alma_api_client):
     po_line_stubs = mocked_alma_api_client.get_brief_po_lines()
     assert next(po_line_stubs) == {"created_date": "2021-05-13Z", "number": "POL-123"}
     assert next(po_line_stubs) == {"created_date": "2021-05-02Z", "number": "POL-456"}
+
+
+def test_alma_get_brief_po_lines_with_acq_method(mocked_alma, mocked_alma_api_client):
+    po_line_stubs = mocked_alma_api_client.get_brief_po_lines("PURCHASE_NOLETTER")
+    assert next(po_line_stubs) == {"created_date": "2021-05-15Z", "number": "POL-789"}
 
 
 def test_alma_get_fund_by_code(mocked_alma, mocked_alma_api_client):

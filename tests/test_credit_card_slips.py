@@ -19,6 +19,7 @@ def test_create_po_line_dict_all_fields(
     assert po_line_dict["item_title"] == "Book title"
     assert po_line_dict["poline"] == "POL-123"
     assert po_line_dict["price"] == "$12.00"
+    assert po_line_dict["quantity"] == "2"
     assert po_line_dict["vendor"] == "Corporation"
 
 
@@ -39,6 +40,7 @@ def test_create_po_line_dict_missing_fields(
     assert po_line_dict_missing_fields["invoice_num"] == (
         "Invoice #: No PO Line created date foundUNK"
     )
+    assert po_line_dict_missing_fields["quantity"] == "0"
     assert po_line_dict_missing_fields["cardholder"] == "No cardholder note found"
 
 
@@ -81,6 +83,7 @@ def test_create_po_line_dicts(
         assert po_line_dict["item_title"] == "Book title"
         assert po_line_dict["poline"] == "POL-123"
         assert po_line_dict["price"] == "$12.00"
+        assert po_line_dict["quantity"] == "2"
         assert po_line_dict["vendor"] == "Corporation"
 
 
@@ -140,6 +143,16 @@ def test_get_po_title_with_title():
 def test_get_po_title_without_title():
     po_line_record = {"resource_metadata": {"title": None}}
     assert credit_card_slips.get_po_title(po_line_record) == "Unknown title"
+
+
+def test_get_quantity_from_locations_with_locations():
+    po_line_record = {"location": [{"quantity": 1}, {"quantity": 1}]}
+    assert credit_card_slips.get_quantity_from_locations(po_line_record) == "2"
+
+
+def test_get_quantity_from_locations_without_locations():
+    po_line_record = {}
+    assert credit_card_slips.get_quantity_from_locations(po_line_record) == "0"
 
 
 def test_get_total_price_with_total_price():

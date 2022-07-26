@@ -104,6 +104,18 @@ def mocked_alma(po_line_record_all_fields):
                 ],
             },
         )
+        m.get(
+            (
+                "http://example.com/acq/po-lines?status=ACTIVE&"
+                "acquisition_method=PURCHASE_NOLETTER"
+            ),
+            json={
+                "total_record_count": 2,
+                "po_line": [
+                    {"number": "POL-789", "created_date": "2021-05-15Z"},
+                ],
+            },
+        )
         m.get("http://example.com/acq/po-lines/POL-123", json=po_line_record_all_fields)
         m.get("http://example.com/acq/po-lines/POL-456", json=po_line_record_wrong_date)
 
@@ -426,6 +438,7 @@ def po_line_record_all_fields():
             {"fund_code": {"value": "ABC"}, "amount": {"sum": "24.0"}}
         ],
         "note": [{"note_text": "CC-abc"}],
+        "location": [{"quantity": 1}, {"quantity": 1}],
     }
     return po_line_record_all
 
