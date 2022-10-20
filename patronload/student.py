@@ -317,7 +317,7 @@ for i in range(0, len(student)):
 
     for user_group in root.iter("user_group"):
         status = ""
-        if re.search("^[1234]$", patron["STUDENT_YEAR"]):
+        if re.search("^[1234Uu]$", patron["STUDENT_YEAR"]):
             status = "31"
         elif re.search("^[Gg]$", patron["STUDENT_YEAR"]):
             status = "32"
