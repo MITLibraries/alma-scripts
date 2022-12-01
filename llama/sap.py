@@ -39,6 +39,10 @@ class FundError(Exception):
         super().__init__(self.message)
 
 
+class VendorAddressError(Exception):
+    """Exception raised when vendor has no addresses"""
+
+
 def retrieve_sorted_invoices(alma_client):
     """Retrieve sorted invoices from Alma.
 
@@ -68,10 +72,13 @@ def parse_invoice_records(
             invoice_data["vendor"] = retrieved_vendors[vendor_code]
         except KeyError:
             logger.debug(f"Retrieving data for vendor {vendor_code}")
-            retrieved_vendors[vendor_code] = populate_vendor_data(
-                alma_client, vendor_code
-            )
-            invoice_data["vendor"] = retrieved_vendors[vendor_code]
+            try:
+                retrieved_vendors[vendor_code] = populate_vendor_data(
+                    alma_client, vendor_code
+                )
+                invoice_data["vendor"] = retrieved_vendors[vendor_code]
+            except VendorAddressError:
+                invoice_data["vendor_address_error"] = vendor_code
         try:
             invoice_data["funds"], retrieved_funds = populate_fund_data(
                 alma_client, invoice_record, retrieved_funds
@@ -81,7 +88,11 @@ def parse_invoice_records(
         multibyte_errors = check_for_multibyte(invoice_data)
         if multibyte_errors:
             invoice_data["multibyte_errors"] = multibyte_errors
-        if ("multibyte_errors" in invoice_data) or ("fund_errors" in invoice_data):
+        if (
+            ("vendor_address_error" in invoice_data)
+            or ("multibyte_errors" in invoice_data)
+            or ("fund_errors" in invoice_data)
+        ):
             problem_invoices.append(invoice_data)
         else:
             parsed_invoices.append(invoice_data)
@@ -167,8 +178,8 @@ def determine_vendor_payment_address(vendor_record: dict) -> dict:
             if address["address_type"][0]["value"] == "payment":
                 return address
         return vendor_record["contact_info"]["address"][0]
-    except KeyError:
-        return "No vendor address in record"
+    except (IndexError, KeyError):
+        raise VendorAddressError
 
 
 def address_lines_from_address(address: dict) -> list:
@@ -457,6 +468,10 @@ def generate_summary_warning(problem_invoices: list) -> str:
                     f"Contains multibyte "
                     f'character: {multibyte["character"]}\n\n'
                 )
+        if "vendor_address_error" in invoice:
+            warning += (
+                f'No addresses found for vendor: {invoice["vendor_address_error"]}\n\n'
+            )
     warning += "Please fix the above before starting a final-run\n\n"
     return warning
 

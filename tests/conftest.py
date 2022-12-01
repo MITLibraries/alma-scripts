@@ -131,6 +131,8 @@ def mocked_alma(po_line_record_all_fields):
             m.get("http://example.com/acq/vendors/VEND-S", json=json.load(f))
         with open("tests/fixtures/vendor_multibyte-address.json") as f:
             m.get("http://example.com/acq/vendors/multibyte-address", json=json.load(f))
+        with open("tests/fixtures/vendor_no-address.json") as f:
+            m.get("http://example.com/acq/vendors/YBP-no-address", json=json.load(f))
 
         # General endpoints
         m.get(
@@ -667,6 +669,16 @@ def problem_invoices():
                     "country": "US",
                 },
             },
+        },
+        {
+            "vendor_address_error": "YBP-no-address",
+            "date": datetime(2021, 5, 11),
+            "id": "9993",
+            "number": "444666",
+            "type": "monograph",
+            "payment method": "ACCOUNTINGDEPARTMENT",
+            "total amount": 1067.04,
+            "currency": "USD",
         },
     ]
     return problem_invoices

@@ -33,6 +33,19 @@ def test_parse_invoice_records(mocked_alma, mocked_alma_api_client):
     }
 
 
+def test_parse_invoice_with_no_address_vendor(mocked_alma, mocked_alma_api_client):
+    invoices_with_no_vendor_address = []
+    with open("tests/fixtures/invoice_with_no_vendor_address.json") as f:
+        invoice_record = json.load(f)
+    invoices_with_no_vendor_address.append(invoice_record)
+    problem_invoices, parsed_invoices = sap.parse_invoice_records(
+        mocked_alma_api_client, invoices_with_no_vendor_address
+    )
+    assert len(parsed_invoices) == 0
+    assert len(problem_invoices) == 1
+    assert problem_invoices[0]["vendor_address_error"] == "YBP-no-address"
+
+
 def test_contains_multibyte():
     invoice_with_multibyte = {
         "id": {
@@ -104,6 +117,11 @@ def test_populate_vendor_data(mocked_alma, mocked_alma_api_client):
     } == vendor_data
 
 
+def test_populate_vendor_data_empty_address_list(mocked_alma, mocked_alma_api_client):
+    with pytest.raises(sap.VendorAddressError):
+        sap.populate_vendor_data(mocked_alma_api_client, "YBP-no-address")
+
+
 def test_determine_vendor_payment_address_present():
     vendor_record = {
         "contact_info": {
@@ -131,10 +149,16 @@ def test_determine_vendor_payment_address_not_present():
     assert {"address_type": [{"value": "order", "desc": "Order"}]} == address
 
 
-def test_determine_vendor_payment_address_no_address_field():
+def test_no_address_field_in_vendor_data_raises_error():
     vendor_record = {"contact_info": {}}
-    address = sap.determine_vendor_payment_address(vendor_record)
-    assert "No vendor address in record" == address
+    with pytest.raises(sap.VendorAddressError):
+        sap.determine_vendor_payment_address(vendor_record)
+
+
+def test_empty_vendor_address_list_raises_error():
+    vendor_record = {"contact_info": {"address": []}}
+    with pytest.raises(sap.VendorAddressError):
+        sap.determine_vendor_payment_address(vendor_record)
 
 
 def test_address_lines_from_address_all_present():
@@ -449,6 +473,9 @@ for fund: also-over-encumbered
 
 Invoice field: vendor:address:lines:0
 Contains multibyte character: ‑
+
+Warning! Invoice: 9993
+No addresses found for vendor: YBP-no-address
 
 Please fix the above before starting a final-run
 
