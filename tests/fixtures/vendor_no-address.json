@@ -1,0 +1,332 @@
+{
+  "link": "string",
+  "code": "YBP-no-address",
+  "name": "The Bookhouse, Inc.",
+  "additional_code": "10210102218",
+  "financial_sys_code": "1",
+  "national_tax_id": "3",
+  "status": {
+    "value": "ALL"
+  },
+  "liable_for_vat": false,
+  "language": {
+    "value": "en"
+  },
+  "material_supplier": true,
+  "access_provider": false,
+  "licensor": false,
+  "governmental": false,
+  "tax_percentage": "string",
+  "library": [
+    {
+      "include_sub_units": false,
+      "code": {
+        "value": "string"
+      }
+    }
+  ],
+  "currency": [
+    {
+      "value": "TMT"
+    }
+  ],
+  "account": [
+    {
+      "code": "string",
+      "description": "string",
+      "financial_sys_code": "string",
+      "status": {
+        "value": "ALL"
+      },
+      "library": [
+        {
+          "include_sub_units": false,
+          "code": {
+            "value": "string"
+          }
+        }
+      ],
+      "discount_percent": "string",
+      "note": "string",
+      "payment_method": [
+        {
+          "value": "CASH"
+        }
+      ],
+      "expected_receipt_interval": "string",
+      "claiming_interval": "string",
+      "expected_invoice_interval": "string",
+      "expected_activation_interval": "string",
+      "renewal_evaluation_interval": "string",
+      "subscription_interval": "string",
+      "reclaim_interval": "1",
+      "contact_info": {
+        "address": [],
+        "email": [
+          {
+            "preferred": true,
+            "email_address": "nosuchmail@no.such.mail.com",
+            "description": "The Bookhouse, Inc.",
+            "email_type": [
+              {
+                "value": "queries"
+              }
+            ]
+          }
+        ],
+        "phone": [
+          {
+            "preferred": false,
+            "preferred_sms": false,
+            "phone_number": "string",
+            "phone_type": [
+              {
+                "value": "orderPhone"
+              }
+            ]
+          }
+        ],
+        "web_address": [
+          {
+            "url": "string",
+            "url_type": {
+              "value": "Interface"
+            },
+            "description": "string",
+            "note": "string"
+          }
+        ]
+      }
+    }
+  ],
+  "contact_person": [
+    {
+      "first_name": "John",
+      "last_name": "Smith"
+    }
+  ],
+  "interface": [
+    {
+      "name": "The Bookhouse, Inc.",
+      "description": "The Bookhouse, Inc.",
+      "status": {
+        "value": "ACTIVE"
+      },
+      "main_note": "string",
+      "contact_info": {
+        "address": [
+          {
+            "preferred": false,
+            "line1": "string",
+            "line2": "string",
+            "line3": "string",
+            "line4": "string",
+            "line5": "string",
+            "city": "string",
+            "state_province": "string",
+            "postal_code": "string",
+            "country": {
+              "value": "VUT"
+            },
+            "address_note": "string",
+            "start_date": "2015-07-20",
+            "end_date": "2015-07-20",
+            "address_type": [
+              {
+                "value": "billing"
+              }
+            ]
+          }
+        ],
+        "email": [
+          {
+            "preferred": true,
+            "email_address": "nosuchmail@no.such.mail.com",
+            "description": "The Bookhouse, Inc.",
+            "email_type": [
+              {
+                "value": "queries"
+              }
+            ]
+          }
+        ],
+        "phone": [
+          {
+            "preferred": false,
+            "preferred_sms": false,
+            "phone_number": "string",
+            "phone_type": [
+              {
+                "value": "orderPhone"
+              }
+            ]
+          }
+        ],
+        "web_address": [
+          {
+            "url": "string",
+            "url_type": {
+              "value": "Interface"
+            },
+            "description": "string",
+            "note": "string"
+          }
+        ]
+      },
+      "admin_info": {
+        "user_id": "string",
+        "user_password": "string",
+        "user_password_note": "string",
+        "online_admin_module": false,
+        "admin_uri": "string",
+        "admin_uri_type": {
+          "value": "URI"
+        },
+        "open_url_compliant": false,
+        "linking_note": "string",
+        "hardware_req_internal": "string",
+        "hardware_req_public": "string",
+        "software_req_internal": "string",
+        "software_req_public": "string",
+        "maintenance_win_value": "string",
+        "incident_log": "string",
+        "admin_documentation": "string"
+      },
+      "statistics": {
+        "user_id": "string",
+        "user_password": "string",
+        "user_pass_note": "string",
+        "available": false,
+        "delivery_method": {
+          "value": "EMAIL"
+        },
+        "format": {
+          "value": "HTML"
+        },
+        "frequency": {
+          "value": "Annual"
+        },
+        "online_location": "string",
+        "delivery_address": "string",
+        "locally_stored": "string",
+        "statistics_note": "string"
+      },
+      "access_info": {
+        "user_id": "string",
+        "user_password": "string",
+        "user_pass_note": "string",
+        "ip_address_reg_method": {
+          "value": "Online"
+        },
+        "ip_address_reg_instructions": "string",
+        "ip_address_note": "string",
+        "access_note": "string",
+        "primary_access_uri": "string",
+        "interface_uri": "string",
+        "implemented_auth_method": {
+          "value": "IPaddress"
+        },
+        "local_persistent_uri": "string"
+      },
+      "interface_notes": [
+        {
+          "note_text": "Created by: John Smith"
+        }
+      ]
+    }
+  ],
+  "contact_info": {
+    "email": [
+      {
+        "preferred": true,
+        "email_address": "nosuchmail@no.such.mail.com",
+        "description": "The Bookhouse, Inc.",
+        "email_type": [
+          {
+            "value": "queries"
+          }
+        ]
+      }
+    ],
+    "phone": [
+      {
+        "preferred": false,
+        "preferred_sms": false,
+        "phone_number": "string",
+        "phone_type": [
+          {
+            "value": "orderPhone"
+          }
+        ]
+      }
+    ],
+    "web_address": [
+      {
+        "url": "string",
+        "url_type": {
+          "value": "Interface"
+        },
+        "description": "string",
+        "note": "string"
+      }
+    ]
+  },
+  "edi_info": {
+    "code": "string",
+    "type": {
+      "value": "31B"
+    },
+    "naming_convention": {
+      "value": "0"
+    },
+    "vendor_format": {
+      "value": "BTN"
+    },
+    "invoices": false,
+    "po_lines": false,
+    "additional_order_number": false,
+    "include_fund_code": false,
+    "do_not_prorate": false,
+    "fund_code": {
+      "value": "string"
+    },
+    "ftp_description": "string",
+    "server_name": "string",
+    "port_number": 0,
+    "user_name": "string",
+    "password": "string",
+    "input_path": "string",
+    "output_path": "string",
+    "allow_navigation": false,
+    "secured_ftp": false,
+    "send_command": {
+      "value": "A"
+    },
+    "passive_mode": false,
+    "ftp_mode": {
+      "value": "B"
+    },
+    "per_organization_unit": [
+      {
+        "organization_unit": {
+          "value": "string"
+        },
+        "edi_code": "string",
+        "edi_type": {
+          "value": "31B"
+        }
+      }
+    ],
+    "ean_account": [
+      {
+        "account": "string",
+        "ean_code": "string"
+      }
+    ]
+  },
+  "notes": [
+    {
+      "note_text": "Created by: John Smith"
+    }
+  ]
+}

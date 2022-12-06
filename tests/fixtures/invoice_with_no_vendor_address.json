@@ -1,0 +1,834 @@
+{
+  "number": "123456",
+  "vendor": {
+    "value": "YBP-no-address",
+    "desc": "The Bookhouse, Inc."
+  },
+  "owner": {
+    "value": "ACQ",
+    "desc": null
+  },
+  "id": "00000055555000000",
+  "invoice_date": "2021-09-27Z",
+  "total_amount": 4056.07,
+  "currency": {
+    "value": "USD",
+    "desc": "US Dollar"
+  },
+  "total_invoice_lines_amount": 4056.07,
+  "vendor_contact_person": {},
+  "payment_method": {
+    "value": "ACCOUNTINGDEPARTMENT",
+    "desc": "Accounting Department"
+  },
+  "reference_number": "",
+  "creation_form": {
+    "value": "EDI",
+    "desc": "EDIteur Invoice Message"
+  },
+  "invoice_status": {
+    "value": "ACTIVE",
+    "desc": "Active"
+  },
+  "invoice_workflow_status": {
+    "value": "Waiting to be Sent",
+    "desc": "Ready to be paid"
+  },
+  "invoice_approval_status": {
+    "value": "APPROVED",
+    "desc": "Approved"
+  },
+  "approved_by": "Smith Jane Q",
+  "approval_date": "2021-10-19Z",
+  "additional_charges": {
+    "use_pro_rata": true,
+    "shipment": 0.0,
+    "overhead": 0.0,
+    "insurance": 0.0,
+    "discount": 0.0
+  },
+  "invoice_vat": {
+    "report_tax": false,
+    "vat_per_invoice_line": false,
+    "vat_code": {
+      "value": "",
+      "desc": null
+    },
+    "percentage": 0.0,
+    "vat_amount": 0,
+    "type": {
+      "value": "LINEEXCLUSIVE",
+      "desc": "Line Exclusive"
+    },
+    "expended_from_fund": true
+  },
+  "explicit_ratio": [],
+  "payment": {
+    "prepaid": false,
+    "internal_copy": false,
+    "payment_status": {
+      "value": "NOT_PAID",
+      "desc": "Not Paid"
+    },
+    "voucher_date": "2021-09-30Z",
+    "voucher_number": "",
+    "voucher_amount": "",
+    "voucher_currency": {
+      "value": "",
+      "desc": null
+    }
+  },
+  "alert": [{
+    "value": "ADDITIONAL_INVOICE_EXISTS",
+    "desc": "Additional Invoice lines are linked to the same PO line"
+  }, {
+    "value": "DIFFERENT_VENDOR_ACCOUNT",
+    "desc": "Invoice holds vendor account different than some of the linked PO lines"
+  }, {
+    "value": "DIFF_PRICE_THAN_POLINE",
+    "desc": "Some invoice lines differ in price from their linked PO line."
+  }, {
+    "value": "EDI_INVOICE_OF_EXTERNAL_SYSTEM",
+    "desc": "The invoice was created by an external system and need to be reviewed."
+  }, {
+    "value": "NOT_LINKED_LINES",
+    "desc": "Lines not linked"
+  }],
+  "note": [],
+  "number_of_lines": {
+    "value": 14,
+    "link": "http://example.com/acq/invoices/00000055555000000/lines"
+  },
+  "invoice_lines": {
+    "invoice_line": [{
+      "id": "00000050014000000",
+      "type": {
+        "value": "OTHER",
+        "desc": "Other"
+      },
+      "number": "14",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "",
+      "price": 69.75,
+      "price_note": "",
+      "total_price": 69.75,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": true,
+      "fully_invoiced": false,
+      "additional_info": "",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "JKL",
+          "desc": "Fund JKL"
+        },
+        "percent": 100.0,
+        "amount": 69.75
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050014000000"
+    }, {
+      "id": "00000050001000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "1",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "PF0001",
+      "price": 239.0,
+      "price_note": "",
+      "total_price": 239.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-12-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "Vol.61, No.1-2; 01.Jan.2022 - 31.Dec.2022",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 239
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050001000000"
+    }, {
+      "id": "00000050002000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "2",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "R60002",
+      "price": 314.0,
+      "price_note": "",
+      "total_price": 314.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-01-01Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "Vol.47, No.1-4; 01.Jan.2022 - 31.Dec.2022",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 314
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050002000000"
+    }, {
+      "id": "00000050003000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "3",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "R00003",
+      "price": 75.0,
+      "price_note": "",
+      "total_price": 75.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-04-01Z",
+      "subscription_to_date": "2023-03-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "01.Apr.2022 - 31.Mar.2023\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 75
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050003000000"
+    }, {
+      "id": "00000050004000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "4",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "RM0004",
+      "price": 379.0,
+      "price_note": "",
+      "total_price": 379.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2021-11-26Z",
+      "subscription_to_date": "2022-11-15Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "16.Nov.2021 - 15.Nov.2022",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "DEF",
+          "desc": "Fund DEF"
+        },
+        "percent": 100.0,
+        "amount": 379
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050004000000"
+    }, {
+      "id": "00000050005000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "5",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "R40005",
+      "price": 58.0,
+      "price_note": "",
+      "total_price": 58.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-12-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "01.Jan.2022 - 31.Dec.2022\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 58
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050005000000"
+    }, {
+      "id": "00000050006000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "6",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "RR0006",
+      "price": 82.4,
+      "price_note": "",
+      "total_price": 82.4,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-04-01Z",
+      "subscription_to_date": "2023-03-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "01.Apr.2022 - 31.Mar.2023\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 82.4
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050006000000"
+    }, {
+      "id": "00000050007000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "7",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "PF0007",
+      "price": 235.52,
+      "price_note": "",
+      "total_price": 235.52,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-12-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "No.39-44; 01.Jan.2022 - 31.Dec.2022\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 235.52
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050007000000"
+    }, {
+      "id": "00000050008000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "8",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "PB0008",
+      "price": 288.0,
+      "price_note": "",
+      "total_price": 288.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-12-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "Vol.61, No.1-2; 01.Jan.2022 - 31.Dec.2022; Higher Education - Very Large, USA\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 288
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050008000000"
+    }, {
+      "id": "00000050009000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "9",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "R00009",
+      "price": 367.0,
+      "price_note": "",
+      "total_price": 367.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2021-10-01Z",
+      "subscription_to_date": "2022-09-30Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "01.Oct.2021 - 30.Sep.2022\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 367
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050009000000"
+    }, {
+      "id": "00000050010000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "10",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "RH0010",
+      "price": 1196.0,
+      "price_note": "",
+      "total_price": 1196.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-12-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "Vol.20, No.1-4; 01.Jan.2022 - 31.Dec.2022\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 1196
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050010000000"
+    }, {
+      "id": "00000050011000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "11",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "PA1011",
+      "price": 299.0,
+      "price_note": "",
+      "total_price": 299.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-12-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "Vol.11, No.1-2; 01.Jan.2022 - 31.Dec.2022\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "GHI",
+          "desc": "Fund GHI"
+        },
+        "percent": 100.0,
+        "amount": 299
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050011000000"
+    }, {
+      "id": "00000050012000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "12",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "R00012",
+      "price": 294.4,
+      "price_note": "",
+      "total_price": 294.4,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-01-01Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "01.Jan.2022 - 31.Dec.2022 \r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 294.4
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050012000000"
+    }, {
+      "id": "00000050013000000",
+      "type": {
+        "value": "REGULAR",
+        "desc": "Regular"
+      },
+      "number": "13",
+      "status": {
+        "value": "READY",
+        "desc": "Ready"
+      },
+      "po_line": "PK0013",
+      "price": 159.0,
+      "price_note": "",
+      "total_price": 159.0,
+      "quantity": 1,
+      "vat_note": "Approximately 0.00 included in line Total Price.",
+      "check_subscription_date_overlap": false,
+      "fully_invoiced": false,
+      "subscription_from_date": "2022-01-01Z",
+      "subscription_to_date": "2022-12-31Z",
+      "release_remaining_encumbrance": false,
+      "reporting_code": {
+        "value": "REPCODE",
+        "desc": "Subscription - SU (REPCODE)"
+      },
+      "secondary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "tertiary_reporting_code": {
+        "value": "",
+        "desc": null
+      },
+      "note": "Vol.85, No.1-4; 01.Jan.2022 - 31.Dec.2022\r\n ",
+      "invoice_line_vat": {
+        "vat_code": {
+          "value": "",
+          "desc": null
+        },
+        "percentage": 0.0,
+        "vat_amount": 0
+      },
+      "fund_distribution": [{
+        "fund_code": {
+          "value": "ABC",
+          "desc": "Biology"
+        },
+        "percent": 100.0,
+        "amount": 159
+      }],
+      "link": "http://example.com/acq/invoices/00000055555000000/lines/00000050013000000"
+    }],
+    "total_record_count": 14
+  },
+  "link": "http://example.com/acq/invoices/00000055555000000"
+}
