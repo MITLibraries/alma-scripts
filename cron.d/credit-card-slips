@@ -1,7 +1,6 @@
 # Cron jobs for credit card slips
 #
 # Daily at 0801
-01 08 * * * gituser /home/gituser/alma-scripts/scripts/Credit-Card-Slips.sh
+# 01 08 * * * gituser /home/gituser/alma-scripts/scripts/Credit-Card-Slips.sh
 #
 #make sure to keep required newline at end of file -
-

@@ -1,7 +1,7 @@
 # Cron jobs for TIMDEX exports
 #
 # Daily at 0853
-53 08 * * * gituser /home/gituser/alma-scripts/scripts/Update-Export.sh
+# 53 08 * * * gituser /home/gituser/alma-scripts/scripts/Update-Export.sh
 #
 # # At 0030 on the 2nd of the month (runs on full export from the 1st of the
 # # month)
@@ -10,4 +10,3 @@
 #30 0 5 * * gituser /home/gituser/alma-scripts/scripts/Full-Export.sh
 
 #make sure to keep required newline at end of file -
-
