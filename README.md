@@ -1,10 +1,10 @@
 # About this project
 
-This repository contains scripts related to the Alma migration, and is primarily used in the alma-sftp-ec2 instance. The EC2 instance is currently turned off, and this repo will eventually be archived, but in the meantime, this disables any cron jobs that might get pushed to the EC2 instance if it accidently gets turned back on.
+This repository contains scripts related to the Alma migration, and is primarily used in the alma-sftp-ec2 instance. 
 
 ## IMPORTANT NOTE 1
 
-This app is due for retirement. The scripts are all migrated to our AWS Organization as standalone cont
+This app is due for retirement. The scripts are all migrated to our AWS Organization as standalone containers. The EC2 instance is currently turned off, and this repo will eventually be archived, but in the meantime, this disables any cron jobs that might get pushed to the EC2 instance if it accidently gets turned back on.
 
 ## Important note 2: How to update files on the alma-sftp-ec2 instance.
 
