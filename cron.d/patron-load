@@ -1,7 +1,6 @@
 # Cron jobs for patron load
 #
 # Daily at 0301
-01 03 * * * gituser /home/gituser/alma-scripts/scripts/Patron-load.sh
+# 01 03 * * * gituser /home/gituser/alma-scripts/scripts/Patron-load.sh
 #
 #make sure to keep required newline at end of file -
-
